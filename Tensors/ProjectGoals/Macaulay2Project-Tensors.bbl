@@ -1,0 +1,99 @@
+\begin{thebibliography}{NQWW07}
+
+\bibitem[CS13]{cartwright2013number}
+D.~Cartwright and B.~Sturmfels.
+\newblock The number of eigenvalues of a tensor.
+\newblock {\em Linear algebra and its applications}, 438(2):942--952, 2013.
+
+\bibitem[DOT17]{draisma2017best}
+J.~Draisma, G.~Ottaviani, and A.~Tocino.
+\newblock Best rank-$k$ approximations for tensors: generalizing eckart-young.
+\newblock {\em arXiv:1711.06443}, 2017.
+
+\bibitem[FO14]{friedland2014number}
+S.~Friedland and G.~Ottaviani.
+\newblock The number of singular vector tuples and uniqueness of best rank-one
+  approximation of tensors.
+\newblock {\em Foundations of Computational Mathematics}, 14(6):1209--1242,
+  2014.
+
+\bibitem[Ga{\l}16]{Gal16}
+Maciej Ga{\l}azka.
+\newblock Multigraded apolarity.
+\newblock {\em arXiv preprint arXiv:1601.06211}, 2016.
+
+\bibitem[GKZ08]{GKZ08}
+Israel~M Gelfand, Mikhail Kapranov, and Andrei Zelevinsky.
+\newblock {\em Discriminants, resultants, and multidimensional determinants}.
+\newblock Springer Science \& Business Media, 2008.
+
+\bibitem[HHLQ13]{hu2013determinants}
+S.~Hu, Z.~H. Huang, C.~Ling, and L.~Qi.
+\newblock On determinants and eigenvalue theory of tensors.
+\newblock {\em Journal of Symbolic Computation}, 50:508--531, 2013.
+
+\bibitem[Koz17]{kozhasov2017fully}
+K.~Kozhasov.
+\newblock On fully real eigenconfigurations of tensors.
+\newblock {\em arXiv:1707.04005}, 2017.
+
+\bibitem[Lan12]{Lan12}
+Joseph~M Landsberg.
+\newblock {\em Tensors: geometry and applications}, volume 128.
+\newblock American Mathematical Society Providence, RI, 2012.
+
+\bibitem[Lim05]{lim2005singular}
+L.~H. Lim.
+\newblock Singular values and eigenvalues of tensors: a variational approach.
+\newblock In {\em Proc. IEEE Internat. Workshop on Comput. Advances in Multi-
+  Sensor Adaptive Processing (CAMSAP 2005)}, pages 129--132. IEEE, 2005.
+
+\bibitem[LO13]{LO13}
+Joseph~M Landsberg and Giorgio Ottaviani.
+\newblock Equations for secant varieties of veronese and other varieties.
+\newblock {\em Annali di Matematica Pura ed Applicata}, 192(4):569--606, 2013.
+
+\bibitem[Mac16]{maccioni1972number}
+M.~Maccioni.
+\newblock The number of real eigenvectors of a real polynomial.
+\newblock {\em Bollettino dell'Unione Matematica Italiana}, pages 1--21, 2016.
+
+\bibitem[MO18]{MoOn18}
+Bernard Mourrain and Alessandro Oneto.
+\newblock On minimal decompositions of low rank symmetric tensors.
+\newblock {\em arXiv preprint arxiv:1805.11940}, 2018.
+
+\bibitem[NQWW07]{ni2007degree}
+G.~Ni, L.~Qi, F.~Wang, and Y.~Wang.
+\newblock The degree of the e-characteristic polynomial of an even order
+  tensor.
+\newblock {\em Journal of Mathematical Analysis and Applications},
+  329(2):1218--1229, 2007.
+
+\bibitem[OO13]{OO13}
+Luke Oeding and Giorgio Ottaviani.
+\newblock Eigenvectors of tensors and algorithms for waring decomposition.
+\newblock {\em Journal of Symbolic Computation}, 54:9--35, 2013.
+
+\bibitem[Qi05]{qi2005eigenvalues}
+L.~Qi.
+\newblock Eigenvalues of a real supersymmetric tensor.
+\newblock {\em Journal of Symbolic Computation}, 40(6):1302--1324, 2005.
+
+\bibitem[Qi07]{qi2007eigenvalues}
+L.~Qi.
+\newblock Eigenvalues and invariants of tensors.
+\newblock {\em Journal of Mathematical Analysis and Applications},
+  325(2):1363--1377, 2007.
+
+\bibitem[QL17]{qi2017tensor}
+L.~Qi and Z.~Luo.
+\newblock {\em Tensor analysis: Spectral theory and special tensors}.
+\newblock SIAM, 2017.
+
+\bibitem[Tei14]{Tei14}
+Zach Teitler.
+\newblock Geometric lower bounds for generalized ranks.
+\newblock {\em arXiv preprint arXiv:1406.5145}, 2014.
+
+\end{thebibliography}

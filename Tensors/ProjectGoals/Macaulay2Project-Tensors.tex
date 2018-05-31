@@ -1,0 +1,179 @@
+\documentclass[11pt]{extarticle}
+
+% packages
+
+\usepackage{amsfonts,amsthm,latexsym,amsmath,amssymb,amscd,amsmath, mathrsfs, epsf, xypic, geometry}
+\usepackage{color}
+\usepackage{picture}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage[colorlinks = true]{hyperref}
+\geometry{verbose,tmargin=2.5cm,lmargin=2cm,rmargin=2cm}
+\headsep 1cm
+\renewcommand{\baselinestretch}{1.15}
+
+% THEOREM Environments ---------------------------------------------------
+ \newtheorem{theorem}{Theorem}[section]
+ \newtheorem{corollary}[theorem]{Corollary}
+ \newtheorem{lemma}[theorem]{Lemma}
+ \newtheorem{proposition}[theorem]{Proposition}
+ \newtheorem{conj}{Conjecture}
+ \theoremstyle{definition}
+ \newtheorem{definition}[theorem]{Definition}
+ \theoremstyle{remark}
+ \newtheorem{remark}[theorem]{Remark}
+ \theoremstyle{definition}
+ \newtheorem{example}[theorem]{Example}
+ \newtheorem{question}[theorem]{Question}
+  \newtheorem{questions}[theorem]{Questions}
+
+%Math commands
+
+\newcommand{\rk}{\mathrm{rk}}
+\newcommand{\elim}{\mathrm{elim}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\XX}{\mathbb{X}{\bf R}(T)}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\caF}{\mathcal{F}}
+\newcommand{\caM}{\mathcal{M}}
+\newcommand{\KK}{\mathbb{K}}
+
+
+\title{{\bf \texttt{Macaulay2} workshop Leipzig 2018 -- project on Tensors}}
+
+%\subjclass[2000]{14P99, 12D05, 13P10, 14A25}
+
+\begin{document}
+
+\maketitle
+
+The main goal of this project is to create a package helpful for researchers interested in {\it tensors} and their {\it decompositions}. In the literature, there are several algorithms (some of them already written in \texttt{Macaulay2}) and new lines of research that should be addressed with tools collected in a well-structured package to be efficiently used. See \cite{Lan12} for an extensive survey on tensors and their uses in algebraic geometry and applications. Here is a list of projects we would like to suggest as points of departure. 
+
+
+
+%\bigskip
+%We distinguish the difficulty of the exercises/questions by denoting them with 
+%
+%\centerline{
+%* (minimum), ** or *** (maximum). 
+%}
+%
+%\smallskip
+%\noindent We suggest the participant not familiar with {\it Waring decompositions of polynomials} and/or {\it Macaulay2} to start with the easier exercises.
+
+\subsection*{Basic constructions of tensors}
+{\it Constructions}
+\begin{itemize}
+\item[(i)] Give an efficient way to handle tensors in {\it Macaulay2}, e.g., how to input a tensor, how to go from a (multi-)homogeneous polynomial and a (partially) symmetric tensor
+\end{itemize}
+
+\noindent {\it Manipulations}
+\begin{itemize}
+\item[(i)] Give functions to construct new tensors from old ones, e.g., Kronecker products, Hadamard products, etc...
+\end{itemize}
+
+\subsection*{Apolarity Theory}
+\noindent {\it Apolar ideal}
+\begin{itemize}
+	\item[(i)]  Define a function that, given a homogeneous polynomial $f$, returns the apolar ideal of $f$.
+\end{itemize}
+{\it Sylvester's Algorithm}
+\begin{itemize}
+	\item[(i)] Define a function that, given a binary form $f$ returns the ideal of a minimal reduced set of points apolar to $f$.
+	\item[(ii)] Define a function that, given a form $f$ in two essential variables returns the ideal of a minimal reduced set of points apolar to $f$.
+\end{itemize}
+
+\noindent {\it Apolarity Lemma}
+\begin{itemize}
+	\item[(i)]  Define a function that, given a homogeneous polynomial $f$ and an ideal $I$, checks if $I$ defines a $0$-dim (reduced) scheme apolar to $f$.
+	
+	\item[(ii)] Can we define a function that, given a homogeneous polynomial $f$ and an ideal defining a minimal set of reduced points apolar to $f$, returns a decomposition of $f$ using the corresponding linear forms?
+	
+	OBS.: in general, this might require to work over fields which are not precise... 
+\end{itemize}
+{\it Generalizations of Apolarity Lemma}
+\begin{itemize}
+\item[(i)] Apolarity Lemma has been generalized to any {\it toric variety}; see \cite{Gal16, Tei14}. Implement a procedure that, given a toric variety $X$, a closed subscheme $R$ and a non-zero global section $F$, checks if $R$ is apolar to $F$. 
+
+OBS.: as testing cases, we should try to use partially symmetric and non-symmetric tensors.
+\end{itemize}
+
+\subsection*{Flattenings: equations of secant varieties and decomposition algorithms}
+{\it Flattenings}
+\begin{itemize}
+	\item[(i)] Define a procedure to construct (symmetric) flattenings of a given (symmetric) tensor.
+	OBS.: as testing cases, we should get the equations defining some secant varieties to some Veronese varieties; see the table at page $2$ of \cite{LO13}.
+\end{itemize}
+{\it Exact decomposition algorithms}
+\begin{itemize}
+	\item[(i)] Implement the {\it Catalecticant algorithm}; see \cite[Section 12.4.1]{Lan12};
+	\item[(ii)] Implement the {\it Koszul flattenings algorithm}; see \cite[Section 12.4.2]{Lan12} and \cite{OO13}. 
+The aim of Koszul flattenings is to go beyond lower bounds to border ranks for tensors $T\in A\otimes B\otimes C$ given by rank conditions on flattenings; namely, beyond the equations $\wedge^{r+1} A^{*}\otimes \wedge^{r+1}(B\otimes C)^{*}$. The idea is to use an augmented version of our tensor $T$. Consider $\textnormal{Id}_A\otimes T: A\otimes B^{*}\rightarrow A\otimes A\otimes C$. We show that the flattenings of $\textnormal{Id}_A\otimes T$ have relations with the border rank of $T$. We have the two canonical projections $T^{\wedge}_A: A\otimes B^{*}\rightarrow \wedge^2 A\otimes C$ and $T^s_A: A\otimes B^{*}\rightarrow S^2 A\otimes C$. \\
+\indent Suppose $\dim A = {\bf a} = 3$. Choosing bases of $A,B,C$, we may write $T$ as 
+$$
+T = a_1\otimes X_1+a_2\otimes X_2+a_3\otimes X_3,
+$$
+\noindent where $X_i : B^{*}\rightarrow C$. In terms of matrices, we have 
+$$
+T^{\wedge}_A=
+\begin{pmatrix}
+0 & X_2 & X_3 \\
+-X_2 & 0 & -X_1 \\
+-X_3 & X_1 & 0\\
+\end{pmatrix}.
+$$
+
+If the border rank of $T$ satisfies $\underline{{\bf R}}(T)\leq r$, then $\textnormal{rank}(T^{\wedge}_A)\leq r({\bf a}-1)$; hence $r\geq \frac{\textnormal{rank}(T^{\wedge}_A)}{({\bf a}-1)}$. More generally, let $A,B,C$ be vector spaces with ${\bf a}=2p+1\leq {\bf b}\leq {\bf c}$. Consider the map
+$$
+T^{\wedge p}_A: \wedge^p A\otimes B^{*}\rightarrow \wedge^{p+1} A\otimes C.
+$$
+\noindent If $T$ has rank one, then $\textnormal{rank}(T^{\wedge p}_A) = \binom{2p}{p}$. If $T$ is generic, then $\textnormal{rank}(T^{\wedge p}_A) = \binom{2p+1}{p}\cdot {\bf b}$. Thus the size $(r+1)\binom{2p}{p}$ minors of $T^{\wedge p}_A$ furnish equations for the $r$th secant variety $\hat{\sigma}_r$ up to $r = \frac{2p+1}{p+1}\cdot{\bf b}-1$. 
+
+OBS.: other procedures to decompose low rank symmetric tensors have been given in \cite{MoOn18}. A package "ApolarLowRank.m2" is also given.
+
+\item[(iii)] Implement the algorithm to find the unique tensor decomposition of a {\it general} element in $\CC^2 \otimes \CC^a \otimes \CC^b$; see \cite[Section 12.4.3]{Lan12}.
+	
+	OBS.: when these exact algorithms fail to give an exact decomposition, bounds on the ranks of tensors should be obtained. In this direction, e.g., see also \cite[Theorem 3.8.2.4]{Lan12}.
+\end{itemize}
+
+\subsection*{Useful constructions to study tensors}
+
+\noindent {\it Symmetry groups of tensors}
+
+\begin{itemize}
+\item[]Let $T\in V_1\otimes \cdots \otimes V_d$ be a tensor. Its  {\it symmetry} or {\it isotropy} group is defined to be 
+$$
+G_T = \lbrace g\in \textnormal{GL}(V_1)\times \cdots \times \textnormal{GL}(V_d)/(\mathbb C^{*})^{d-1} \ | \ gT = T \rbrace.  
+$$
+\noindent Here the $(d-1)$-dimensional torus comes from the trivial action on every tensor given by $\prod_{i=1}^d \lambda_i = 1$, for $\lambda_i\in \mathbb C^{*}$. Since the action is rational, the symmetry group is an algebraic group and thus an algebraic variety. Given a tensor $T$, we determine the dimension of its symmetry group $G_T$. Moreover, we use \texttt{GAP} to analyze further properties of this group related to its Lie algebra $\mathfrak g_T$. For instance, the Levi-Malcev decomposition of $\mathfrak g_T$ and the structure of its semisimple part. 
+\end{itemize}
+
+\bigskip
+\noindent {\it Eigenvectors of tensors}
+
+\begin{itemize}
+\item[] The \emph{E-eigenvalues} and \emph{E-eigenvectors} of tensors (the ``E'' stands for ``Euclidean'') were proposed independently by Lek-Heng Lim and Liqun Qi in \cite{lim2005singular,qi2005eigenvalues}. There are different types of eigenvectors and eigenvalues in the literature, see \cite{cartwright2013number,hu2013determinants,ni2007degree,qi2007eigenvalues,qi2017tensor}. The notions of E-eigenvalues and E-eigenvectors of tensors arise mainly in the context of approximation of tensors, which deals usually with real tensors. Some excellent references about the \emph{best rank $k$ approximation problem} for tensors are \cite{draisma2017best,friedland2014number}. Possibility to experiment the reality of eigenvectors. Some reality issues of eigenvalues and eigenvectors are studied in \cite{maccioni1972number,kozhasov2017fully}.
+\end{itemize}
+
+\noindent  {\it Hyperderminants}
+
+\begin{itemize}
+\item[] For definitions and constructions, we refer to \cite[Chapter 14]{GKZ08}.
+\end{itemize}
+
+%-----
+%
+%\begin{itemize}
+%
+%\item Applications to tensor network states? Interesting algorithms to implement? Probably one interesting thing
+%is write down explicitly the tensor and compute ranks of its flattenings. {\color{red}{no idea here, any hints from Anna S.?}}
+%\end{itemize}
+
+
+\bibliographystyle{alpha}
+\bibliography{references.bib}
+
+\end{document}
+
