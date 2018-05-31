@@ -5,6 +5,7 @@ show language doc on web
 getting help inside M2
      help
      viewHelp
+     see the documentation node "The Macaulay2 language"
 
 some emacs hints
      start it once, don't exit it, do everything in it
@@ -66,4 +67,4 @@ homework:
      3.  Define a new type of basic list which implements filtered modules.
      	 The notation M^i should give the i-th entry in the filtration, with
      	 appropriate answers if i < 0 or i ≥ length M.  Implement "gr M" as the
-     	 associate graded module.  Make "net" of it do something good looking.
+     	 associated graded module.  Make "net" of it do something good looking.
