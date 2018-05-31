@@ -1,0 +1,69 @@
+-*- mode: M2 -*-
+
+show language doc on web
+
+getting help inside M2
+     help
+     viewHelp
+
+some emacs hints
+     start it once, don't exit it, do everything in it
+     read the documentation and learn it
+
+data types
+     parent and class; showStructure and showClassStructure
+     ancestors
+     basic data types: string, net, ZZ, RR, CC, Boolean, BasicList, HashTable, Function,
+     	  Database, Dictionary, File, mutable and not
+     === vs. ==
+     sets (based on ===, hence sets of ideals have not been implemented)
+     how to choose good keys for hash tables and option tables
+          x.c versus x#"c" in hash tables
+     mathematical objects
+        peek inside some polynomials, rings, modules, and ideals
+	what is a module?
+	what is a matrix?
+        where do method functions get stored?
+     cache tables
+
+new types of things
+     give a brief example
+     	  how about a type of list with no enclosing brackets for the nets?
+	  net operations, netList
+
+good coding style
+     please read https://github.com/Macaulay2/M2/wiki/Package-Writing-Style-Guide
+     short code is good
+         avoid redundant parentheses and redundant "return"
+	 avoid duplication of code
+	    e.g.:
+	       flatten entries gens gb I
+	       invent an abbreviation, such as
+		  GroebnerBasis _* := G -> flatten gens G
+     indentation
+     avoid order N algorithms (e.g., lists growing by 1 each time)
+     "for" versus "scan" and "apply" ?  (just for lists)
+
+homework:
+
+     1.  Write code to add a border of asterisks to a net.  For example,
+	 from "abc" we get this:
+
+	  *****
+	  *abc*
+	  *****
+
+         Ensure that it adds 1 to the height and to the depth, while adding 2
+         to the width, so it is positioned properly on an output line.
+
+     2.  Implement the standard datatype known as "stacks" as a new type of
+         basic list, where {} is the empty linked list, and the list {x,y}
+         serves to hold the first element, x, and the remainder of the list, y.
+         See https://en.wikipedia.org/wiki/Stack_(abstract_data_type) .
+         Provide a suitable error message when popping is attempted from an
+         empty stack.  (Warning: the M2 function "stack" is unrelated.)
+
+     3.  Define a new type of basic list which implements filtered modules.
+     	 The notation M^i should give the i-th entry in the filtration, with
+     	 appropriate answers if i < 0 or i ≥ length M.  Implement "gr M" as the
+     	 associate graded module.  Make "net" of it do something good looking.
