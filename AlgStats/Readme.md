@@ -8,11 +8,17 @@ Have a look at the two packages Graphical Models and Markov to see what has been
 Team Members 
 ----------------------------------------------------------------
 Daniele Agostini (daniele.agostini@mis.mpg.de)
+
 Lamprini Ananiadi (lamprini.ananiadi@ovgu.de)
+
 Oliver Gäfvert (oliverg@kth.se)
+
 Marina Garrote-López (marina.garrote@upc.edu)
+
 Alex Grosdos (algrosdoskou@uos.de)
+
 Orlando Marigliano (orlando.marigliano@mis.mpg.de)
+
 (let us know if you want to join)
 
 ----------------------------------------------------------------
