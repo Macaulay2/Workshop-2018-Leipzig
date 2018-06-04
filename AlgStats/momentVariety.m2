@@ -31,8 +31,8 @@ momentIdealExponential = (d,mix) ->(
 --takes as input the number of mixtures and the highest degree of moments appearing
 --computes the homogeneous moment ideal by eliminating the means and standard deviations
 momentIdealGaussian = (mix,d)->(
-    R=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
-    series:=sum for i from 1 to mix list exp(mn_i*t+(1/2)*sd_i^2*t^2);
-    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
-    homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0)
+    R=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
+    series:=sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2);
+    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
+    homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0)
 )
