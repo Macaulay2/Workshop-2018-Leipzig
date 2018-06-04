@@ -2371,49 +2371,9 @@ i106 : x
 
 o106 = stdio:106:1:(3): error: at print: expected argument 2 to be a string, or list or sequence of strings and integers, or null
 
+-- comment: what happened just above is that our function above did not return a net, so it confused the printing routines
+
 o106 : X
-
-i107 : a
-
-o107 = a
-
-o107 : R
-
-i108 : b
-
-o108 = b
-
-o108 : Symbol
-
-i109 : c
-
-o109 = c
-
-o109 : Symbol
-
-i110 : net x
-
-o110 = stdio:110:1:(3): error: at print: expected argument 2 to be a string, or list or sequence of strings and integers, or null
-
-o110 : X
-
-i111 : net x;
-
-i112 : peek net x
-
-o112 = X{a, b, c}
-
-i113 : net X := t -> apply(toList t,net)
-
-o113 = -*Function[stdio:113:12-113:30]*-
-
-o113 : FunctionClosure
-
-i114 : x
-
-o114 = {a, b, c}
-
-o114 : X
 
 i115 : net X := t -> horizontalJoin apply(toList t,net)
 
