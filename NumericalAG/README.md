@@ -19,3 +19,4 @@ Also, there is a [wiki](https://github.com/Macaulay2/Workshop-2018-Leipzig/wiki/
 * We should test dependencies among packages---for instance, are the PHC and Bertini interfaces thoroughly integrated into the other packages that may benefit from them?
 * Various numerical routines, such as the multihomogeneous trace test [described here](https://arxiv.org/pdf/1608.00540.pdf) would be great additions to the NAG tree. There may be some design decisions to be made first...
 * In general, packages may benefit from basic maintenance, added functionality, more robust checking of input/output, and improved interface. In particular, "NumericalHilbert" and "MonodromySolver" may be worth consdering for some of these tasks.
+* 'ExampleSystems' package contains a few benchmark examples of polynomials systems. Let's add more examples suitable for the packages mentioned above.
