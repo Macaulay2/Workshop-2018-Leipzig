@@ -48,7 +48,8 @@ newPackage(
       ///
 
 end--
-
+restart
+loadPackage("TateOnProducts",Reload=>true)
 resMax = method(Options => options coarseMultigradedRegularity)
 resMax ChainComplex := o-> F -> (
     --we assume F starts in homol degree 0.
@@ -108,11 +109,18 @@ coarseSet1 = M ->(
     d'' = max(d',0);
     apply(d''+1, i-> {twistreg_0+i,twistreg_1+d'-i}))
 
-LL = (d,t) -> (
+LL = method()
+LL (ZZ,ZZ) := (d,t) -> (
     if t==1 then {{d}} else
     flatten apply(d+1, i->
 	apply(LL(d-i,t-1),ell ->flatten prepend(i,ell)))
     )
+
+LL (ZZ,List) := (d,n) -> (
+    L1 = LL(d,#n);
+    select(L1, ell -> all(#n, i-> ell_i\leq (1+n_i)));
+    )
+
 
 findLins= M->(
     t := degreeLength ring M;
@@ -125,57 +133,67 @@ findLins= M->(
 	    )
 	))
 )
-loadPackage ("TateOnProducts",Reload=>true)
+
+multigradedPolynomialRing = method(Options=>
+    {CoefficientField=>ZZ/32003,
+    Variables=>{getSymbol "x"}})
+multigradedPolynomialRing(List) := opts -> n -> (
+     kk := opts.CoefficientField;
+     x:= opts.Variables; -- symbol x;
+     t:= #n;
+     xx:=flatten apply(t,i->apply(n_i+1,j->x_(i,j)));
+     degs:=flatten apply(t,i->apply(n_i+1,k->apply(t,j->if i==j then 1 else 0)));
+     kk[xx,Degrees=>degs])
+    
+multigradedPolynomialRing ZZ := opt -> n -> (productOfProjectiveSpaces(toList(n:1)))
+
+linearTruncations = method()
+linearTruncations Module := M-> (
+    t := degreeLength M;
+    F := res prune M;
+    range := toList(min F..max F-1);
+    degsF := apply(range,i -> degrees (F_i));
+    lowerbounds := flatten flatten apply(range, i->(
+	    apply(degsF_i, d -> apply(LL(i,t), ell -> d-ell))
+	    ));
+    m := apply(t, i-> max apply(lowerbounds, ell->ell_i));
+    r := regularity F;
+    L1 := LL(r,t);
+    L2 :=  apply(L1, ell-> toList(ell..m));
+    L3 := toList sum(L2, ell->set ell);
+    L4 := select(L3,c->(
+	    F = res prune truncate(c,M);
+    	all(range,i-> 
+	    max apply(degrees F_i, d->sum d) == i+sum c
+	    )));
+    findMins L4
+    )
+
+M = S^1/ran{2,3,4,5}
+linearTruncations M
+
+linearTruncations(Module,List) := (M, candidates) ->(
+    F := res prune M;
+    L := select(candidates, c->
+    	all(toList(min F..max F-1),i-> 
+	    max apply(degrees F_i, d->sum d) == i+sum c
+	    )
+	);
+    findMins L)
+
 (S,E) = productOfProjectiveSpaces{2,2}	
 
 S' = coefficientRing S[gens S]
 loadPackage"randomIdeals"
 ran = L -> substitute(randomMonomialIdeal(L,S'), S)
 
+I = ideal random(S^1, S^{2:{0,-2},2:-{3,0}})
 
-I = ran{2,3,4,5}
+M = S^1/ran{2,3,4,5}
+linearTruncations M
+coarseMultigradedRegularity M
 --interesting example, where the degree for linear res is {1,5}
 I = ideal(x_(0,1)*x_(0,2),x_(0,2)^2*x_(1,1),
     x_(0,1)*x_(1,0)*x_(1,1)^2,x_(1,0)^4*x_(1,2))
-I = ideal random(S^1, S^{2:{0,-2},2:-{2,3},2:-{2,0}})
-M = S^1/I
-findLins M
-
-resMax1 M
-coarseSet M
-coarseSet1 M
-
-coarseSet(M)
-resMax M
-regularity M
---LL = toList({0,0}..{6,6})
-LL(6,1)    
-LL(6,2)    
-LL(6,3)
-	apply(
-L = findMins select(LL,c->(
-	F = res prune truncate(c,S^1/I);
-    	all(toList(min F..max F-1),i-> 
-	    max apply(degrees F_i, d->sum d) == i+sum c
-	    )
-	))
-
-    
-    
-G = res truncate({2,4},M)
-G.dd_3
-F = res M
-netList apply(toList(min F..max F-1),i->  unique degrees F_i)
-
-
-high = {9,9};low = {0,0}
-cohomologyMatrix(M,low,high)
-cohomologyMatrix(T= cornerComplex(M,low,high), low, high)
-cohomologyMatrix (cornerComplex(T,{1,5}), low, high)
-cohomologyMatrix (cornerComplex(T,{1,4}), low, high)
-cohomologyMatrix (lastQuadrantComplex(T,{1,4}), low, high)
-lq = lastQuadrantComplex(T,{1,4})
-betti oo
-uq = firstQuadrantComplex(T,{1,4})
-betti oo
-
+M = S^1/ideal random(S^1, S^{2:{0,-2},2:-{2,3},2:-{2,0}})
+linearTruncations M
