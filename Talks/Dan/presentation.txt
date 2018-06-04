@@ -16,6 +16,7 @@ data types
      ancestors
      basic data types: string, net, ZZ, RR, CC, Boolean, BasicList, HashTable, Function,
      	  Database, Dictionary, File, mutable and not
+     nets and strings
      === vs. ==
      sets (based on ===, hence sets of ideals have not been implemented)
      how to choose good keys for hash tables and option tables
