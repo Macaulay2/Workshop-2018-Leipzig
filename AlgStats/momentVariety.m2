@@ -1,4 +1,5 @@
-momentVariety = (d,R) -> (
+-- Lists all moments of the univariate Gaussian
+listOfMoments = (d,R) -> (
   S := R[t]/t^(d+1);
   use S;
   g := gens R;
@@ -6,7 +7,7 @@ momentVariety = (d,R) -> (
   b := exp(a);
   li := for i from 1 to d list i! * coefficient(t^i,b);
   use R;
-  ideal(li)
+  li
 )
 
 --Gaussian
