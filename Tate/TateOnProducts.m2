@@ -4376,7 +4376,9 @@ resMax ChainComplex := o-> F -> (
     f := e-r*e';
     (regs, d, regs + toList(#regs:e') + (toList(f:1)|toList((#regs-f):0)))
     )
+
 resMax Module := o->M->resMax(res prune M)
+
 findMins = L->(
     t = #L_0;
     P = ZZ/101[vars(0..t-1)];
@@ -4414,6 +4416,7 @@ lq = lastQuadrantComplex(T,{1,4})
 betti oo
 uq = firstQuadrantComplex(T,{1,4})
 betti oo
+
  
 
 
