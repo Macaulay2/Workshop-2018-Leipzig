@@ -2,6 +2,7 @@ restart
 loadPackage "Cremona" --- Cremona map in Macaulay2
 loadPackage "MultiGradedRationalMap" -- new criterion
 
+installPackage "MultiGradedRationalMap"
 ------ PURPOSE OF THIS FILE-------
 -- In this given a long list of examples, where we certify our computations
 --   with the package "Cremona" which is provided in Macaualay2.
@@ -123,6 +124,7 @@ A = matrix{ {x^3, x^2 + y^2},
 	    {0, x^2}
 	   }
 I = minors(2, A) -- a non birational map
+gensSatSpecialFib I
 degree rationalMap gens I 
 degreeOfMap I 
 degreeOfMap(I, Strategy=>SatSpecialFibStrategy)
@@ -132,18 +134,22 @@ jDRank I
 satSpecialFiber I
 gensSatSpecialFib I
 
- 
-A = matrix{ {x^3, x^3 + y^3},
-            {-y^3, y^3 + z^2*x},
-	    {0, x^3}
+
+A = matrix{ {x^3, x^2 + y^2},
+            {-y^3, y^2 + z*x},
+	    {0, x^2}
 	   }
 I = minors(2, A) -- a non birational map
+gensSatSpecialFib I
 degree rationalMap gens I 
 degreeOfMap I 
 degreeOfMap(I, Strategy=>SatSpecialFibStrategy)
 degreeOfMapIter(I, 5)
 isBiratMap I
 jDRank I
+satSpecialFiber I
+gensSatSpecialFib I
+
 
 
 A = matrix{ {x^3, x^4},
@@ -311,6 +317,7 @@ A = matrix{ {x + y,  x, x},
 I = minors(3, A) -- birational
 degree rationalMap gens I 
 degreeOfMap I
+satSpecialFiber I
 degreeOfMap(I, Strategy=>SatSpecialFibStrategy)
 degreeOfMapIter(I, 5) 
 isBiratMap I
@@ -493,6 +500,7 @@ partialJDRs I
 
 
 I = ideal(x*u, y*v, x*v + y*u) -- non birational map
+gensSatSpecialFib(I, 5)
 degreeOfMapIter(I, 5)
 isBiratMap I
 jDRank I

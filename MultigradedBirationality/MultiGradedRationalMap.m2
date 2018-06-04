@@ -622,13 +622,138 @@ doc ///
 	(x_0: ... :x_r) \to (f_0(x_0,...,x_r), f_1(x_0,...,x_r), ..... , f_s(x_0,...,x_r)).
 	$$
 	The degree can be computed by two different strategies and the default one is "Hm1Rees0Strategy".
+    
+        The following example is a rational map without base points: 
     Example
       R = QQ[x,y,z]
-      I = ideal(random(4, R), random(4, R), random(4, R))
+      I = ideal(random(4, R), random(4, R), random(4, R));
+      betti res I
       degreeOfMap I
+    Text
+    	In the following examples we play with the relations of the Hilbert-Burch presentation and the degree of $\mathbb{F}$ (see Proposition 5.2 and Theorem 5.12):
+    Example 	
+      A = matrix{ {x, x^2 + y^2},
+            {-y, y^2 + z*x},
+	    {0, x^2}
+	   }
+      I = minors(2, A) -- a birational map
+      degreeOfMap I
+      A = matrix{ {x^2, x^2 + y^2},
+                  {-y^2, y^2 + z*x},
+	          {0, x^2}
+	        }
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+      A = matrix{ {x^3, x^2 + y^2},
+                  {-y^3, y^2 + z*x},
+	          {0, x^2}
+	        }
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+      A = matrix{ {x^3, x^4},
+                  {-y^3, y^4},
+	          {z^3, x^4}
+	        }
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+    Text
+      The following examples are computed with the strategy "SatSpecialFibStrategy".
+    Example
+      R = QQ[x,y,z,v,w]
+      I = ideal(random(1, R), random(1, R), random(1, R), random(1, R), random(1, R));
+      degreeOfMap(I, Strategy=>SatSpecialFibStrategy)    	
+      I = ideal(29*x^3 + 55*x*y*z, 7*y^3, 14*z^3, 17*v^3, 12*w^3)
+      degreeOfMap(I, Strategy=>SatSpecialFibStrategy)
+ 	
   Caveat
     To call the method "degreeOfMap(I)", the ideal $I$ should be in a single graded polynomial ring.	    
 ///
+
+
+
+doc ///
+  Key
+    degreeOfMapIter
+    (degreeOfMapIter,Ideal,ZZ)
+  Headline
+    Computation of the degree of a rational map
+  Usage
+    degreeOfMapIter(I, nsteps)
+  Inputs
+    I : Ideal
+    	an ideal defining the map
+    nsteps: ZZ
+        the number of steps used for computing the saturated special fiber ring
+  Outputs
+    :ZZ
+        the degree of the corresponding rational map 
+  Description
+    Text
+        Let $R$ be the multi-homogeneous polynomial ring $R=k[x_{1,0},x_{1,1},...,x_{1,r_1}, x_{2,0},x_{2,1},...,x_{2,r_2}, ......, x_{m,0},x_{m,1},...,x_{m,r_m}]$ and $I$ be the multi-homogeneous ideal $I=(f_0,f_1,...,f_s)$ where the polynomials $f_i$'s have the same multi-degree.
+	We compute the degree of the rational map $\mathbb{F}: \mathbb{P}^{r_1} \times \mathbb{P}^{r_2} \times ... \times \mathbb{P}^{r_m}  \to \mathbb{P}^s$ defined by
+	$$
+	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
+	$$
+	This method calls "satSpecialFiber(I, nsteps)" in order to obtain the saturated special fiber ring and then computes the degree of $\mathbb{F}$ from the multiplicity of the saturated special fiber ring. 
+    Example
+     	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+        I = ideal(x*u, y*u, y*v) -- a birational map
+        degreeOfMapIter(I, 5)
+     	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+        degreeOfMapIter(I, 5)
+	A = matrix{ {x^5*u,  x^2*v^2},
+    	            {y^5*v, x^2*u^2},
+	            {0,     y^2*v^2}
+    	          }
+        I = minors(2, A)  -- a non birational
+        degreeOfMapIter(I, 5)
+
+  Caveat
+       It only gives the correct answer if nteps is big enough to attain all the generators of the saturated special fiber ring.    
+///
+
+
+
+doc ///
+  Key
+    isBiratMap 
+    (isBiratMap ,Ideal)
+  Headline
+    Birationality is tested with the Jacobian dual criterion
+  Usage
+    isBiratMap(I)
+  Inputs
+    I : Ideal
+    	an ideal defining the map
+  Outputs
+    :Boolean
+        true/false if the rational map is birational/non birational 
+  Description
+    Text
+        Let $R$ be the multi-homogeneous polynomial ring $R=k[x_{1,0},x_{1,1},...,x_{1,r_1}, x_{2,0},x_{2,1},...,x_{2,r_2}, ......, x_{m,0},x_{m,1},...,x_{m,r_m}]$ and $I$ be the multi-homogeneous ideal $I=(f_0,f_1,...,f_s)$ where the polynomials $f_i$'s have the same multi-degree.
+	We compute the degree of the rational map $\mathbb{F}: \mathbb{P}^{r_1} \times \mathbb{P}^{r_2} \times ... \times \mathbb{P}^{r_m}  \to \mathbb{P}^s$ defined by
+	$$
+	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
+	$$
+	This method calls "jDRank" in order to obtain the total Jacobian dual rank  and then it tests the birationality of $\mathbb{F}$ (see Theorem 4.4). 
+    
+        First we compute some examples in the bigraded setting.  
+    Example
+     	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+        I = ideal(x*u, y*u, y*v) -- a birational map
+        isBiratMap I
+     	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+        isBiratMap I
+	A = matrix{ {x^5*u,  x^2*v^2},
+    	            {y^5*v, x^2*u^2},
+	            {0,     y^2*v^2}
+    	          }
+        I = minors(2, A)  -- a non birational
+        isBiratMap I
+
+///
+
+
 
 
 doc ///
@@ -692,6 +817,8 @@ doc ///
 	 
 	 When we call "gensSatSpecialFib(I)", the method first computes the module $[H_m^1(Rees(I))]_0$ from which an upper bound nsteps.
 	 After that, it simply calls "gensSatSpecialFib(I, nsteps)".
+	 
+	 First, we compute some examples in the case of plane rational maps.
        Example
        	 R = QQ[x,y,z]
     	 A = matrix{ {x, x^2 + y^2},
@@ -709,13 +836,152 @@ doc ///
   	 gensSatSpecialFib I
 	 gensSatSpecialFib(I, 5)
 	 
+       Text
+         Next, we compute an example in the bigraded case.
+       Example	 	 
 	 R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
-    	 I = ideal(x*u, y*v, x*v + y*u) -- non birational map
+    	 I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
          gensSatSpecialFib(I, 5)
     Caveat
     	To call the method "gensSatSpecialFib(I)", the ideal $I$ should be in a single graded polynomial ring.
     			 
 ///
+
+
+doc ///
+    Key 
+        satSpecialFiber
+	(satSpecialFiber, Ideal, ZZ)
+    	(satSpecialFiber, Ideal)
+    Headline 
+    	It computes the saturated special fiber ring
+    Usage 
+        satSpecialFiber(I, nsteps)
+        satSpecialFiber(I)
+    Inputs
+    	I : Ideal
+	    a homogeneous ideal generated by elements of the same degree   
+        nteps : ZZ
+	    the number steps in the saturation of the powers of I. Optional.	
+    Outputs
+    	:QuotientRing
+            the saturated special fiber ring
+    Description
+       Text
+         The purpose of this function is to express the saturated special fiber ring as a quotient of a polynomial ring.
+	 In this way, it can be used to compute the degree of a rational map.
+	
+	 
+    	 Suppose that $\{g_1,...,g_m\}$ is the set of generators of the saturated special fiber ring (which can be obtained from  "gensSatSpecialFib").
+	 This function computes the saturated special fiber ring of $I$, by simply calling the function "satSpecialFiberIdeal".
+	 The ideal $J$ returned by "satSpecialFiberIdeal" corresponds with the kernel of the map $k[y_1, ... ,y_m] \to k[g_1, ... ,g_m]$ which is given by
+	 $$
+	 y_i \to g_i.
+	 $$
+	 
+	 So the result of this function is the quotient ring 
+	 $$
+	 k[y_1, ... ,y_m]/J.
+	 $$
+    	 
+	 If nsteps is specified then "satSpecialFiberIdeal(I,stpeps)" is called, else "satSpecialFiberIdeal(I)" is used instead.
+         
+	 In the following examples the saturated special fiber ring is a polynomial ring when the map is birational (see Theorem 2.4).
+	 First we compute some examples of plane rational maps. 
+       Example 
+       	 R = QQ[x,y,z]
+         A = matrix{ {x, x^5 + y^5},
+                     {-y, y^5 + z*x^2*y^2},
+	             {0, x^5}
+	           }
+         I = minors(2, A) -- a birational map
+         satSpecialFiber I
+	 A = matrix{ {x^3, x^2 + y^2},
+                     {-y^3, y^2 + z*x},
+ 	             {0, x^2}
+	           }
+         I = minors(2, A) -- a non birational map
+         satSpecialFiber I 
+       Text
+         Next, we test some bigraded rational maps.
+       Example
+         R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+         I = ideal(x*u, y*u, y*v) -- a birational map
+         satSpecialFiber(I, 5)
+	 I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+	 satSpecialFiber(I, 5) 
+	    
+    Caveat
+    	To call the method "satSpecialFiber(I)", the ideal $I$ should be in a single graded polynomial ring.
+	
+	The answer of "satSpecialFiber(I, nsteps)" is correct only if nsteps is big enough to attain all the generators of the saturated special fiber ring.
+
+///
+
+
+
+
+doc ///
+    Key 
+        satSpecialFiberIdeal
+	(satSpecialFiberIdeal, Ideal, ZZ)
+    	(satSpecialFiber, Ideal)
+    Headline 
+    	It computes the defining equations of the saturated special fiber ring
+    Usage 
+        satSpecialFiberIdeal(I, nsteps)
+        satSpecialFiberIdeal(I)
+    Inputs
+    	I : Ideal
+	    a homogeneous ideal generated by elements of the same degree   
+        nteps : ZZ
+	    the number steps in the saturation of the powers of I. Optional.	
+    Outputs
+    	:Ideal
+            the defining equations of the saturated special fiber ring
+    Description
+       Text
+         The purpose of this function is to compute the defining equations of the special fiber ring.
+		 
+    	 Suppose that $\{g_1,...,g_m\}$ is the set of generators of the saturated special fiber ring (which can be obtained from  "gensSatSpecialFib").
+      	 This function returns the kernel of the map $k[z_1, ... ,z_m] \to k[g_1, ... ,g_m]$ which is given by
+	 $$
+	 z_i \to g_i.
+	 $$
+	 
+ 	 First we compute some examples of plane rational maps. 
+       Example 
+       	 R = QQ[x,y,z]
+         A = matrix{ {x, x^5 + y^5},
+                     {-y, y^5 + z*x^2*y^2},
+	             {0, x^5}
+	           }
+         I = minors(2, A) -- a birational map
+         satSpecialFiberIdeal I
+	 A = matrix{ {x^3, x^2 + y^2},
+                     {-y^3, y^2 + z*x},
+ 	             {0, x^2}
+	           }
+         I = minors(2, A) -- a non birational map
+         satSpecialFiberIdeal I 
+       Text
+         Next, we test some bigraded rational maps.
+       Example
+         R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+         I = ideal(x*u, y*u, y*v) -- a birational map
+         satSpecialFiberIdeal(I, 5)
+	 I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+	 satSpecialFiberIdeal(I, 5) 
+	    
+    Caveat
+    	To call the method "satSpecialFiberIdeal(I)", the ideal $I$ should be in a single graded polynomial ring.
+	
+	The answer of "satSpecialFiberIdeal(I, nsteps)" is correct only if nsteps is big enough to attain all the generators of the saturated special fiber ring.
+
+///
+
+
+
 
 
 doc ///
