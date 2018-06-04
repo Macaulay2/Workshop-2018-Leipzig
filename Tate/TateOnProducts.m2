@@ -99,7 +99,8 @@ protect ChangeBases
 ----------------------------------------------
 coarseMultigradedRegularity = method(Options =>
                {Strategy =>"MinimalResolution"})
-coarseMultigradedRegularity ChainComplex := o-> F -> (
+
+-*coarseMultigradedRegularity ChainComplex := o-> F -> (
     --we assume F starts in homol degree 0.
     el := length F;
     r := degreeLength ring F;
@@ -128,6 +129,45 @@ coarseMultigradedRegularity Module := o-> M -> (
     F = allGradings(F',Tm, S));
     coarseMultigradedRegularity F
     ) 
+*-
+LL = method()
+LL (ZZ,ZZ) := (d,t) -> (
+    if t==1 then {{d}} else
+    flatten apply(d+1, i->
+	apply(LL(d-i,t-1),ell ->flatten prepend(i,ell)))
+    )
+
+LL (ZZ,List) := (d,n) -> (
+    L1 := LL(d,#n);
+    select(L1, ell -> all(#n, i-> ell_i<= (1+n_i)));
+    )
+
+coarseMultigradedRegularity ChainComplex := o-> F -> (
+    --we assume F starts in homol degree 0.
+    t := degreeLength ring F;
+    range := toList(min F..max F-1);
+    degsF := apply(range,i -> degrees (F_i));
+    lowerbounds := flatten flatten apply(range, i->(
+	    apply(degsF_i, d -> apply(LL(i,t), ell -> d-ell))
+	    ));
+    apply(t, i-> max apply(lowerbounds, ell->ell_i))
+    )
+
+coarseMultigradedRegularity Module := o-> M-> (
+    t := degreeLength ring M;
+    if o.Strategy == "MinimalResolution" then F := res M else
+    if o.Strategy == "FastNonminimal" then (
+    S := ring M;
+    S' := coefficientRing S[gens S];
+    m := presentation M;
+    Tm := target m;
+    Tm':= S'^(degrees Tm/sum);
+    M' := coker map(Tm',,sub(presentation M, S'));
+    assert(isHomogeneous M');
+    F' := res(M', FastNonminimal=>true);
+    F = allGradings(F',Tm, S));
+    coarseMultigradedRegularity(F, Strategy => o.Strategy)
+    )
 
 allGradings=method()
 allGradings (ChainComplex,Module, Ring) := (fJ,F0,Sall) -> (
