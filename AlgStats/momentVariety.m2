@@ -17,3 +17,11 @@ momentIdeal = d->(
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
     eliminate({mn,sd},I)
     )
+
+--Exponential mixture
+--takes highest  degree d of moments and number of mixtures
+momentIdealExponential = (d,mix) ->(
+    R:=QQ[lam_1..lam_mix,alp_1..alp_mix,m_0..m_d];
+    I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list alp_j*lam_j^i)+ideal(-1+sum for i from 1 to mix list alp_i);
+    eliminate for j from 1 to mix list alp_j,eliminate(for i from 1 to mix list lam_i ,I))
+)
