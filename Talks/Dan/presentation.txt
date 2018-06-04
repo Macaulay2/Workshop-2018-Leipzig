@@ -64,7 +64,9 @@ homework:
          Provide a suitable error message when popping is attempted from an
          empty stack.  (Warning: the M2 function "stack" is unrelated.)
 
-     3.  Define a new type of basic list which implements filtered modules.
-     	 The notation M^i should give the i-th entry in the filtration, with
-     	 appropriate answers if i < 0 or i ≥ length M.  Implement "gr M" as the
-     	 associated graded module.  Make "net" of it do something good looking.
+     3.  Write code to define a new type of basic list that implements filtered
+     	 modules.  The notation M^i should give the i-th entry in the
+     	 filtration, with appropriate answers if i < 0 or i ≥ length M.
+     	 Implement "gr M" as the associated graded module.  Make "net" of it do
+     	 something good looking.  Implement a method M==N for equality of
+     	 filtered modules.
