@@ -735,9 +735,9 @@ doc ///
 	$$
 	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
 	$$
-	This method calls "jDRank" in order to obtain the total Jacobian dual rank  and then it tests the birationality of $\mathbb{F}$ (see Theorem 4.4). 
+	This method calls "jDRank" in order to obtain the full Jacobian dual rank  and then it tests the birationality of $\mathbb{F}$ (see Theorem 4.4). 
     
-        First we compute some examples in the bigraded setting.  
+        First, we compute some examples in the bigraded setting.  
     Example
      	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
         I = ideal(x*u, y*u, y*v) -- a birational map
@@ -750,7 +750,21 @@ doc ///
     	          }
         I = minors(2, A)  -- a non birational
         isBiratMap I
-
+	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
+        isBiratMap I
+    Text	
+    	Next, we test some rational maps over three projective spaces.
+    Example
+    	R = QQ[x,y,z,w]
+        A = matrix{ {x + y,  x, x},
+                    {3*z - 4*w, y, z},
+	            {w,  z, z + w}, 
+	            {y - z,  w, x + y}
+	          }
+        I = minors(3, A) -- a birational map
+        isBiratMap I
+        I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
+        isBiratMap I
 ///
 
 
@@ -887,7 +901,7 @@ doc ///
 	 If nsteps is specified then "satSpecialFiberIdeal(I,stpeps)" is called, else "satSpecialFiberIdeal(I)" is used instead.
          
 	 In the following examples the saturated special fiber ring is a polynomial ring when the map is birational (see Theorem 2.4).
-	 First we compute some examples of plane rational maps. 
+	 First, we compute some examples of plane rational maps. 
        Example 
        	 R = QQ[x,y,z]
          A = matrix{ {x, x^5 + y^5},
@@ -949,7 +963,7 @@ doc ///
 	 z_i \to g_i.
 	 $$
 	 
- 	 First we compute some examples of plane rational maps. 
+ 	 First, we compute some examples of plane rational maps. 
        Example 
        	 R = QQ[x,y,z]
          A = matrix{ {x, x^5 + y^5},
@@ -981,6 +995,174 @@ doc ///
 ///
 
 
+doc ///
+  Key
+    jDRank 
+    (jDRank ,Ideal)
+  Headline
+    Computes the full Jacobian dual rank
+  Usage
+    jDRank(I)
+  Inputs
+    I : Ideal
+    	an ideal defining the map
+  Outputs
+    :ZZ
+        the total Jacobian dual rank 
+  Description
+    Text
+        Let $R$ be the multi-homogeneous polynomial ring $R=k[x_{1,0},x_{1,1},...,x_{1,r_1}, x_{2,0},x_{2,1},...,x_{2,r_2}, ......, x_{m,0},x_{m,1},...,x_{m,r_m}]$ and $I$ be the multi-homogeneous ideal $I=(f_0,f_1,...,f_s)$ where the polynomials $f_i$'s have the same multi-degree.
+	We compute the degree of the rational map $\mathbb{F}: \mathbb{P}^{r_1} \times \mathbb{P}^{r_2} \times ... \times \mathbb{P}^{r_m}  \to \mathbb{P}^s$ defined by
+	$$
+	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
+	$$
+	This function computes the full Jacobian dual rank of $\mathbb{F}$ (see Notation 4.2). 
+    
+        First, we compute some examples in the bigraded setting.  
+    Example
+     	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+        I = ideal(x*u, y*u, y*v) -- a birational map
+        jDRank I
+     	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+        jDRank I
+	A = matrix{ {x^5*u,  x^2*v^2},
+    	            {y^5*v, x^2*u^2},
+	            {0,     y^2*v^2}
+    	          }
+        I = minors(2, A)  -- a non birational
+        jDRank I
+	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
+        jDRank I 
+    Text	
+    	Next, we test some rational maps over three projective spaces.
+    Example
+    	R = QQ[x,y,z,w]
+        A = matrix{ {x + y,  x, x},
+                    {3*z - 4*w, y, z},
+	            {w,  z, z + w}, 
+	            {y - z,  w, x + y}
+	          }
+        I = minors(3, A) -- a birational map
+        jDRank I
+        I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
+        jDRank I
+///
+
+
+doc ///
+  Key
+    partialJDRs 
+    (partialJDRs ,Ideal)
+  Headline
+    Computes the partial Jacobian dual ranks
+  Usage
+    partialJDRs(I)
+  Inputs
+    I : Ideal
+    	an ideal defining the map
+  Outputs
+    :List
+        the partial Jacobian dual ranks 
+  Description
+    Text
+        Let $R$ be the multi-homogeneous polynomial ring $R=k[x_{1,0},x_{1,1},...,x_{1,r_1}, x_{2,0},x_{2,1},...,x_{2,r_2}, ......, x_{m,0},x_{m,1},...,x_{m,r_m}]$ and $I$ be the multi-homogeneous ideal $I=(f_0,f_1,...,f_s)$ where the polynomials $f_i$'s have the same multi-degree.
+	We compute the degree of the rational map $\mathbb{F}: \mathbb{P}^{r_1} \times \mathbb{P}^{r_2} \times ... \times \mathbb{P}^{r_m}  \to \mathbb{P}^s$ defined by
+	$$
+	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
+	$$
+	This function computes the partial Jacobian dual ranks of $\mathbb{F}$ (see Notation 4.2). 
+    
+        First, we compute some examples in the bigraded setting.  
+    Example
+     	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+        I = ideal(x*u, y*u, y*v) -- a birational map
+        partialJDRs I
+     	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+        partialJDRs I
+	A = matrix{ {x^5*u,  x^2*v^2},
+    	            {y^5*v, x^2*u^2},
+	            {0,     y^2*v^2}
+    	          }
+        I = minors(2, A)  -- a non birational
+        partialJDRs I
+	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
+        partialJDRs I
+    Text	
+    	Next, we test some rational maps over three projective spaces.
+    Example
+    	R = QQ[x,y,z,w]
+        A = matrix{ {x + y,  x, x},
+                    {3*z - 4*w, y, z},
+	            {w,  z, z + w}, 
+	            {y - z,  w, x + y}
+	          }
+        I = minors(3, A) -- a birational map
+        partialJDRs I
+        I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
+        partialJDRs I
+///
+
+
+
+doc ///
+  Key
+   upperBoundDegreeSingleGraded
+   (upperBoundDegreeSingleGraded,Ideal)
+  Headline
+   Computes an upper bound for the degree of a rational map
+  Usage
+   upperBoundDegreeSingleGraded(I)
+  Inputs
+    I : Ideal
+    	an ideal defining the map
+  Outputs
+    :ZZ
+        an upper bound for the degree of the corresponding rational map 
+  Description
+    Text
+        Let $R$ be the polynomial ring $R=k[x_0,...,x_r]$ and $I$ be the homogeneous ideal $I=(f_0,f_1,...,f_s)$ where $deg(f_i)=d$.
+	We compute the degree of the rational map $\mathbb{F}: \mathbb{P}^r \to \mathbb{P}^s$ defined by
+	$$
+	(x_0: ... :x_r) \to (f_0(x_0,...,x_r), f_1(x_0,...,x_r), ..... , f_s(x_0,...,x_r)).
+	$$
+        Using certain Hilbert functions the degree of the map is bounded (see Theorem 3.22).
+    
+        The following example is a rational map without base points: 
+    Example
+      R = QQ[x,y,z]
+      I = ideal(random(4, R), random(4, R), random(4, R));
+      betti res I
+      degreeOfMap I
+      upperBoundDegreeSingleGraded I
+    Text
+    	In the following examples we play with the relations of the Hilbert-Burch presentation and the degree of $\mathbb{F}$ (see Proposition 5.2 and Theorem 5.12):
+    Example 	
+      A = matrix{ {x, x^2 + y^2},
+            {-y, y^2 + z*x},
+	    {0, x^2}
+	   }
+      I = minors(2, A) -- a birational map
+      degreeOfMap I
+      upperBoundDegreeSingleGraded I
+      A = matrix{ {x^2, x^2 + y^2},
+                  {-y^2, y^2 + z*x},
+	          {0, x^2}
+	        }
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+      upperBoundDegreeSingleGraded I
+      A = matrix{ {x^3, x^2 + y^2},
+                  {-y^3, y^2 + z*x},
+	          {0, x^2}
+	        }
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+      upperBoundDegreeSingleGraded I
+ 	
+  Caveat
+    To call the method "degreeOfMap(I)", the ideal $I$ should be in a single graded polynomial ring and dim(R/I) <= 1.	    
+///
+
 
 
 
@@ -994,6 +1176,7 @@ doc ///
 	    When this strategy is used then the degree of the map is computed directly from the multiplicity of $[H_m^1(Rees(I))]_0$.
     	    It contains an implementation of Corollary 2.12.
 ///
+
 
 
 doc ///
@@ -1029,3 +1212,4 @@ uninstallPackage "MultiGradedRationalMap"
 installPackage "MultiGradedRationalMap"
 viewHelp "MultiGradedRationalMap"
 
+loadPackage "MultiGradedRationalMap"

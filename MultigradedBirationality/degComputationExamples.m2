@@ -497,6 +497,7 @@ degreeOfMapIter(I, 5)
 isBiratMap I
 jDRank I
 partialJDRs I
+satSpecialFiber(I, 5)
 
 
 I = ideal(x*u, y*v, x*v + y*u) -- non birational map
