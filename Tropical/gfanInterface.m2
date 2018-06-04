@@ -450,7 +450,6 @@ multiplicitiesReorder (List):=(L)->(
 gfanParsePolyhedralFan = method(TypicalValue => PolyhedralObject, Options => {"GfanFileName" => null})
 gfanParsePolyhedralFan String := o -> s -> (
     	if debugLevel>0 then (print s);
-	
 	B := select(sublists(lines s, l -> #l =!= 0, toList, l -> null), l -> l =!= null);
 	header := first B; --first list of lines
 	if #B < 2 and #header < 2 then error(concatenate header);
@@ -4316,7 +4315,6 @@ doc ///
 -- Tests
 ---------------------------------------
 
--- # garbage
 --        TEST gfan
 	TEST ///
 	  R = QQ[x,y,z];
@@ -4367,21 +4365,21 @@ doc ///
 	 assert gfanDoesIdealContain(gfanBuchberger({x*y - y, x*z + z}), {y*z})
 	 assert not gfanDoesIdealContain(gfanBuchberger({x*y - y, x*z + z}), {y*z+1})
 	 ///
-	--
-	-- -- TEST gfanCommonRefinement
-	-- TEST ///
-	-- QQ[x,y];
-	-- F = gfanToPolyhedralFan gfan {x+y};
-	-- G = gfanToPolyhedralFan gfan {x+y^2};
-	-- C = gfanFanCommonRefinement(F,G);
-	-- assert(C#"AMBIENT_DIM" === 2)
-	-- assert(C#"DIM" === 2)
-	-- assert C#"SIMPLICIAL"
-	-- assert(C#"LINEALITY_DIM" === 0)
-	-- assert(C#"N_RAYS" === 4)
-	-- assert(set C#"RAYS" === set {{-2, -1}, {-1, -1}, {1, 1}, {2, 1}})
-	-- assert(set C#"CONES" === set {{}, {0}, {1}, {2}, {3}, {0, 1}, {0, 2}, {1, 3}, {2, 3}})
-	-- ///
+
+	-- TEST gfanCommonRefinement
+	 TEST ///
+	 QQ[x,y];
+	 F = gfanToPolyhedralFan gfan {x+y};
+	 G = gfanToPolyhedralFan gfan {x+y^2};
+	 C = gfanFanCommonRefinement(F,G);
+--	 assert(C#"AMBIENT_DIM" === 2)
+--	 assert(C#"DIM" === 2)
+--	 assert ((C#cache)#"simplicial")
+--	 assert(C#"LINEALITY_DIM" === 0)
+--	 assert(C#"N_RAYS" === 4)
+--	 assert(set C#"RAYS" === set {{-2, -1}, {-1, -1}, {1, 1}, {2, 1}})
+--	 assert(set C#"CONES" === set {{}, {0}, {1}, {2}, {3}, {0, 1}, {0, 2}, {1, 3}, {2, 3}})
+	 ///
 	--
 	-- -- TEST gfanFanLink
 	-- TEST ///
