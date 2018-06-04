@@ -16,10 +16,9 @@ newPackage(
 	Configuration => {
 		"path" => "",
 		"fig2devpath" => "",
-		"keepfiles" => false,
+		"keepfiles" => true,
 		"verbose" => false,
-		"cachePolyhedralOutput" => true,
-		"tropicalMax" => false
+		"cachePolyhedralOutput" => true
 	},
 	PackageExports => {"Polyhedra"}
 )
@@ -921,7 +920,8 @@ toPolymakeFormat(String, Matrix) := (propertyName, M) -> (
      else(
      	  S := propertyName|"\n";
      	  if numRows M > 0 then
-	     S = S|replace("\\|", "", toString net M)|"\n\n";
+	     S = S|replace("\\|", "", toString net M)|"\n\n"
+	  else S = S|"\n";
      	  S
      	  )
      )
@@ -930,7 +930,8 @@ toPolymakeFormat(String,Vector) := (propertyName,V) -> (
      else(
      	  S := propertyName|"\n";
      	  if length V > 0 then
-              S = S|replace("\\|", "", toString net matrix{V});
+              S = S|replace("\\|", "", toString net matrix{V})|"\n\n"
+	  else S = S|"\n";
      	  S
      	  )
      )
@@ -939,8 +940,9 @@ toPolymakeFormat(String,Vector) := (propertyName,V) -> (
      else(
      	  S := propertyName|"\n";
      	  if length V > 0 then
-	        scan(V,l -> S = S|replace(","," ",gfanToExternalString l)|"\n");
-    	  S=S|"\n";		
+	        scan(V,l -> S = S|replace(","," ",gfanToExternalString l)|"\n")
+    	  else S=S|"\n\n";		
+	  S = S | "\n";
      	  S
      	  )
      )
@@ -950,7 +952,7 @@ toPolymakeFormat(String,ZZ) := (propertyName,x) -> (
      )
 toPolymakeFormat(String,Boolean) := (propertyName,x) -> (
      if x === null then ""
-     else propertyName|"\n"|(if x then "1" else "0")|"\n"
+     else propertyName|"\n"|(if x then "1" else "0")|"\n\n"
      )
 --toPolymakeFormat(PolyhedralObject) := (P) -> (
 --     goodkeys := select(keys P, k -> not match("Gfan", k));
@@ -1369,22 +1371,26 @@ gfanStableIntersection = method( Options=> {
 gfanStableIntersection (Fan,List,Fan,List) := opts -> (F,m1,G,m2) -> (
      fileF := "";
      fileG := "";
-     fileFisTemp := true;
-     fileGisTemp := true;
+--     fileFisTemp := false;
+--     fileGisTemp := false;
      fileF = gfanMakeTemporaryFile( (toPolymakeFormat(F))| toPolymakeFormat("MULTIPLICITIES",m1));
+<<fileF<<endl;     
      fileG = gfanMakeTemporaryFile( (toPolymakeFormat(G))| toPolymakeFormat("MULTIPLICITIES",m2));
      opts = opts ++ { "i1" => fileF , "i2" => fileG };
      out := runGfanCommand("gfan _fancommonrefinement --stable", opts, "");
      if (#select("empty",out#0)==1) then return "error: this fan is empty";
      if (length(out#0)==0) then return "error: this fan is empty";
+<<out<<endl;     
      out = gfanParsePolyhedralFan out;
      if gfanKeepFiles then (
 	  F#"GfanFileName" = fileF;
 	  G#"GfanFileName" = fileG;
 	   )
      else (
-    	 if fileFisTemp then gfanRemoveTemporaryFile fileF;
-	 if fileGisTemp then gfanRemoveTemporaryFile fileG;
+--    	 if fileFisTemp then 
+	 gfanRemoveTemporaryFile fileF;
+--	 if fileGisTemp then 
+         gfanRemoveTemporaryFile fileG;
 	 );
 	out
 )    
@@ -4311,57 +4317,56 @@ doc ///
 ---------------------------------------
 
 -- # garbage
-	-- -- TEST gfan
-	-- TEST ///
-	-- R = QQ[x,y,z];
-	-- L = gfan(ideal(x^2*y -y^2, y^2*x - x^2));
-	-- assert(#L == 4)
-	-- assert(any(L, l -> set first l === set {y^5,x*y^2,x^2}))
-	--
-	-- S = gfan({x^2*y -y^2, y^2*x - x^2}, "symmetry" => {{0,1,2}, {1,0,2}})
-	-- assert(#S == 2)
-	--
-	-- G = gfan(markedPolynomialList {{y^5, x*y^2, x^2},{y^5-y^2,x*y^2 - y^4, x^2 -y^4}}, "g" => true)
-	-- Gprime = {
-	-- 	markedPolynomialList {{y^5,x*y^2,x^2},{y^5-y^2,-y^4+x*y^2,-y^4+x^2}},
-	-- 	markedPolynomialList {{y^4,x*y^2,x^2*y,x^3},{y^4-x^2,x*y^2-x^2,x^2*y-y^2,x^3-y^3}},
-	-- 	markedPolynomialList {{y^3,x*y^2,x^2*y,x^4},{-x^3+y^3,x*y^2-x^2,x^2*y-y^2,x^4-y^2}},
-	-- 	markedPolynomialList {{y^2,x^2*y,x^5},{-x^4+y^2,-x^4+x^2*y,x^5-x^2}}
-	-- }
-	-- assert(G == Gprime)  -- may fail if the order of output changes
-	-- ///
-	--
-	-- -- TEST MPLConverter
-	-- TEST ///
-	-- equalMPL = (A,B) -> set transpose A === set transpose B
-	-- QQ[x,y];
-	-- I = ideal(x*2 + y^2, x*y + y^2 + y^3);
-	-- B = MPLConverter(I)
-	-- Bprime = markedPolynomialList {{x^2, y^3},{x^2 + y^2, y^3 + x*y + y^2}}
-	-- assert equalMPL(B,Bprime)
-	-- ///
-	--
-	-- -- TEST gfanBuchberger
-	-- TEST ///
-	-- equalMPL = (A,B) -> set transpose A === set transpose B
-	-- QQ[x,y,z];
-	-- I = ideal(x*y + z, x*z + y);
-	-- B = gfanBuchberger(I)
-	-- Bprime = markedPolynomialList {{y^2,x*z,x*y},{y^2-z^2,x*z+y,x*y+z}}
-	-- assert equalMPL(B,Bprime)
-	--
-	-- A = gfanBuchberger(I, "w" => {1,2,3})
-	-- Aprime = markedPolynomialList {{z^2,x*z,x*y},{-y^2+z^2,x*z+y,x*y+z}}
-	-- assert equalMPL(A,Aprime)
-	-- assert not equalMPL(A, B)
-	-- ///
-	--
-	-- -- TEST gfanDoesIdealContain
-	-- TEST ///
-	-- QQ[x,y,z];
-	-- assert gfanDoesIdealContain(gfanBuchberger({x*y - y, x*z + z}), {y*z})
-	-- assert not gfanDoesIdealContain(gfanBuchberger({x*y - y, x*z + z}), {y*z+1})
-	-- ///
+--        TEST gfan
+	TEST ///
+	  R = QQ[x,y,z];
+	  L = gfan(ideal(x^2*y -y^2, y^2*x - x^2));
+	  assert(#L == 4)
+	  assert(any(L, l -> set first l === set {y^5,x*y^2,x^2}))
+
+	  S = gfan({x^2*y -y^2, y^2*x - x^2}, "symmetry" => {{0,1,2}, {1,0,2}})
+	  assert(#S == 2)
+
+--	  G = gfan(markedPolynomialList {{y^5, x*y^2, x^2},{y^5-y^2,x*y^2 - y^4, x^2 -y^4}}, "g" => true)
+--	  Gprime = {
+--	  	markedPolynomialList {{y^5,x*y^2,x^2},{y^5-y^2,-y^4+x*y^2,-y^4+x^2}},
+--	  	markedPolynomialList {{y^4,x*y^2,x^2*y,x^3},{y^4-x^2,x*y^2-x^2,x^2*y-y^2,x^3-y^3}},
+--	 	markedPolynomialList {{y^3,x*y^2,x^2*y,x^4},{-x^3+y^3,x*y^2-x^2,x^2*y-y^2,x^4-y^2}},
+--	 	markedPolynomialList {{y^2,x^2*y,x^5},{-x^4+y^2,-x^4+x^2*y,x^5-x^2}}
+--	 }
+--	 assert(G == Gprime)  -- may fail if the order of output changes
+	 ///
+-- 	TEST MPLConverter
+	 TEST ///
+	 equalMPL = (A,B) -> set transpose A === set transpose B
+	 QQ[x,y];
+	 I = ideal(x^2 + y^2, x*y + y^2 + y^3);
+	 B = MPLConverter(I)
+	 Bprime = markedPolynomialList {{x^2, y^3},{x^2 + y^2, y^3 + x*y + y^2}}
+	 assert equalMPL(B,Bprime)
+	 ///
+
+	-- TEST gfanBuchberger
+	TEST ///
+	 equalMPL = (A,B) -> set transpose A === set transpose B
+	 QQ[x,y,z];
+	 I = ideal(x*y + z, x*z + y);
+	 B = gfanBuchberger(I)
+	 Bprime = markedPolynomialList {{y^2,x*z,x*y},{y^2-z^2,x*z+y,x*y+z}}
+	 assert equalMPL(B,Bprime)
+	
+	 A = gfanBuchberger(I, "w" => {1,2,3})
+	 Aprime = markedPolynomialList {{z^2,x*z,x*y},{-y^2+z^2,x*z+y,x*y+z}}
+	 assert equalMPL(A,Aprime)
+	 assert not equalMPL(A, B)
+	 ///
+	
+	-- TEST gfanDoesIdealContain
+	TEST ///
+	 QQ[x,y,z];
+	 assert gfanDoesIdealContain(gfanBuchberger({x*y - y, x*z + z}), {y*z})
+	 assert not gfanDoesIdealContain(gfanBuchberger({x*y - y, x*z + z}), {y*z+1})
+	 ///
 	--
 	-- -- TEST gfanCommonRefinement
 	-- TEST ///
@@ -4581,19 +4586,19 @@ doc ///
 -- mytest
 -- TEST tropical min/max convention
 --this test is obsolete as minmax switch is now disabled
-TEST /// -- by default the convention should be TROPICAL-MIN
+--TEST /// -- by default the convention should be TROPICAL-MIN
 --  QQ[x,y,z];
 -- loadPackage("gfanInterface", Reload=>true, Configuration=>{ "tropicalMax"=> false });  
 --  fan1 = gfanTropicalTraverse gfanTropicalStartingCone ideal(x+y+z);
 --  assert( member({2,-1,-1}, fan1#"Rays"));
-///
+--///
 
-TEST /// -- alternatively TROPICAL-MAX can be specified on loading the package
+--TEST /// -- alternatively TROPICAL-MAX can be specified on loading the package
 --  QQ[x,y,z];
 --  loadPackage("gfanInterface", Reload=>true, Configuration=>{ "tropicalMax"=> true });
 --  fan1 = gfanTropicalTraverse gfanTropicalStartingCone ideal(x+y+z);
 -- assert( member({-2,1,1}, fan1#"Rays"));
-///
+--///
 
 end--
 
