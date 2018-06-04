@@ -4,6 +4,8 @@ This is the collaboration area for those interested in the development of numeri
 
 The "examples" subdirectory is intended to collect some illustrative examples---please feel free to add your own!
 
+Also, there is a [wiki](https://github.com/Macaulay2/Workshop-2018-Leipzig/wiki/Numerical-AG).
+
 ## Team Members
 
 * Anton Leykin
