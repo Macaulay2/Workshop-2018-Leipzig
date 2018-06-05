@@ -240,22 +240,19 @@ tropicalVariety (Ideal) := o -> (I) ->(
     	R := ring I;
     	AA := symbol AA;
 	
-	--Extend to a new coefficient ring
-	--S := coefficientRing(R)[gens R, getSymbol "AA", Local => true];
-	--use R;
+	--Extend to a new coefficient ring. The added variable is at the beginning.
 	S := first flattenRing(R[AA, Join =>false]);
-	
-	-- get the index of the last variable of S
-	N:= #gens(S)-1;
 
 	J:=substitute(I,S);
-	J=homogenize(J,S_N);
-	J=saturate(J,S_N);
+	J=homogenize(J,S_0);
+	J=saturate(J,S_0);
 	--we transform I in J so that the procedure continues as in the homogeneous case
 	I=J;
 	
-	--If Symmetry present, adjust the symmetry vectors to the right length. If not present, this operates on an empty list.
-	newSym=(i->append(i, N))\newSym;	
+	--If Symmetry present, adjust the symmetry vectors to the right length and shift the values up by one. If not present, this operates on an empty list.
+	newSym= (i->prepend(0,i)) \
+	            (i -> (j -> j + 1) \ i) \ 
+		        newSym;	
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
@@ -1168,7 +1165,7 @@ doc///
 			L=linealitySpace T
 			    
 ///
-	    
+end;	    
     	
 ----- TESTS -----
 
