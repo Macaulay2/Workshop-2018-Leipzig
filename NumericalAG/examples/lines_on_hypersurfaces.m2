@@ -13,7 +13,6 @@ sparseFamily PolySystem := o -> PS -> (
     polySystem transpose matrix {polysP}
     )
 
-
 familyOfHypersurfaces = method(Options=>{ParameterSymbol=>W, Projective=>true})
 familyOfHypersurfaces PolySystem := o -> PS -> (
     if (PS.NumberOfPolys == 1) then return sparseFamily PS
@@ -47,7 +46,7 @@ end
 restart
 needs "lines_on_hypersurfaces.m2"
 
---viewHelp "MonodromySolver"
+viewHelp "MonodromySolver"
  
 -- how many lines on a cubic surface in P^3
 n=3
@@ -81,12 +80,13 @@ peek P
 --slice to get a 0-dimensional family
 Q=sliceFamily P
 peek Q
+apply(equations Q,p->first degree p)
+product oo-- bezout #
 
 --solve a random system in this family
 setRandomSeed 0
-elapsedTime (sys,sols)=solveFamily Q;
+elapsedTime (sys,sols)=solveFamily(Q,NumberOfEdges=>3);
 #sols
-
 
 --check that all solutions are ok?
 resids=apply(sols,s->sum apply(sys,p->norm evaluate(matrix{{p}},s)));
