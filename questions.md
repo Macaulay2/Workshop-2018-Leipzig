@@ -15,4 +15,32 @@ k=N.ReactionRates
 
 
 - Your question here.
-4) Suppose I wish to interact with another program using "openInOut" and anticipate that I will transfer more than 4096 bites. What are my options? Does repeatedly using "read" or some other function buy me anything? Experiments seem to suggest not.
+4) Suppose I wish to interact with another program using "openInOut" and anticipate that I will transfer more than 4096 bites. What are my options? Consider the following code:
+
+```
+n=10000
+f=openInOut("!M2")
+for j from 0 to 9 do (
+    for i from 0 to (n-1) do (
+    	f<<"1+1\n";
+    	f<<flush;
+    	);
+    x=read f;
+    print(#x);
+    );
+    
+restart
+
+n=10000
+f=openInOut("!M2")
+for j from 0 to 9 do (
+    for i from 0 to (n-1) do (
+    	f<<"1+1\n";
+    	f<<flush;
+	x=read f;
+    	);
+    print(#x);
+    );
+```
+
+The loop above "restart" executes successfully on my machine, while the code below hangs (consistent with the warning given in the documentation for openInOut.) Is there a better general way communicate then reading immediately after writing?
