@@ -117,6 +117,7 @@ intersectCones=(M,N)-> (
 );	
 
 --Chow
+-- i is codim
 AA=(i,X) -> ( 
      if i>dim(X) then error("i > dim(X)");
      if not(X.cache.?Chow) then X.cache.Chow = new MutableHashTable;
@@ -702,7 +703,7 @@ document {
      Headline => "Chow rings for toric varieties",
      Usage => "AA(i,X)",
      Inputs => {"i" => ZZ, "X" => NormalToricVariety},
-     Outputs => {"an abelian group ( a  ZZ-module)"},
+     Outputs => {"the codim-i Chow group $A^i(X)$, an abelian group (a  ZZ-module)"},
      "This procedure computes the ith Chow group of the
 NormalToricVariety X.  It produces it as the cokernel of a matrix,
 following the description given in Proposition 2.1 of Fulton-Sturmfels
@@ -711,19 +712,18 @@ PARA{}, "It is cached in X.cache.Chow#i. ",
 " ???say something about pruning map ", 
 PARA{},
 " These groups are all one-dimensional for projective space. ", 
--- EXAMPLE lines /// 
--- X =projectiveSpace 4 
--- rank AA(1,X) 
--- rank AA(2,X) 
--- rank AA(3,X)
--- ///, 
--- "We next consider the blow-up of P^3 at two points." ,
--- EXAMPLE lines ///
--- X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
--- AA(1,X) 
--- AA(2,X) 
--- pic X 
--- ///, 
+EXAMPLE lines /// 
+X = projectiveSpace 4 
+rank AA(1,X) 
+rank AA(2,X) 
+rank AA(3,X)
+///, 
+"We next consider the blow-up of P^3 at two points." ,
+EXAMPLE lines ///
+X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+AA(1,X) 
+AA(2,X) 
+/// 
 }
 
 
@@ -735,16 +735,16 @@ document {
      Outputs => {Matrix => "whose columns are the generators for
 the cone of effective i-cycles "},
      "This is currently only implemented for smooth toric varieties. ",
-      "The columns are given in a basis for the i-th Chow group
+      "The columns should be given in a basis for the i-th Chow group
 recorded in X.cache.ChowRingBas#i. ",
---      EXAMPLE lines ///
---      X=projectiveSpace 4
---      effCone(2,X)
---      ///,
---      EXAMPLE lines ///
---      X=hirzebruchSurface 1;
---      effCone(1,X)
---      ///,
+     EXAMPLE lines ///
+     X = projectiveSpace 4
+     effCone(2,X)
+     ///,
+     EXAMPLE lines ///
+     X = hirzebruchSurface 1;
+     effCone(1,X)
+     ///,
 }    
 
 
@@ -760,14 +760,14 @@ complementary dimension nonnegatively. ",
       "This is currently only implemented for smooth toric varieties. ",
       "The columns are given in a basis for the i-th Chow group
 recorded in X.cache.ChowRingBas#i. ",
---     EXAMPLE lines ///
---     X=projectiveSpace 4
---     nefCone(2,X)
---     ///,
---     EXAMPLE lines ///
---     X=hirzebruchSurface 1;
---     nefCone(1,X)
---     ///,
+    EXAMPLE lines ///
+    X=projectiveSpace 4
+    nefCone(2,X)
+    ///,
+    EXAMPLE lines ///
+    X=hirzebruchSurface 1;
+    nefCone(1,X)
+    ///,
 }     
 
 -- document { 
@@ -807,23 +807,22 @@ the ideal is the ideal given in the Stanley-Reisner presentation of
 the cohomology ring of X. ", PARA{},
      "This assumes that X is smooth.  Eventually it will be
 implemented for simplicial toric varieties. ",
---     Example
---        X = projectiveSpace 2
---        I = SR X
---     	R = ring I
---     	for i from 0 to 2 do <<hilbertFunction(i,R/I)<<endl
---     Text	
---    	PARA{},
---  	"Next we consider the blow-up of P^3 at 2 points. ",
---     Example
---        X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
---     	I = SR X
---     	R = ring I
---     	hilbertFunction(1,R/I)
---     	rank pic X       
---     Text
---     "Note that the degree-one part of the ring has dimension the
---Picard-rank, as expected. ", 
+    EXAMPLE lines ///
+    X = projectiveSpace 2
+    I = SR X
+    R = ring I
+    for i from 0 to 2 do <<hilbertFunction(i,R/I)<<endl
+    ///,
+   	PARA{},
+ 	  "Next we consider the blow-up of P^3 at 2 points. ",
+    EXAMPLE lines ///
+    X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+    I = SR X
+    R = ring I
+    hilbertFunction(1,R/I)
+    ///,
+    "Note that the degree-one part of the ring has dimension the
+Picard-rank, as expected. ", 
 }
 
 document {
@@ -864,6 +863,8 @@ end
 -- SCRATCH SPACE
 ---------------------------------------------------------------------------
  
+restart
+loadPackage "Chow"
 --X is blow-up of P^3 at two points
 raysX={{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}};
 Sigma={{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}};
@@ -920,4 +921,6 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(AA(i,X)))^2;));
 <<summ<<endl;
 
 
-
+uninstallPackage "Chow"
+restart
+installPackage "Chow"
