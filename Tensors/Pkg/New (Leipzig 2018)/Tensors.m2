@@ -23,7 +23,7 @@ tensorSpace (Ring,List,List,List) := (R,L,D,A) -> (
     d := #L;
     Tmod := R[];
     for i to d-1 do (
-	Tmod = Tmod ** R[L#i, SkewCommutative => A#i];
+	Tmod = Tmod ** R[toList(L#i), SkewCommutative => A#i];
 	);
     new TensorSpace from hashTable{baseField => R,
 	tensorBasis => first entries basis({0}|D,Tmod),
@@ -63,9 +63,6 @@ net (TensorSpace) := V -> net expression V
 -- function to construct a TENSOR
 makeTensor = method();
 makeTensor (List,TensorSpace) := (L,V) -> (
-    if (any(L, i -> ring(i) =!= V#baseField)) then (
-    	return "error: coefficients are not in the base field"
-	);
     if (#L != #(V#tensorBasis)) then (
 	return "error: coefficients do not match the dimension"
 	);
@@ -84,14 +81,12 @@ expression (Tensor) := T -> (
 	    expr = expression expr + expression (toString(Tcoeff_i * (Tspace#tensorBasis)_i));
 	);
     );
-    return expression (expr expression " in" expression Tspace)
+    return expression (expr)
 )
-
-net (Tensor) := V -> net expression V 
 
 --  EXAMPLE:
 --    construction of a general tensor in sym^1(CC^2) ** sym^2(CC^2)
-S = QQ[a_0..a_6];	       -- ring of coefficients
+S = QQ[a_0..a_6];	       	       -- ring of coefficients
 V = tensorSpace(S,{{x,y},{z,t}},{1,2}) -- tensor space
 T = makeTensor(toList(a_1..a_6),V)     -- make the tensor
 peek V	      	      	      	       -- to look at attributes of V
