@@ -216,9 +216,12 @@ lin = linearTruncations M
 ))
 use S
 M = cokernel matrix {{x_(0,0)^2*x_(1,1), x_(0,0)*x_(0,1)*x_(1,0)^2, x_(0,1)*x_(1,0)^3*x_(1,1), x_(0,1)*x_(1,0)^4, x_(0,0)^2*x_(0,1)^2*x_(1,0), x_(0,1)^5*x_(1,0)}} 
+coarseMultigradedRegularity M
+betti res(truncate(coarseMultigradedRegularity M, M))
 regularity M
 netList apply (LL(8,2), ell -> (ell, betti res prune truncate (ell, M)))
 --good tuples are {5,3},{6,2},{7,1}
+
 coarseMultigradedRegularity M
 
 S = multigradedPolynomialRing{2,2}	
