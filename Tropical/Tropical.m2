@@ -236,7 +236,7 @@ tropicalVariety (Ideal) := o -> (I) ->(
     if o.IsHomogeneous==false then 
     (	 
 	
-	--First homogenize, append variable AA to the end
+	--First homogenize, append variable AA to the beginning
     	R := ring I;
     	AA := symbol AA;
 	
@@ -1164,8 +1164,7 @@ doc///
 			T=tropicalVariety I;
 			L=linealitySpace T
 			    
-///
-end;	    
+///	    
     	
 ----- TESTS -----
 
