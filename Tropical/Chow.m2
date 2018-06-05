@@ -125,7 +125,16 @@ AA=(i,X) -> (
      n:=dim X;
      -- Get the faces of dim i, i-1
      sigmaCodimi := orbits(X,n-i);
-     tauCodimiminus1 := orbits(X,n-i+1);
+     if i == 0 then (
+	if #sigmaCodimi == 0 then (
+	    sigmaCodimi = {{}};
+	);
+        X.cache.Chow#i = ZZ^(#sigmaCodimi);
+	return X.cache.Chow#i;   
+     ) else tauCodimiminus1 := orbits(X,n-i+1);
+     if i == 1 then (
+	 tauCodimiminus1 = {{}};
+     );
      if #tauCodimiminus1 > 0 then (
          --Create the relations (Fulton-Sturmfels eqtn 1, p337)
      Relns:=apply(tauCodimiminus1, tau -> (
@@ -741,7 +750,6 @@ doc ///
          chowGroupBasis(X)
          chowGroupBasis(X,2) -- a basis for divisors on this threefold
 ///
-end
 
 
 doc ///
@@ -965,4 +973,6 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(AA(i,X)))^2;));
 
 uninstallPackage "Chow"
 restart
+--loadPackage "Chow"
 installPackage "Chow"
+check "Chow"

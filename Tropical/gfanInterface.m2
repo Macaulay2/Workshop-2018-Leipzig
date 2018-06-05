@@ -10,8 +10,8 @@ newPackage(
 	Date => "Aug 2012 (updated by Josephine Yu)",
 	Authors => {
 		{Name => "Mike Stillman", Email => "mike@math.cornell.edu", HomePage => ""},
-		{Name => "Andrew Hoefel", Email => "andrew.hoefel@gmail.com", HomePage =>"http://www.mast.queensu.ca/~ahhoefel/"}
-		},
+		{Name => "Andrew Hoefel", Email => "andrew.hoefel@gmail.com", HomePage =>"http://www.mast.queensu.ca/~ahhoefel/"},
+	    {Name => "Diane Maclagan (current maintainer)", Email => "D.Maclagan@warwick.ac.uk", HomePage=>"http://homepages.warwick.ac.uk/staff/D.Maclagan/"}},
 	Headline => "Interface to Anders Jensen's Gfan software",
 	Configuration => {
 		"path" => "",
@@ -83,8 +83,7 @@ export {
 --	"gfanVectorListListToString", -- to make gfan input
 	"gfanVersion",
 	"toPolymakeFormat",
-	"multiplicitiesReorder",
-"runGfanCommand"      
+	"multiplicitiesReorder"
 }
 
 gfanPath = gfanInterface#Options#Configuration#"path"
@@ -2279,16 +2278,35 @@ gfanTropicalIntersection = method( Options => {
 	"symmetryPrinting" => false,
 	"symmetryExploit" => false,
 	"restrict" => false,
-	"stable" => false
+	"stable" => false,
+	"Symmetry" => {}
 	}
 )
 
 gfanTropicalIntersection (List) := opts -> (L) -> (
+	local newOpts;
+	newOpts=new OptionTable from {	
+	"tropicalbasistest" => opts#"tropicalbasistest",
+	"tplane" => opts#"tplane",
+	"symmetryPrinting" => opts#"symmetryPrinting",
+	"symmetryExploit" => opts#"symmetryExploit",
+	"restrict" => opts#"restrict",
+	"stable" => opts#"stable"};
+
 	(ringMap, newL) := gfanConvertToNewRing(L);
 	L = newL;
 	input := gfanRingToString(ring first L) | gfanPolynomialListToString(L);
+	
+	local s;
 
-	s:=runGfanCommand("gfan _tropicalintersection", opts, input);
+	if opts#"Symmetry" == {} then
+		s=runGfanCommand("gfan _tropicalintersection", newOpts, input)
+	else (
+		stringSymmetry:=gfanVectorListToString(opts#"Symmetry");
+		newInput := input | stringSymmetry;
+		s=runGfanCommand("gfan _tropicalintersection", newOpts, newInput);
+	);
+
 	tropicalBasisOutput:=s_0;--this is 0 if not tropical basis and 1 otherwise.
 	if ((opts#"tropicalbasistest")==false) then (return gfanParsePolyhedralFan s)
 	else 
@@ -4305,6 +4323,31 @@ doc ///
 			@STRONG "gfan Documentation"@
 			@gfanHelp "gfan _tropicalweildivisor"@
 ///
+
+
+doc ///
+	Key
+                gfanOverIntegers
+	Headline
+		all reduced Grobenr bases of a poynomial ideal with coefficients in ZZ
+	Usage
+		G = gfanOverIntegers(I)
+	Inputs
+		I:Ideal
+			contained in a polynomial ring with coefficients in ZZ
+	Outputs
+		G:List
+		        all @TO2 {"Marked Groebner Basis Example", "marked reduced Groebner bases"}@ of {\tt I}.
+	Description
+		Text
+		    	????some text will go here
+		Example
+		    1+1
+		Text
+		    @STRONG "gfan Documentation"@
+		    @gfanHelp "gfan _overintegers"@
+///
+
 
 
 ---------------------------------------
