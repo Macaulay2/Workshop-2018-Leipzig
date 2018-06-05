@@ -377,10 +377,10 @@ stableIntersection (TropicalCycle, TropicalCycle) := o -> (T1,T2) -> (
 	return tropicalCycle (F,mult);
     )
     else if (o.Strategy=="gfan") then (
-	F1 := T1#"Fan";	
-	m1 := T1#"Multiplicities";
-	F2 := T2#"Fan";	
-	m2 := T2#"Multiplicities";
+	F1 := fan(T1);
+	m1 := multiplicities(T1);
+	F2 := fan(T2);
+	m2 := multiplicities(T2);
 	return gfanStableIntersection(F1,m1,F2,m2);
     ) 
     else (
