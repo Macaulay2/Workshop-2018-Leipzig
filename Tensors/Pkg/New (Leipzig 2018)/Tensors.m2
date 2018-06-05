@@ -4,6 +4,10 @@
 --    	  the Macaulay2 Workshop in Boise (2015).
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+------------------------------------------------------------------------
+-- CONSTRUCTIONS OF TENSOR SPACES AND TENSORS
+------------------------------------------------------------------------
+
 -- Definition of new types for tensor spaces (TensorSpace) and tensors (Tensor)
 TensorSpace = new Type of HashTable
 Tensor = new Type of HashTable
@@ -29,7 +33,8 @@ tensorSpace (Ring,List,List,List) := (R,L,D,A) -> (
 	tensorBasis => first entries basis({0}|D,Tmod),
 	dims => for i in L list #i,
 	degs => D,
-	antiSym => A}
+	antiSym => A
+	}
     )
 tensorSpace (Ring,List,List) := (R,L,D) -> (
     A := toList(#L:false);
@@ -83,6 +88,56 @@ expression (Tensor) := T -> (
     );
     return expression (expr)
 )
+
+net (Tensor) := V -> net expression V
+
+------------------------------------------------------------------------
+-- ALGEBRA OF TENSORS
+------------------------------------------------------------------------
+
+-- access to tensor basis
+TensorSpace _ Sequence := (V,s) -> (
+    if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > (V#dims)_i or s_i < 0) then (
+	return "error: the sequence does not match the format"
+	);
+    D := V#degs;
+    L := V#dims;
+    A := V#antiSym;
+    totDim := {};
+    for i to #(V#dims)-1 do (
+	if A_i then (
+	totDim = append(totDim,binomial(D_i,L_i));
+	) else (
+	totDim = append(totDim,binomial(D_i-1+L_i,D_i));
+	);
+    );
+    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list totDim_h);
+    i = i + last(s);
+    I = apply(toList(0..(product totDim - 1)), j -> if j == i then 1 else 0);    
+    return makeTensor(I,V)
+    )
+
+-- indexed tensor
+Tensor _ Sequence := (T,s) -> (
+    V := T#tensorSpace;
+    if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > (V#dims)_i or s_i < 0) then (
+	return "error: the sequence does not match the format"
+	);
+    D := V#degs;
+    L := V#dims;
+    A := V#antiSym;
+    totDim := {};
+    for i to #(V#dims)-1 do (
+	if A_i then (
+	totDim = append(totDim,binomial(D_i,L_i));
+	) else (
+	totDim = append(totDim,binomial(D_i-1+L_i,D_i));
+	);
+    );
+    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list totDim_h);
+    i = i + last(s);
+    return (T#coeff)_i
+    )
 
 --  EXAMPLE:
 --    construction of a general tensor in sym^1(CC^2) ** sym^2(CC^2)
