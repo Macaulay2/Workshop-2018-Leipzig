@@ -23,43 +23,31 @@ Tensor = new Type of HashTable
 --    	  an exterior algebra instead of a symmetric algebra;
 --    	  Default value: Anti = {false,...,false}
 tensorSpace = method();
-tensorSpace (Ring,List,List,List) := (R,L,D,A) -> (
-    d := #L;
-    Tmod := R[];
-    for i to d-1 do (
-	Tmod = Tmod ** R[toList(L#i), SkewCommutative => A#i];
+tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> (
+    d := #N;
+    if d == 0 then (
+	Tmod := R;
+    	) else (
+	Tmod = R[X_(0,0)..X_(0,N_0-1)];
+	for i from 1 to d-1 do (
+	    Tmod = Tmod ** R[X_(i,0)..X_(i,N_i-1)];
+	    );
 	);
-    new TensorSpace from hashTable{baseField => R,
-	tensorBasis => first entries basis({0}|D,Tmod),
-	dims => for i in L list #i,
-	degs => D,
-	antiSym => A
+    new TensorSpace from hashTable{
+	baseRing => R,
+	dims => N,
+	tensorBasis => first entries basis(toList(#N:1),Tmod)
 	}
     )
-tensorSpace (Ring,List,List) := (R,L,D) -> (
-    A := toList(#L:false);
-    return tensorSpace(R,L,D,A)
-)
-tensorSpace (Ring,List) := (R,L) -> (
-    D := toList(#L:1);
-    return tensorSpace(R,L,D)
-)
 
 -- Definition of the way a tensor space 'looks like' when printed in output
 expression (TensorSpace) := V -> (
-    expr := "";
-    for i from 0 to #(V#dims)-2 do (
-	if (V#antiSym)_i == true then (
-	    expr = expr | "ext^"|toString((V#degs)_i)|"("|toString((V#dims)_i)|") * ";
-	    ) else (
-	    expr = expr | "sym^"|toString((V#degs)_i)|"("|toString((V#dims)_i)|") * ";
-	    );
+    N := V#dims;
+    expr := toString(V#baseRing)|"[";
+    for i to #N-2 do (
+	expr = expr | toString(N_i) | "x";
 	);
-    if last(V#antiSym) == true then (
-	    expr = expr | "ext^"|toString(last(V#degs))|"("|toString(last(V#dims))|")";
-	    ) else (
-	    expr = expr | "sym^"|toString(last(V#degs))|"("|toString(last(V#dims))|")";
-	    );
+    expr = expr | toString(last(N)) | "]";
     return expression expr
 )
 
@@ -67,12 +55,12 @@ net (TensorSpace) := V -> net expression V
 
 -- function to construct a TENSOR
 makeTensor = method();
-makeTensor (List,TensorSpace) := (L,V) -> (
+makeTensor (VisibleList,TensorSpace) := (L,V) -> (
     if (#L != #(V#tensorBasis)) then (
 	return "error: coefficients do not match the dimension"
 	);
     new Tensor from hashTable{
-	coeff => L,
+	coeff => toList(L),
 	tensorSpace => V
 	}
     )
@@ -82,14 +70,14 @@ expression (Tensor) := T -> (
     Tcoeff := T#coeff;
     expr := expression toString(Tcoeff_0*(Tspace#tensorBasis)_0);
     for i from 1 to #(Tspace.tensorBasis)-1 do (
-	if Tcoeff_i != 0_(Tspace.baseField) then (
+	if Tcoeff_i != 0_(Tspace.baseRing) then (
 	    expr = expression expr + expression (toString(Tcoeff_i * (Tspace#tensorBasis)_i));
 	);
     );
     return expression (expr)
 )
 
-net (Tensor) := V -> net expression V
+net (Tensor) := T -> net expression T
 
 ------------------------------------------------------------------------
 -- ALGEBRA OF TENSORS
@@ -97,54 +85,54 @@ net (Tensor) := V -> net expression V
 
 -- access to tensor basis
 TensorSpace _ Sequence := (V,s) -> (
-    if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > (V#dims)_i or s_i < 0) then (
+    if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > ((V#dims)_i)-1 or s_i < 0) then (
 	return "error: the sequence does not match the format"
 	);
-    D := V#degs;
-    L := V#dims;
-    A := V#antiSym;
-    totDim := {};
-    for i to #(V#dims)-1 do (
-	if A_i then (
-	totDim = append(totDim,binomial(D_i,L_i));
-	) else (
-	totDim = append(totDim,binomial(D_i-1+L_i,D_i));
-	);
-    );
-    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list totDim_h);
+    N := V#dims;
+    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list N_h);
     i = i + last(s);
-    I = apply(toList(0..(product totDim - 1)), j -> if j == i then 1 else 0);    
+    I = apply(toList(0..(product N - 1)), j -> if j == i then 1 else 0);    
     return makeTensor(I,V)
+    )
+TensorSpace _ ZZ := (V,z) -> (
+    s := append((),z);
+    return V_s
     )
 
 -- indexed tensor
 Tensor _ Sequence := (T,s) -> (
     V := T#tensorSpace;
-    if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > (V#dims)_i or s_i < 0) then (
+    if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > (V#dims)_i-1 or s_i < 0) then (
 	return "error: the sequence does not match the format"
 	);
-    D := V#degs;
-    L := V#dims;
-    A := V#antiSym;
-    totDim := {};
-    for i to #(V#dims)-1 do (
-	if A_i then (
-	totDim = append(totDim,binomial(D_i,L_i));
-	) else (
-	totDim = append(totDim,binomial(D_i-1+L_i,D_i));
-	);
-    );
-    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list totDim_h);
+    N := V#dims;
+    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list N_h);
     i = i + last(s);
     return (T#coeff)_i
     )
+Tensor _ ZZ := (T,z) -> (
+    s := append((),z);
+    return T_s
+    )
+
+-- FIXME!!
+-- tensor product
+TensorSpace ** TensorSpace := (V,W) -> (
+    if V#baseRing =!= W#baseRing then (
+	return "error: base rings are different"
+    )
+    A := V#antiSym | W#antiSym;
+    D := V#degs | W#degs;
+    N := V#dims | W#dims;
+    Tmod := ring (first V#tensorBasis) ** ring (first W#tensorBasis);
+)
 
 --  EXAMPLE:
 --    construction of a general tensor in sym^1(CC^2) ** sym^2(CC^2)
-S = QQ[a_0..a_6];	       	       -- ring of coefficients
-V = tensorSpace(S,{{x,y},{z,t}},{1,2}) -- tensor space
+a = symbol a
+S = QQ[a_0..a_6];
+V = tensorSpace(QQ,{{x,y},{z,t}},{1,2}) -- tensor space
+W = tensorSpace(QQ,{symbol u_0..symbol u_4},{2}) -- tensor space
 T = makeTensor(toList(a_1..a_6),V)     -- make the tensor
 peek V	      	      	      	       -- to look at attributes of V
 peek T	      	      	      	       -- to look at attributes of T
-T#tensorSpace
-V#dims
