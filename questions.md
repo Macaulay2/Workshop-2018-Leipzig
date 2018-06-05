@@ -14,4 +14,5 @@ k=N.ReactionRates
   `R`?  How do I get the index `{0,1}` of the variable `k_{0,1}`.
 
 
-- Your question here. 
+- Your question here.
+4) Suppose I wish to interact with another program using "openInOut" and anticipate that I will transfer more than 4096 bites. What are my options? Does repeatedly using "read" or some other function buy me anything? Experiments seem to suggest not.
