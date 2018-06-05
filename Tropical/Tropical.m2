@@ -28,10 +28,7 @@ newPackage(
         PackageExports => {"gfanInterface","EliminationMatrices","Binomials"},
 	DebuggingMode => true,
 	AuxiliaryFiles => true,
-<<<<<<< HEAD
 --	AuxiliaryFiles => false,
-=======
->>>>>>> 4da454e39cf6806580448f477332ba0d3a14fba6
 	CacheExampleOutput => true,
 	optArgs
 )
