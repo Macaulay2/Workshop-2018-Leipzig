@@ -744,48 +744,60 @@ doc ///
 end
 
 
-document {
-     Key => effCone,
-     Headline => "the cone of effective T-invariant i-cycles",   
-     Usage => "effCone(i,X)",
-     Inputs => {"i" => ZZ, "X" => NormalToricVariety},
-     Outputs => {Matrix => "whose columns are the generators for
-the cone of effective i-cycles "},
-     "This is currently only implemented for smooth toric varieties. ",
-      "The columns should be given in a basis for the i-th Chow group
-recorded in X.cache.ChowGroupBas#i and accessed via chowGroupBasis(X).",
-     EXAMPLE lines ///
-     X = projectiveSpace 4
-     effCone(2,X)
-     ///,
-     EXAMPLE lines ///
-     X = hirzebruchSurface 1;
-     effCone(1,X)
-     ///,
-}    
+doc ///
+     Key
+       effCone
+     Headline
+       the cone of effective T-invariant i-cycles  
+     Usage
+       effCone(i,X)
+     Inputs
+       i:ZZ
+       X:NormalToricVariety
+     Outputs
+       :Matrix
+         whose columns are the generators for the cone of effective i-cycles
+     Description
+       Text
+         This is currently only implemented for smooth toric varieties.
+         The columns should be given in a basis for the i-th Chow group
+         recorded in X.cache.ChowGroupBas#i and accessed via chowGroupBasis(X).
+       Example
+         X = projectiveSpace 4
+         effCone(2,X)
+       Example 
+         X = hirzebruchSurface 1;
+         effCone(1,X)
+///   
 
 
-document {
-     Key => nefCone,
-     Headline => "the cone of nef T-invariant i-cycles",   
-     Usage => "nefCone(i,X)",
-     Inputs => {"i" => ZZ, "X" => NormalToricVariety},
-     Outputs => {Matrix => "whose columns are the generators for
-the cone of nef i-cycles "},
-     "A cycle is nef if it intersects every effective cycle of
-complementary dimension nonnegatively. ",
-      "This is currently only implemented for smooth toric varieties. ",
-      "The columns are given in a basis for the i-th Chow group
-recorded in X.cache.ChowGroupBas#i and accessed via chowGroupBasis(X). ",
-    EXAMPLE lines ///
-    X=projectiveSpace 4
-    nefCone(2,X)
-    ///,
-    EXAMPLE lines ///
-    X=hirzebruchSurface 1;
-    nefCone(1,X)
-    ///,
-}     
+doc ///
+     Key
+       nefCone
+     Headline
+       the cone of nef T-invariant i-cycles   
+     Usage
+       nefCone(i,X)
+     Inputs
+       i:ZZ
+       X:NormalToricVariety
+     Outputs
+       :Matrix
+         whose columns are the generators for the cone of nef i-cycles
+     Description
+       Text
+         A cycle is nef if it intersects every effective cycle of
+         complementary dimension nonnegatively.
+	 This is currently only implemented for smooth toric varieties.
+	 The columns are given in a basis for the i-th Chow group
+         recorded in X.cache.ChowGroupBas#i and accessed via chowGroupBasis(X).
+       Example
+         X=projectiveSpace 4
+         nefCone(2,X)
+       Example 
+         X=hirzebruchSurface 1;
+	 nefCone(1,X)
+///     
 
 -- document { 
 --      Key => isCartier,
@@ -812,48 +824,61 @@ recorded in X.cache.ChowGroupBas#i and accessed via chowGroupBasis(X). ",
      
      
      
-document {
-     Key => SR,
-     Headline => "compute the Chow ring of a smooth toric variety",
-     Usage => "SR(X)",
-     Inputs => {"X" => NormalToricVariety},
-     Outputs => {Ideal => "which defines the relations on the Chow
-ring of X"},
-     "The ring of the ideal has one generator for each ray of X, and
-the ideal is the ideal given in the Stanley-Reisner presentation of
-the cohomology ring of X. ", PARA{},
-     "This assumes that X is smooth.  Eventually it will be
-implemented for simplicial toric varieties. ",
-    EXAMPLE lines ///
-    X = projectiveSpace 2
-    I = SR X
-    R = ring I
-    for i from 0 to 2 do <<hilbertFunction(i,R/I)<<endl
-    ///,
-   	PARA{},
- 	  "Next we consider the blow-up of P^3 at 2 points. ",
-    EXAMPLE lines ///
-    X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
-    I = SR X
-    R = ring I
-    hilbertFunction(1,R/I)
-    ///,
-    "Note that the degree-one part of the ring has dimension the
-Picard-rank, as expected. ", 
-}
+doc ///
+     Key
+       SR
+     Headline
+       compute the Chow ring of a smooth toric variety
+     Usage
+       SR(X)
+     Inputs 
+       X:NormalToricVariety
+     Outputs
+       :Ideal
+         which defines the relations on the Chow ring of X
+     Description
+       Text 
+         The ring of the ideal has one generator for each ray of X, and
+         the ideal is the ideal given in the Stanley-Reisner presentation of
+         the cohomology ring of X.
+         This assumes that X is smooth.  Eventually it will be
+         implemented for simplicial toric varieties.
+       Example
+         X = projectiveSpace 2
+         I = SR X
+         R = ring I
+         for i from 0 to 2 do <<hilbertFunction(i,R/I)<<endl
+       Text 
+         Next we consider the blow-up of P^3 at 2 points.
+       Example 
+         X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+         I = SR X
+         R = ring I
+         hilbertFunction(1,R/I)
+       Text 
+         Note that the degree-one part of the ring has dimension the Picard-rank, as expected. 
 
-document {
-     Key => isContainedCones,
-     Headline => "decide if one cone is contained inside another",
-     Usage => "isContainedCones(M,N)",
-     Inputs => {"M"=>Matrix, "N"=>Matrix},
-     Outputs => {Boolean},
-     "Returns true if the cone generated by the columns of the matrix
-M is contained in the cone generated by the columns of the matrix N.
-",
-"This currently assumes that both cones are full-dimensional, and is implemented in 
-a somewhat hackish manner."
-}
+///
+
+doc ///
+     Key
+        isContainedCones
+     Headline
+        decide if one cone is contained inside another
+     Usage
+        isContainedCones(M,N)
+     Inputs
+        M:Matrix
+	N:Matrix
+     Outputs
+       :Boolean
+          Returns true if the cone generated by the columns of the matrix
+     Description
+        Text
+          M is contained in the cone generated by the columns of the matrix N.
+          This currently assumes that both cones are full-dimensional, and is implemented in 
+          a somewhat hackish manner.
+///
 ---------------------------------------------------------------------------
 -- TEST
 ---------------------------------------------------------------------------
