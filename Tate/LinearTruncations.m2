@@ -185,17 +185,24 @@ linearTruncations(Module,List) := (M, candidates) ->(
     findMins L))
 
 
-coarseMultigradedRegularity = method()
-coarseMultigradedRegularity Module := M-> (
+coarseMultigradedRegularity = method(Options =>{Strategy=>Simple})
+coarseMultigradedRegularity Module := o->M-> (
     t := degreeLength M;
     F := res prune M;
     range := toList(min F..max F-1);
     degsF := apply(range,i -> degrees (F_i));
+    if o.Strategy == Simple then(
+       apply(t, s-> 
+	   apply(range, i->
+	       max((degrees F_i)/(ell->ell_s))-i
+                )
+	    )/max
+	                        ) else(
     lowerbounds := flatten flatten apply(range, i->(
 	    apply(degsF_i, d -> apply(LL(i,t), ell -> d-ell))
 	    ));
     apply(t, i-> max apply(lowerbounds, ell->ell_i))
-    )
+    ))
 -------------------------
 
 --------------------------------------------------------
@@ -212,7 +219,9 @@ ran = L -> substitute(randomMonomialIdeal(L,S'), S)
 netList apply(10, i->(
 I = ran{3,4,5,5,5,6};
 M = S^1/I;
-lin = linearTruncations M
+r = coarseMultigradedRegularity M;
+print betti res truncate(r,M);
+--lin = linearTruncations M
 ))
 use S
 M = cokernel matrix {{x_(0,0)^2*x_(1,1), x_(0,0)*x_(0,1)*x_(1,0)^2, x_(0,1)*x_(1,0)^3*x_(1,1), x_(0,1)*x_(1,0)^4, x_(0,0)^2*x_(0,1)^2*x_(1,0), x_(0,1)^5*x_(1,0)}} 

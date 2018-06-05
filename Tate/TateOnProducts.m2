@@ -1805,6 +1805,16 @@ restart
 loadPackage("TateOnProducts", Reload=>true)
 ///
 
+isSurjection = (A,B)->(
+    --tests a random degree 0 map to see whether its a surjection
+    H := Hom(A,B);
+    B0 := basis(0,H);
+    f = homomorphism(B0*random(source B0, (ring B0)^1));
+    coker f == 0)
+isIsomorphic = (A,B) -> (
+    --tests random degree 0 maps A->B, B->A and returns true
+    --if both are surjective.
+    isSurjection(A,B) and isSurjection(B,A))
 
 --------------------------
 -- Begin of the documentation
