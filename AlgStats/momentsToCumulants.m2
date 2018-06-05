@@ -1,18 +1,18 @@
 restart
-cumulantsToMoments = cumulants -> (
+cumulantsToMoments = (cumulants,R) -> (
     assert(cumulants#0 == 0);
-    return powerSeriesTransform(cumulants, exp)
+    return powerSeriesTransform(cumulants, exp, R)
     )
 
-momentsToCumulants = moments -> (
+momentsToCumulants = (moments,R) -> (
     assert(moments#0 == 1);
-    return powerSeriesTransform(moments, formalLog)
+    return powerSeriesTransform(moments, formalLog, R)
     )
 
-powerSeriesTransform = (l, f) -> (
-    S := QQ[t]/t^#l;
+powerSeriesTransform = (l, f, R) -> (
+    S := R[t]/t^#l;
     use S;
-    p := f(sum for i from 1 to #l-1 list t^i * l#i/i!);
+    p := f(sum for i from 0 to #l-1 list t^i * l#i/i!);
     return for i from 0 to #l-1 list i!*coefficient(t^i, p);
     )
 
@@ -26,16 +26,13 @@ formalLog = f -> (
 -- TEST --
 
 R = QQ[x,y]
-S = QQ[x,y][t]/t^10
-
-f = x*t + 1/2 * y^2 * t^2
-
-g = exp(f)
-
-formalLog(g)
 
 cumulants = {0, 1, 1}
-cumulantsToMoments(cumulants)
+cumulantsToMoments(cumulants,R)
 
 moments = {1, 1, 2}
-momentsToCumulants(moments)
+momentsToCumulants(moments,R)
+
+cumulants = {0, x, y^2, 0, 0, 0, 0}
+l = cumulantsToMoments(cumulants,R)
+l_2
