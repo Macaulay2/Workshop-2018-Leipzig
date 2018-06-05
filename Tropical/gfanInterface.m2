@@ -965,7 +965,7 @@ toPolymakeFormat(Fan) := (F) ->(
      str=concatenate(str,toPolymakeFormat("N_RAYS",rank source raysF));
      L:=linealitySpace(F);
      str=concatenate(str,toPolymakeFormat("LINEALITY_DIM",rank L));
-     str=concatenate(str,toPolymakeFormat("LINEALITY_SPACE",L));	 
+     str=concatenate(str,toPolymakeFormat("LINEALITY_SPACE",transpose L));	 
      conesF:=flatten apply(dim(F)+1-rank L,i->(cones(i+rank L,F)));	 
      str=concatenate(str,toPolymakeFormat("CONES", conesF));
      str=concatenate(str,toPolymakeFormat("MAXIMAL_CONES", maxCones F));
@@ -1373,7 +1373,6 @@ gfanStableIntersection (Fan,List,Fan,List) := opts -> (F,m1,G,m2) -> (
 --     fileFisTemp := false;
 --     fileGisTemp := false;
      fileF = gfanMakeTemporaryFile( (toPolymakeFormat(F))| toPolymakeFormat("MULTIPLICITIES",m1));
-<<fileF<<endl;     
      fileG = gfanMakeTemporaryFile( (toPolymakeFormat(G))| toPolymakeFormat("MULTIPLICITIES",m2));
      opts = opts ++ { "i1" => fileF , "i2" => fileG };
      out := runGfanCommand("gfan _fancommonrefinement --stable", opts, "");
