@@ -1439,9 +1439,6 @@ gfanFanProduct = method( Options => {
 gfanFanProduct (Fan, Fan) := opts -> (F,G) -> (
      fileF := "";
      fileG := "";
-     fileFisTemp := true;
-     fileGisTemp := true;
-
 --     if F#?"GfanFileName" and fileExists F#"GfanFileName" then
 --        (fileF = F#"GfanFileName"; fileFisTemp = false;)
 --     else if F#?"GfanFileRawString" then
@@ -1464,8 +1461,8 @@ gfanFanProduct (Fan, Fan) := opts -> (F,G) -> (
 	  G#"GfanFileName" = fileG;
 	   )
      else (
-    	 if fileFisTemp then gfanRemoveTemporaryFile fileF;
-	 if fileGisTemp then gfanRemoveTemporaryFile fileG;
+    	 gfanRemoveTemporaryFile fileF;
+	 gfanRemoveTemporaryFile fileG;
 	 );
 	out
 )
@@ -4370,52 +4367,53 @@ doc ///
 	 F = gfanToPolyhedralFan gfan {x+y};
 	 G = gfanToPolyhedralFan gfan {x+y^2};
 	 C = gfanFanCommonRefinement(F,G);
---	 assert(C#"AMBIENT_DIM" === 2)
---	 assert(C#"DIM" === 2)
---	 assert ((C#cache)#"simplicial")
---	 assert(C#"LINEALITY_DIM" === 0)
---	 assert(C#"N_RAYS" === 4)
---	 assert(set C#"RAYS" === set {{-2, -1}, {-1, -1}, {1, 1}, {2, 1}})
---	 assert(set C#"CONES" === set {{}, {0}, {1}, {2}, {3}, {0, 1}, {0, 2}, {1, 3}, {2, 3}})
+	 assert(rank target rays(C) === 2)
+	 assert(dim(C) === 2)
+	 assert (isSimplicial(C))
+	 assert(rank(linealitySpace(C)) === 0)
+	 assert(rank source rays(C) === 4)
+	 assert(rays(C) === transpose matrix {{-2, -1}, {-1, -1}, {1, 1}, {2, 1}})
+	 assert(maxCones(C) === {{0, 1}, {0, 2}, {1, 3}, {2, 3}})
 	 ///
-	--
-	-- -- TEST gfanFanLink
-	-- TEST ///
-	-- QQ[x,y];
-	-- F = gfanToPolyhedralFan {markedPolynomialList{{x}, {x+y}}};
-	-- G = gfanToPolyhedralFan {markedPolynomialList{{y^2}, {x+y^2}}};
-	-- Q = gfanFanCommonRefinement(F,G);
-	-- C = gfanFanLink(Q, {2,1}, "star" => true)
-	-- assert(C#"AMBIENT_DIM" === 2)
-	-- assert(C#"DIM" === 2)
-	-- assert C#"SIMPLICIAL"
-	-- assert(C#"LINEALITY_DIM" === 0)
-	-- assert(C#"N_RAYS" === 2)
-	-- assert(set C#"RAYS" === set {{1, 1}, {2, 1}})
-	-- assert(set C#"CONES" === set {{}, {0}, {1}, {0, 1}})
-	-- ///
-	--
-	-- -- TEST gfanFanProduct
-	-- TEST ///
-	-- QQ[x,y];
-	-- F = gfanToPolyhedralFan {markedPolynomialList{{x}, {x+y}}};
-	-- G = gfanToPolyhedralFan {markedPolynomialList{{y^2}, {x+y^2}}};
-	-- C = gfanFanProduct(F,G);
-	-- assert(C#"AMBIENT_DIM" === 4)
-	-- assert(C#"DIM" === 4)
-	-- assert C#"SIMPLICIAL"
-	-- assert(C#"LINEALITY_DIM" === 2)
-	-- assert(C#"N_RAYS" === 2)
-	-- assert(set C#"RAYS" === set {{0, 0, -1, 2}, {1, -1, 0, 0}})
-	-- assert(set C#"CONES" === set {{}, {0}, {1}, {0, 1}})
-	-- assert(set C#"LINEALITY_SPACE" === set {{1, 1, 0, 0}, {0, 0, 2, 1}})
-	-- ///
-	--
-	-- -- TEST gfanGroebnerCone
-	-- TEST ///
-	-- QQ[x,y];
-	-- C = gfanGroebnerCone( markedPolynomialList {{x}, {x+y}} )
-	-- assert(set C#"IMPLIED_EQUATIONS" === set {})
+
+	-- TEST gfanFanLink
+	 TEST ///
+	 QQ[x,y];
+	 F = gfanToPolyhedralFan {markedPolynomialList{{x}, {x+y}}};
+	 G = gfanToPolyhedralFan {markedPolynomialList{{y^2}, {x+y^2}}};
+	 Q = gfanFanCommonRefinement(F,G);
+	 C = gfanFanLink(Q, {2,1}, "star" => true)
+	 assert(rank target rays(C) === 2)
+	 assert(dim(C) === 2)
+	 assert isSimplicial(C)
+	 assert(rank(linealitySpace(C)) === 0)
+	 assert(rank source rays(C) === 2)
+	 assert(rays(C) === transpose matrix {{1, 1}, {2, 1}})
+	 assert(maxCones(C) === {{0,1}})
+	 ///
+
+	-- TEST gfanFanProduct
+	TEST ///
+	 QQ[x,y];
+	 F = gfanToPolyhedralFan {markedPolynomialList{{x}, {x+y}}};
+	 G = gfanToPolyhedralFan {markedPolynomialList{{y^2}, {x+y^2}}};
+	 C = gfanFanProduct(F,G);
+--Problem is that gfanFanProduct returns two lists.	 
+-- 	 assert(rank(target(rays(C))) === 4)
+-- 	 assert(dim(C) === 4)
+-- 	 assert isSimplicial(C)
+-- 	 assert(rank(linealitySpace(C)) === 2)
+-- 	 assert(rank(source(rays(C)) === 2)
+--  	 assert(rays(C) === transpose matrix {{0, 0, -1, 2}, {1, -1, 0, 0}})
+-- 	 assert(maxCones(C) === {{0, 1}})
+-- 	 assert(linealitySpace(C) === {{1, 1, 0, 0}, {0, 0, 2, 1}})
+	 ///
+	
+	-- TEST gfanGroebnerCone
+	TEST ///
+	  QQ[x,y];
+	  C = gfanGroebnerCone( markedPolynomialList {{x}, {x+y}} )
+--	  assert(set C#"IMPLIED_EQUATIONS" === set {})
 	-- assert(C#"AMBIENT_DIM" === 2)
 	-- assert(C#"RELATIVE_INTERIOR_POINT" === {1, 0})
 	-- assert(set C#"LINEALITY_SPACE" === set {{1, 1}})
@@ -4430,8 +4428,8 @@ doc ///
 	-- assert(C#"LINEALITY_DIM" === 1)
 	-- assert(C#"DIM" === 1)
 	-- assert(set C#"FACETS" === set {})
-	-- ///
-	--
+	///
+	
 	-- -- TEST gfanHomogeneitySpace
 	-- TEST ///
 	-- QQ[x,y,z];
