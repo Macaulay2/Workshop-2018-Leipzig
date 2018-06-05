@@ -28,6 +28,10 @@ newPackage(
         PackageExports => {"gfanInterface","EliminationMatrices","Binomials"},
 	DebuggingMode => true,
 	AuxiliaryFiles => true,
+<<<<<<< HEAD
+--	AuxiliaryFiles => false,
+=======
+>>>>>>> 4da454e39cf6806580448f477332ba0d3a14fba6
 	CacheExampleOutput => true,
 	optArgs
 )
@@ -43,7 +47,8 @@ export {
   "tropicalVariety",
   "isTropicalBasis",
   "multiplicities",
-  "IsHomogeneous"}
+  "IsHomogeneous",
+  "Symmetry"}
 
 
 if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not present\n"
@@ -213,7 +218,8 @@ findMultiplicities=(I,T)->(
 tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 	ComputeMultiplicities => true,
 	Prime => true,
-	IsHomogeneous=>false
+	IsHomogeneous=>false,
+	Symmetry => null
 	})
 
 
@@ -222,23 +228,39 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 tropicalVariety (Ideal) := o -> (I) ->(
     local F;
     local T;
+	newSym:= o.Symmetry;
+	
     if o.IsHomogeneous==false  then 
     (	 
 	 --First homogenize
     	R:=ring I;
     	AA:= symbol AA;
-    	S:= first flattenRing( R[getSymbol "AA", Join=>false]);
+		S:= coefficientRing(R)[gens R, getSymbol "AA"];
+		-- the index of the last variable of S
+		N:= #gens(S)-1;
+    	----S:= first flattenRing( R[getSymbol "AA", Join=>false]);
 	J:=substitute(I,S);
-	J=homogenize(J,S_0);
-	J=saturate(J,S_0);
+	J=homogenize(J,S_N);
+	J=saturate(J,S_N);
 	--we transform I in J so that the procedure continues as in the homogeneous case
 	I=J;
+	
+	--if symmetry is not null and we had to homogenize then we adjust the symmetry vectors accordingly.
+	
+	if(newSym =!= null) then
+		newSym=(i->append(i, N))\newSym;
+	
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
 	    --check if resulting fan would be empty
 	    if instance(cone, String) then return cone;
-	    F= gfanTropicalTraverse cone;
+		if(o.Symmetry === null) then
+			F= gfanTropicalTraverse cone
+		else	(
+			--print class o.Symmetry;
+			F= gfanTropicalTraverse (cone, "symmetry" => newSym);	
+				);			
 	    --check if resulting fan would be empty
 	    if (instance(F,String)) then return F; 
 	    T=tropicalCycle(F_0,F_1))

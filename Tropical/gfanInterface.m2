@@ -2411,7 +2411,6 @@ gfanTropicalTraverse (List) := opts -> (L) -> (
 		| gfanMPLToString(first L)
 		| gfanMPLToString(last L)
 		| gfanVectorListToString(opts#"symmetry");
-
 	output := runGfanCommand("gfan _tropicaltraverse", opts, input);
 	--check if the returned fan is empty
 	if(length(output#0)==0) then return "error: this fan is empty";
