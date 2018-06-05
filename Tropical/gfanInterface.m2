@@ -83,7 +83,8 @@ export {
 --	"gfanVectorListListToString", -- to make gfan input
 	"gfanVersion",
 	"toPolymakeFormat",
-	"multiplicitiesReorder"
+	"multiplicitiesReorder",
+"runGfanCommand"      
 }
 
 gfanPath = gfanInterface#Options#Configuration#"path"
@@ -4310,6 +4311,10 @@ doc ///
 -- Tests
 ---------------------------------------
 
+--status: need to fix comments in gfan, all of gfanFanProduct, in the
+--middle of gfanGroebnerCone
+
+
 --        TEST gfan
 	TEST ///
 	  R = QQ[x,y,z];
@@ -4393,11 +4398,11 @@ doc ///
 	 ///
 
 	-- TEST gfanFanProduct
-	TEST ///
-	 QQ[x,y];
-	 F = gfanToPolyhedralFan {markedPolynomialList{{x}, {x+y}}};
-	 G = gfanToPolyhedralFan {markedPolynomialList{{y^2}, {x+y^2}}};
-	 C = gfanFanProduct(F,G);
+-- 	TEST ///
+-- 	 QQ[x,y];
+-- 	 F = gfanToPolyhedralFan {markedPolynomialList{{x}, {x+y}}};
+-- 	 G = gfanToPolyhedralFan {markedPolynomialList{{y^2}, {x+y^2}}};
+-- 	 C = gfanFanProduct(F,G);
 --Problem is that gfanFanProduct returns two lists.	 
 -- 	 assert(rank(target(rays(C))) === 4)
 -- 	 assert(dim(C) === 4)
@@ -4407,18 +4412,18 @@ doc ///
 --  	 assert(rays(C) === transpose matrix {{0, 0, -1, 2}, {1, -1, 0, 0}})
 -- 	 assert(maxCones(C) === {{0, 1}})
 -- 	 assert(linealitySpace(C) === {{1, 1, 0, 0}, {0, 0, 2, 1}})
-	 ///
+--	 ///
 	
 	-- TEST gfanGroebnerCone
 	TEST ///
 	  QQ[x,y];
 	  C = gfanGroebnerCone( markedPolynomialList {{x}, {x+y}} )
 --	  assert(set C#"IMPLIED_EQUATIONS" === set {})
-	-- assert(C#"AMBIENT_DIM" === 2)
+	  assert(rank target rays C  === 2)
 	-- assert(C#"RELATIVE_INTERIOR_POINT" === {1, 0})
-	-- assert(set C#"LINEALITY_SPACE" === set {{1, 1}})
-	-- assert(C#"LINEALITY_DIM" === 1)
-	-- assert(C#"DIM" === 2)
+	  assert(linealitySpace(C) === transpose matrix {{1, 1}})
+	  assert(rank(linealitySpace(C)) === 1)
+	  assert(dim(C) === 2)
 	-- assert(set C#"FACETS" === set {{1,-1}})
 	-- C = gfanGroebnerCone( markedPolynomialList {{x}, {x+y}},  markedPolynomialList {{x}, {x+y}} )
 	-- assert(set C#"IMPLIED_EQUATIONS" === set {{1, -1}})
