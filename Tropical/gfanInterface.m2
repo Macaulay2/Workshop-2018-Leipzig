@@ -10,8 +10,8 @@ newPackage(
 	Date => "Aug 2012 (updated by Josephine Yu)",
 	Authors => {
 		{Name => "Mike Stillman", Email => "mike@math.cornell.edu", HomePage => ""},
-		{Name => "Andrew Hoefel", Email => "andrew.hoefel@gmail.com", HomePage =>"http://www.mast.queensu.ca/~ahhoefel/"}
-		},
+		{Name => "Andrew Hoefel", Email => "andrew.hoefel@gmail.com", HomePage =>"http://www.mast.queensu.ca/~ahhoefel/"},
+	    {Name => "Diane Maclagan (current maintainer)", Email => "D.Maclagan@warwick.ac.uk", HomePage=>"http://homepages.warwick.ac.uk/staff/D.Maclagan/"}},
 	Headline => "Interface to Anders Jensen's Gfan software",
 	Configuration => {
 		"path" => "",
@@ -83,8 +83,7 @@ export {
 --	"gfanVectorListListToString", -- to make gfan input
 	"gfanVersion",
 	"toPolymakeFormat",
-	"multiplicitiesReorder",
-"runGfanCommand"      
+	"multiplicitiesReorder"
 }
 
 gfanPath = gfanInterface#Options#Configuration#"path"
@@ -4305,6 +4304,31 @@ doc ///
 			@STRONG "gfan Documentation"@
 			@gfanHelp "gfan _tropicalweildivisor"@
 ///
+
+
+doc ///
+	Key
+                gfanOverIntegers
+	Headline
+		all reduced Grobenr bases of a poynomial ideal with coefficients in ZZ
+	Usage
+		G = gfanOverIntegers(I)
+	Inputs
+		I:Ideal
+			contained in a polynomial ring with coefficients in ZZ
+	Outputs
+		G:List
+		        all @TO2 {"Marked Groebner Basis Example", "marked reduced Groebner bases"}@ of {\tt I}.
+	Description
+		Text
+		    	????some text will go here
+		Example
+		    1+1
+		Text
+		    @STRONG "gfan Documentation"@
+		    @gfanHelp "gfan _overintegers"@
+///
+
 
 
 ---------------------------------------
