@@ -224,7 +224,7 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 	ComputeMultiplicities => true,
 	Prime => true,
 	IsHomogeneous=>false,
-	Symmetry => null
+	Symmetry => {}
 	})
 
 
@@ -233,34 +233,40 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 tropicalVariety (Ideal) := o -> (I) ->(
     local F;
     local T;
-	newSym:= o.Symmetry;
+    	
+    newSym:= o.Symmetry;
+    
+    --If Symmetry present, check user has input permutations with the right length. If newSym is {}, any always returns false.
+    M := #(gens ring I);
+    if any(newSym, i ->  #i != M) then
+	return concatenate("Length of list of permutations should be ", toString M);
 	
-    if o.IsHomogeneous==false  then 
+    if o.IsHomogeneous==false then 
     (	 
-	 --First homogenize
-    	R:=ring I;
-    	AA:= symbol AA;
-		S:= coefficientRing(R)[gens R, getSymbol "AA"];
-		-- the index of the last variable of S
-		N:= #gens(S)-1;
-    	----S:= first flattenRing( R[getSymbol "AA", Join=>false]);
+	
+	--First homogenize, append variable AA to the beginning
+    	R := ring I;
+    	AA := symbol AA;
+	
+	--Extend to a new coefficient ring. The added variable is at the beginning.
+	S := first flattenRing(R[AA, Join =>false]);
+
 	J:=substitute(I,S);
-	J=homogenize(J,S_N);
-	J=saturate(J,S_N);
+	J=homogenize(J,S_0);
+	J=saturate(J,S_0);
 	--we transform I in J so that the procedure continues as in the homogeneous case
 	I=J;
 	
-	--if symmetry is not null and we had to homogenize then we adjust the symmetry vectors accordingly.
-	
-	if(newSym =!= null) then
-		newSym=(i->append(i, N))\newSym;
-	
+	--If Symmetry present, adjust the symmetry vectors to the right length and shift the values up by one. If not present, this operates on an empty list.
+	newSym= (i->prepend(0,i)) \
+	            (i -> (j -> j + 1) \ i) \ 
+		        newSym;	
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
 	    --check if resulting fan would be empty
 	    if instance(cone, String) then return cone;
-		if(o.Symmetry === null) then
+		if(newSym == {}) then
 			F= gfanTropicalTraverse cone
 		else	(
 			--print class o.Symmetry;
@@ -1166,8 +1172,7 @@ doc///
 			T=tropicalVariety I;
 			L=linealitySpace T
 			    
-///
-	    
+///	    
     	
 ----- TESTS -----
 

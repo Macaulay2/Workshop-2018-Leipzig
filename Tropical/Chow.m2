@@ -25,7 +25,7 @@ export {
      "effCone",
      "isContainedCones",
      "nefEqualsIntersection",
-     "chowRingBasis",
+     "chowGroupBasis",
      "Mob",
      "Lcone",
      "Lconeb",
@@ -34,14 +34,14 @@ export {
      }
 
 
-protect ChowRingBas 
+protect ChowGroupBas 
 protect ChowRingIdeal
 
 ---------------------------------------------------------------------------
 -- CODE
 ---------------------------------------------------------------------------
 
- needsPackage "FourierMotzkin";
+needsPackage "FourierMotzkin";
 needsPackage "Polyhedra";
 needsPackage "NormalToricVarieties";
 
@@ -117,6 +117,7 @@ intersectCones=(M,N)-> (
 );	
 
 --Chow
+-- i is codim
 AA=(i,X) -> ( 
      if i>dim(X) then error("i > dim(X)");
      if not(X.cache.?Chow) then X.cache.Chow = new MutableHashTable;
@@ -232,7 +233,7 @@ SR=X->(
      X.cache.ChowRingIdeal=ideal mingens I;
      );
      X.cache.ChowRingIdeal
-);          	       	    
+);
 
 
 --Create SR ideal
@@ -258,19 +259,21 @@ intersectionRing=X->(
      X.cache.IntersectionRing=R/(ideal mingens I);
      );
      X.cache.IntersectionRing
-);          	       	    
+);
 
 
 --Compute a basis for the Chow ring
-chowRingBasis=(X,i)->(
-     if not X.cache.?ChowRingBas then
-     	  X.cache.ChowRingBas = new MutableHashTable;
+chowGroupBasis = method()
+chowGroupBasis(NormalToricVariety,ZZ) := (X,i) -> (
+     if not X.cache.?ChowGroupBas then
+     	  X.cache.ChowGroupBas = new MutableHashTable;
      I:=SR(X);
      R:=ring I;
-     if not X.cache.ChowRingBas#?i then 	  
-          X.cache.ChowRingBas#i=flatten entries lift(basis(dim X -i,R/I),R);
-     return(X.cache.ChowRingBas#i);
+     if not X.cache.ChowGroupBas#?i then 	  
+          X.cache.ChowGroupBas#i=flatten entries lift(basis(dim X -i,R/I),R);
+     return(X.cache.ChowGroupBas#i);
 );
+chowGroupBasis(NormalToricVariety) := X -> (for i from 0 to dim X list chowGroupBasis(X,i))
 
 
 --Code to compute the cone of nef cycles
@@ -289,7 +292,7 @@ nefCone=(i,X)->(
      R:=ring I;
      --Now create the multiplication map
      --First get a basis for AA_i
-     chowBas:=chowRingBasis(X,i);
+     chowBas:=chowGroupBasis(X,i);
      mono:=1_R;
      for i in (max X)_0 do mono=mono*R_i;
      topBas1:=mono % I;
@@ -326,16 +329,16 @@ nefCone2=(k,i,X)->(
      R:=ring I;
      --Now create the multiplication map
      --First get a basis for AA_k
-     if not X.cache.?ChowRingBas then
-     	  X.cache.ChowRingBas = new MutableHashTable;
-     if not X.cache.ChowRingBas#?(n-k) then 	  
-          X.cache.ChowRingBas#(n-k)=flatten entries lift(basis(k,R/I),R);
+     if not X.cache.?ChowGroupBas then
+     	  X.cache.ChowGroupBas = new MutableHashTable;
+     if not X.cache.ChowGroupBas#?(n-k) then 	  
+          X.cache.ChowGroupBas#(n-k)=flatten entries lift(basis(k,R/I),R);
      --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
      --???need to edit from here.	  
      mono:=1_R;
      for i in (max X)_0 do mono=mono*R_i;
      topBas1:=mono % I;
-     Mat:=matrix unique apply(X.cache.ChowRingBas#(n-k),m->(
+     Mat:=matrix unique apply(X.cache.ChowGroupBas#(n-k),m->(
 	       apply(Conesk,sigma->(
 			 mono:=1_R;
 			 for j in sigma do mono=mono*R_j;
@@ -369,7 +372,7 @@ Mob=(k,i,X)->(
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
      --First get a basis for AA_k
-     chowBask:=chowRingBasis(X,n-k);
+     chowBask:=chowGroupBasis(X,n-k);
      --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
      --???need to edit from here.	  
      TotalFacets:=flatten apply(Conesi, sigma->(
@@ -414,7 +417,7 @@ Lcone=(k,i,X)->(
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
      --First get a basis for AA_k
-     chowBask:=chowRingBasis(X,n-k);
+     chowBask:=chowGroupBasis(X,n-k);
      --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
      --???need to edit from here.	  
      TotalFacets:=flatten apply(n-i+1,j-> (
@@ -472,7 +475,7 @@ Lconeb=(k,i,X)->(
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
      --First get a basis for AA_k
-     chowBask:=chowRingBasis(X,n-k);
+     chowBask:=chowGroupBasis(X,n-k);
      --We loop through j from 0 to i, and compute for each j 
      --the facets of the cone pos(V(sigma) : V(sigma).V(tau) is effective for all
      -- tau in Sigma(j)) + span(V(sigma) : V(sigma).V(tau) =0 for all tau 
@@ -480,7 +483,7 @@ Lconeb=(k,i,X)->(
      TotalFacets:=flatten apply(n-i+1,j-> (
 --<<"j   "<<j<<endl;	       
     	       Conesj:=orbits(X,n-j); 
-               chowBaskj:=chowRingBasis(X,n-k-j);
+               chowBaskj:=chowGroupBasis(X,n-k-j);
 	       --facets of effCone(n-k-j) are the rows of effkjFacets
 	       effkjFacets=-1*(fourierMotzkin(effCone(n-k-j,X)))#0;
 	       effkjFacets=transpose effkjFacets;
@@ -547,7 +550,7 @@ i:=k;
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
      --First get a basis for AA_k
-     chowBask:=chowRingBasis(X,n-k);
+     chowBask:=chowGroupBasis(X,n-k);
      --We loop through j from 0 to i, and compute for each j 
      --the facets of the cone pos(V(sigma) : V(sigma).V(tau) is effective for all
      -- tau in Sigma(j)) + span(V(sigma) : V(sigma).V(tau) =0 for all tau 
@@ -555,7 +558,7 @@ i:=k;
      TotalFacets:=flatten apply(n-i+1,j-> (
 --<<"j   "<<j<<endl;	       
     	       Conesj:=orbits(X,n-j); 
-               chowBaskj:=chowRingBasis(X,n-k-j);
+               chowBaskj:=chowGroupBasis(X,n-k-j);
 	       --facets of effCone(n-k-j) are the rows of effkjFacets
 	       effkjFacets=-1*(fourierMotzkin(effCone(n-k-j,X)))#0;
 	       effkjFacets=transpose effkjFacets;
@@ -605,17 +608,17 @@ effCone=(i,X)->(
      --Get SR ring
      I:=SR(X);
      R:=ring I;
-     if not X.cache.?ChowRingBas then
-     	  X.cache.ChowRingBas = new MutableHashTable;
-     if not X.cache.ChowRingBas#?i then 	  
-          X.cache.ChowRingBas#i=flatten entries lift(basis(n-i,R/I),R);
+     if not X.cache.?ChowGroupBas then
+     	  X.cache.ChowGroupBas = new MutableHashTable;
+     if not X.cache.ChowGroupBas#?i then 	  
+          X.cache.ChowGroupBas#i=flatten entries lift(basis(n-i,R/I),R);
      --j=n-i
      Conesj:=orbits(X,i);
      EffMat:=transpose matrix apply(Conesj,sigma->(
     	  mono:=1_R;
 	  for j in sigma do mono=mono*R_j;
      	  mono=mono % I;
-	  apply(X.cache.ChowRingBas#i,m->(coefficient(m,mono)))
+	  apply(X.cache.ChowGroupBas#i,m->(coefficient(m,mono)))
      ));	  
      return(EffMat);
 );
@@ -663,112 +666,138 @@ nefEqualsIntersection=(i,X)->(
 ---------------------------------------------------------------------------
 beginDocumentation()
 
-document { 
-     Key => Chow,
-     Headline => "intersection theory for normal toric varieties",
-     "This is a subpackage for eventual inclusion into Greg Smith's
-NormalToricVarieties package",
-     PARA{},     
-     "It contains routines to do compute the Chow ring and groups of a
-normal toric variety, plus compute the nef and effective cones of
-cycles." 
-     }  
-
--- document { 
---      Key => {(cones, ZZ, NormalToricVariety)},
---      Headline => "the i-dimensional cones of the fan of X",
---      Usage => "cones(i,X)",
---      Inputs => {"i" => ZZ, "X" => NormalToricVariety},
---      Outputs => {List => " of lists; each entry is the index set of
--- rays in an i-dimensional cone of the fan of X."},
---      "This procedure produces a list of the i-dimensional cone of the fan of a toric variety X",
---      EXAMPLE lines ///
--- 	  X = projectiveSpace 2;
--- 	  cones(2,X)
--- 	  max X
--- 	  cones(1,X)
--- 	  rays X
--- 	  ///,
--- 	  "Note that an i-dimensional cone may have more than i extreme rays",
---      EXAMPLE lines ///
--- 	  X=normalToricVariety({{1,0,0},{1,2,0},{1,2,2},{1,0,2},{-1,-1,-1}}, {{0,1,2,3},{0,1,4}, {1,2,4},{2,3,4},{0,3,4}});
--- 	  cones(3,X)
--- 	  ///,
---      }
+doc ///
+    Key
+        Chow
+    Headline
+        intersection theory for normal toric varieties
+    Description
+        Text
+            This is a subpackage for eventual inclusion into Greg Smith's NormalToricVarieties package
+        Text 
+            It contains routines to do compute the Chow ring and groups of a normal toric variety, plus compute the nef and effective cones of cycles.
+///
 
 
-document { 
-     Key => AA,
-     Headline => "Chow rings for toric varieties",
-     Usage => "AA(i,X)",
-     Inputs => {"i" => ZZ, "X" => NormalToricVariety},
-     Outputs => {"an abelian group ( a  ZZ-module)"},
-     "This procedure computes the ith Chow group of the
-NormalToricVariety X.  It produces it as the cokernel of a matrix,
-following the description given in Proposition 2.1 of Fulton-Sturmfels
-\" Intersection Theory on toric varieties \" (Topology, 1996).",
-PARA{}, "It is cached in X.cache.Chow#i. ", 
-" ???say something about pruning map ", 
-PARA{},
-" These groups are all one-dimensional for projective space. ", 
--- EXAMPLE lines /// 
--- X =projectiveSpace 4 
--- rank AA(1,X) 
--- rank AA(2,X) 
--- rank AA(3,X)
--- ///, 
--- "We next consider the blow-up of P^3 at two points." ,
--- EXAMPLE lines ///
--- X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
--- AA(1,X) 
--- AA(2,X) 
--- pic X 
--- ///, 
-}
+doc ///
+  Key
+      AA
+  Headline
+      Chow rings for toric varieties
+  Usage
+      AA(i,X)
+  Inputs
+      i:ZZ
+      X:NormalToricVariety
+  Outputs
+      :Module
+         the codim-i Chow group $A^i(X)$, an abelian group (a  ZZ-module)
+  Description
+      Text
+         This procedure computes the ith Chow group of the NormalToricVariety X. It produces it as the cokernel of a matrix, 
+	 following the description given in Proposition 2.1 of Fulton-Sturmfels
+	 Intersection Theory on toric varieties (Topology, 1996). 
+      Text
+         It is cached in X.cache.Chow#i.
+      Text 
+         ???say something about pruning map.
+      Text 
+         These groups are all one-dimensional for projective space.  
+      Example 
+         X = projectiveSpace 4
+	 rank AA(1,X) 
+	 rank AA(2,X) 
+	 rank AA(3,X)
+      Text
+         We next consider the blow-up of P^3 at two points.
+      Example
+         X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+         AA(1,X) 
+         AA(2,X)
+/// 	 
+
+doc ///
+    Key
+        chowGroupBasis
+    Headline
+        the basis of the Chow group in dim i
+    Usage
+        chowGroupBasis(X) or chowGroupBasis(X,i)
+    Inputs
+        X:NormalToricVariety
+	i:ZZ
+    Outputs
+        :Module
+	   a basis for the ith Chow group (a ZZ-module)
+    Description
+       Text 
+         This method returns the cached basis for the Chow group of dimension-i cycles on X.  
+	 If called without i, it returns a list so that chowGroupBasis(X)#i = chowGroupBasis(X,i).
+       Example
+         X = projectiveSpace 4 
+         chowGroupBasis(X)
+       Example
+         X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+         chowGroupBasis(X)
+         chowGroupBasis(X,2) -- a basis for divisors on this threefold
+///
+end
 
 
-document {
-     Key => effCone,
-     Headline => "the cone of effective T-invariant i-cycles",   
-     Usage => "effCone(i,X)",
-     Inputs => {"i" => ZZ, "X" => NormalToricVariety},
-     Outputs => {Matrix => "whose columns are the generators for
-the cone of effective i-cycles "},
-     "This is currently only implemented for smooth toric varieties. ",
-      "The columns are given in a basis for the i-th Chow group
-recorded in X.cache.ChowRingBas#i. ",
---      EXAMPLE lines ///
---      X=projectiveSpace 4
---      effCone(2,X)
---      ///,
---      EXAMPLE lines ///
---      X=hirzebruchSurface 1;
---      effCone(1,X)
---      ///,
-}    
+doc ///
+     Key
+       effCone
+     Headline
+       the cone of effective T-invariant i-cycles  
+     Usage
+       effCone(i,X)
+     Inputs
+       i:ZZ
+       X:NormalToricVariety
+     Outputs
+       :Matrix
+         whose columns are the generators for the cone of effective i-cycles
+     Description
+       Text
+         This is currently only implemented for smooth toric varieties.
+         The columns should be given in a basis for the i-th Chow group
+         recorded in X.cache.ChowGroupBas#i and accessed via chowGroupBasis(X).
+       Example
+         X = projectiveSpace 4
+         effCone(2,X)
+       Example 
+         X = hirzebruchSurface 1;
+         effCone(1,X)
+///   
 
 
-document {
-     Key => nefCone,
-     Headline => "the cone of nef T-invariant i-cycles",   
-     Usage => "nefCone(i,X)",
-     Inputs => {"i" => ZZ, "X" => NormalToricVariety},
-     Outputs => {Matrix => "whose columns are the generators for
-the cone of nef i-cycles "},
-     "A cycle is nef if it intersects every effective cycle of
-complementary dimension nonnegatively. ",
-      "This is currently only implemented for smooth toric varieties. ",
-      "The columns are given in a basis for the i-th Chow group
-recorded in X.cache.ChowRingBas#i. ",
---     EXAMPLE lines ///
---     X=projectiveSpace 4
---     nefCone(2,X)
---     ///,
---     EXAMPLE lines ///
---     X=hirzebruchSurface 1;
---     nefCone(1,X)
---     ///,
-}     
+doc ///
+     Key
+       nefCone
+     Headline
+       the cone of nef T-invariant i-cycles   
+     Usage
+       nefCone(i,X)
+     Inputs
+       i:ZZ
+       X:NormalToricVariety
+     Outputs
+       :Matrix
+         whose columns are the generators for the cone of nef i-cycles
+     Description
+       Text
+         A cycle is nef if it intersects every effective cycle of
+         complementary dimension nonnegatively.
+	 This is currently only implemented for smooth toric varieties.
+	 The columns are given in a basis for the i-th Chow group
+         recorded in X.cache.ChowGroupBas#i and accessed via chowGroupBasis(X).
+       Example
+         X=projectiveSpace 4
+         nefCone(2,X)
+       Example 
+         X=hirzebruchSurface 1;
+	 nefCone(1,X)
+///     
 
 -- document { 
 --      Key => isCartier,
@@ -795,49 +824,61 @@ recorded in X.cache.ChowRingBas#i. ",
      
      
      
-document {
-     Key => SR,
-     Headline => "compute the Chow ring of a smooth toric variety",
-     Usage => "SR(X)",
-     Inputs => {"X" => NormalToricVariety},
-     Outputs => {Ideal => "which defines the relations on the Chow
-ring of X"},
-     "The ring of the ideal has one generator for each ray of X, and
-the ideal is the ideal given in the Stanley-Reisner presentation of
-the cohomology ring of X. ", PARA{},
-     "This assumes that X is smooth.  Eventually it will be
-implemented for simplicial toric varieties. ",
---     Example
---        X = projectiveSpace 2
---        I = SR X
---     	R = ring I
---     	for i from 0 to 2 do <<hilbertFunction(i,R/I)<<endl
---     Text	
---    	PARA{},
---  	"Next we consider the blow-up of P^3 at 2 points. ",
---     Example
---        X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
---     	I = SR X
---     	R = ring I
---     	hilbertFunction(1,R/I)
---     	rank pic X       
---     Text
---     "Note that the degree-one part of the ring has dimension the
---Picard-rank, as expected. ", 
-}
+doc ///
+     Key
+       SR
+     Headline
+       compute the Chow ring of a smooth toric variety
+     Usage
+       SR(X)
+     Inputs 
+       X:NormalToricVariety
+     Outputs
+       :Ideal
+         which defines the relations on the Chow ring of X
+     Description
+       Text 
+         The ring of the ideal has one generator for each ray of X, and
+         the ideal is the ideal given in the Stanley-Reisner presentation of
+         the cohomology ring of X.
+         This assumes that X is smooth.  Eventually it will be
+         implemented for simplicial toric varieties.
+       Example
+         X = projectiveSpace 2
+         I = SR X
+         R = ring I
+         for i from 0 to 2 do <<hilbertFunction(i,R/I)<<endl
+       Text 
+         Next we consider the blow-up of P^3 at 2 points.
+       Example 
+         X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+         I = SR X
+         R = ring I
+         hilbertFunction(1,R/I)
+       Text 
+         Note that the degree-one part of the ring has dimension the Picard-rank, as expected. 
 
-document {
-     Key => isContainedCones,
-     Headline => "decide if one cone is contained inside another",
-     Usage => "isContainedCones(M,N)",
-     Inputs => {"M"=>Matrix, "N"=>Matrix},
-     Outputs => {Boolean},
-     "Returns true if the cone generated by the columns of the matrix
-M is contained in the cone generated by the columns of the matrix N.
-",
-"This currently assumes that both cones are full-dimensional, and is implemented in 
-a somewhat hackish manner."
-}
+///
+
+doc ///
+     Key
+        isContainedCones
+     Headline
+        decide if one cone is contained inside another
+     Usage
+        isContainedCones(M,N)
+     Inputs
+        M:Matrix
+	N:Matrix
+     Outputs
+       :Boolean
+          Returns true if the cone generated by the columns of the matrix
+     Description
+        Text
+          M is contained in the cone generated by the columns of the matrix N.
+          This currently assumes that both cones are full-dimensional, and is implemented in 
+          a somewhat hackish manner.
+///
 ---------------------------------------------------------------------------
 -- TEST
 ---------------------------------------------------------------------------
@@ -864,6 +905,8 @@ end
 -- SCRATCH SPACE
 ---------------------------------------------------------------------------
  
+restart
+loadPackage "Chow"
 --X is blow-up of P^3 at two points
 raysX={{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}};
 Sigma={{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}};
@@ -920,4 +963,6 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(AA(i,X)))^2;));
 <<summ<<endl;
 
 
-
+uninstallPackage "Chow"
+restart
+installPackage "Chow"
