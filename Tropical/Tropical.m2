@@ -120,11 +120,19 @@ isBalanced (TropicalCycle):= T->(
 
 tropicalPrevariety = method(TypicalValue => Fan,  Options => {
 --in the future, more strategies not dependent on "gfan" will be available
-	Strategy=> "gfan"
+	Strategy=> "gfan",
+	Symmetry=> {}
 	})
 
- 
-tropicalPrevariety (List) := o -> L -> (gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,"symmetryExploit" => false,"restrict" => false,"stable" => false};
+--- if symmetry is not null then call this with symmetry exploit = true and pass the symmetry at the end of the string  
+tropicalPrevariety (List) := o -> L -> ( 
+	local gfanopt;
+	if o.Symmetry == {} then gfanopt=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => false,"restrict" => false,"stable" => false, "Symmetry"=>{}}
+	else 
+	gfanopt=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => true,"restrict" => false,"stable" => false, "Symmetry"=>o.Symmetry};
+	
 --using strategy gfan
     if (o.Strategy=="gfan") then (
     	F:= gfanTropicalIntersection(L, gfanopt); 
@@ -216,7 +224,7 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 	ComputeMultiplicities => true,
 	Prime => true,
 	IsHomogeneous=>false,
-	Symmetry => null
+	Symmetry => {}
 	})
 
 
@@ -225,34 +233,40 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 tropicalVariety (Ideal) := o -> (I) ->(
     local F;
     local T;
-	newSym:= o.Symmetry;
+    	
+    newSym:= o.Symmetry;
+    
+    --If Symmetry present, check user has input permutations with the right length. If newSym is {}, any always returns false.
+    M := #(gens ring I);
+    if any(newSym, i ->  #i != M) then
+	return concatenate("Length of list of permutations should be ", toString M);
 	
-    if o.IsHomogeneous==false  then 
+    if o.IsHomogeneous==false then 
     (	 
-	 --First homogenize
-    	R:=ring I;
-    	AA:= symbol AA;
-		S:= coefficientRing(R)[gens R, getSymbol "AA"];
-		-- the index of the last variable of S
-		N:= #gens(S)-1;
-    	----S:= first flattenRing( R[getSymbol "AA", Join=>false]);
+	
+	--First homogenize, append variable AA to the beginning
+    	R := ring I;
+    	AA := symbol AA;
+	
+	--Extend to a new coefficient ring. The added variable is at the beginning.
+	S := first flattenRing(R[AA, Join =>false]);
+
 	J:=substitute(I,S);
-	J=homogenize(J,S_N);
-	J=saturate(J,S_N);
+	J=homogenize(J,S_0);
+	J=saturate(J,S_0);
 	--we transform I in J so that the procedure continues as in the homogeneous case
 	I=J;
 	
-	--if symmetry is not null and we had to homogenize then we adjust the symmetry vectors accordingly.
-	
-	if(newSym =!= null) then
-		newSym=(i->append(i, N))\newSym;
-	
+	--If Symmetry present, adjust the symmetry vectors to the right length and shift the values up by one. If not present, this operates on an empty list.
+	newSym= (i->prepend(0,i)) \
+	            (i -> (j -> j + 1) \ i) \ 
+		        newSym;	
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
 	    --check if resulting fan would be empty
 	    if instance(cone, String) then return cone;
-		if(o.Symmetry === null) then
+		if(newSym == {}) then
 			F= gfanTropicalTraverse cone
 		else	(
 			--print class o.Symmetry;
@@ -1158,8 +1172,7 @@ doc///
 			T=tropicalVariety I;
 			L=linealitySpace T
 			    
-///
-	    
+///	    
     	
 ----- TESTS -----
 
@@ -1356,7 +1369,18 @@ F:=tropicalPrevariety({x+y+z+w,x^2+y*z})
 assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
 ///
 
+TEST///
+QQ[x,y,z,w]
+F:=tropicalPrevariety({x+y+z+w,x^2+y*z}, Symmetry=>{{0,2,1,3}})
+assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
+///
 
+
+TEST///
+QQ[x,y]
+F:=tropicalPrevariety({x+y+1}, Symmetry=>{{0,1}})
+assert((rays F) == matrix {{1,-1,0},{0,-1,1}})
+///
 
 -----------------------
 --stableIntersection
@@ -1448,7 +1472,15 @@ assert ((rays T)== (matrix {{-1, 0, 3}, {1, -3, 0}, {0, -1, 1}}))
 assert((linealitySpace T)==( matrix {{0}, {0}, {1}} ))
 assert((maxCones T)==( {{1}, {0}, {2}}))
 assert((multiplicities T)==( {1, 1, 1}))
-
+--symmetry and homogenious 
+QQ[x,y, z]
+I=ideal(x^2+y^2+z^2)
+G=tropicalVariety(I, Symmetry=>{{1, 0, 2}, {1, 2, 0}, {2, 0, 1}})
+assert ((rays G)==(matrix {{2, -1, -1},{-1, 2, -1}, {-1, -1, 2}}))
+--symmetry and non-homogenious 
+QQ[x,y]
+G=tropicalVariety(ideal(x+y+1), Symmetry=>{{0,1}})
+assert((rays G) == matrix {{1,-1,0},{0,-1,1}})
 
 ///
 

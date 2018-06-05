@@ -126,6 +126,9 @@ AA=(i,X) -> (
      -- Get the faces of dim i, i-1
      sigmaCodimi := orbits(X,n-i);
      tauCodimiminus1 := orbits(X,n-i+1);
+     if i == 1 then (
+	 tauCodimiminus1 = {{}};
+     );
      if #tauCodimiminus1 > 0 then (
          --Create the relations (Fulton-Sturmfels eqtn 1, p337)
      Relns:=apply(tauCodimiminus1, tau -> (
@@ -741,7 +744,6 @@ doc ///
          chowGroupBasis(X)
          chowGroupBasis(X,2) -- a basis for divisors on this threefold
 ///
-end
 
 
 doc ///
@@ -899,6 +901,14 @@ for i from 0 to 6 do
      assert(rank AA(i,X) == hilbertFunction(i,R/I))
 ///
 
+TEST ///
+assert(4 == 5)
+///
+
+TEST ///
+assert (4==4)
+///
+
 end
 
 ---------------------------------------------------------------------------
@@ -965,4 +975,6 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(AA(i,X)))^2;));
 
 uninstallPackage "Chow"
 restart
+--loadPackage "Chow"
 installPackage "Chow"
+check "Chow"

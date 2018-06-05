@@ -2278,16 +2278,35 @@ gfanTropicalIntersection = method( Options => {
 	"symmetryPrinting" => false,
 	"symmetryExploit" => false,
 	"restrict" => false,
-	"stable" => false
+	"stable" => false,
+	"Symmetry" => {}
 	}
 )
 
 gfanTropicalIntersection (List) := opts -> (L) -> (
+	local newOpts;
+	newOpts=new OptionTable from {	
+	"tropicalbasistest" => opts#"tropicalbasistest",
+	"tplane" => opts#"tplane",
+	"symmetryPrinting" => opts#"symmetryPrinting",
+	"symmetryExploit" => opts#"symmetryExploit",
+	"restrict" => opts#"restrict",
+	"stable" => opts#"stable"};
+
 	(ringMap, newL) := gfanConvertToNewRing(L);
 	L = newL;
 	input := gfanRingToString(ring first L) | gfanPolynomialListToString(L);
+	
+	local s;
 
-	s:=runGfanCommand("gfan _tropicalintersection", opts, input);
+	if opts#"Symmetry" == {} then
+		s=runGfanCommand("gfan _tropicalintersection", newOpts, input)
+	else (
+		stringSymmetry:=gfanVectorListToString(opts#"Symmetry");
+		newInput := input | stringSymmetry;
+		s=runGfanCommand("gfan _tropicalintersection", newOpts, newInput);
+	);
+
 	tropicalBasisOutput:=s_0;--this is 0 if not tropical basis and 1 otherwise.
 	if ((opts#"tropicalbasistest")==false) then (return gfanParsePolyhedralFan s)
 	else 
