@@ -125,7 +125,13 @@ AA=(i,X) -> (
      n:=dim X;
      -- Get the faces of dim i, i-1
      sigmaCodimi := orbits(X,n-i);
-     tauCodimiminus1 := orbits(X,n-i+1);
+     if i == 0 then (
+	if #sigmaCodimi == 0 then (
+	    sigmaCodimi = {{}};
+	);
+        X.cache.Chow#i = ZZ^(#sigmaCodimi);
+	return X.cache.Chow#i;   
+     ) else tauCodimiminus1 := orbits(X,n-i+1);
      if i == 1 then (
 	 tauCodimiminus1 = {{}};
      );
@@ -899,14 +905,6 @@ R=QQ[x,y]
 I=ideal(x^4,y^4)
 for i from 0 to 6 do
      assert(rank AA(i,X) == hilbertFunction(i,R/I))
-///
-
-TEST ///
-assert(4 == 5)
-///
-
-TEST ///
-assert (4==4)
 ///
 
 end
