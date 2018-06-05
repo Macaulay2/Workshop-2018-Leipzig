@@ -23,6 +23,13 @@ formalLog = f -> (
     )
 
 
+cTM = d -> (
+    R:=QQ[k_1..k_d][t]/t^(d+1);
+    cumulantsum := sum for i from 1 to d list (k_i*t^i/(i!));
+    expcumulantsum :=  1+sum for i from 1 to d list (cumulantsum^i/(i!));
+    d!*coefficient(t^d,expcumulantsum)
+    )
+
 -- TEST --
 
 R = QQ[x,y]
