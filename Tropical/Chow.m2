@@ -666,16 +666,17 @@ nefEqualsIntersection=(i,X)->(
 ---------------------------------------------------------------------------
 beginDocumentation()
 
-document { 
-     Key => Chow,
-     Headline => "intersection theory for normal toric varieties",
-     "This is a subpackage for eventual inclusion into Greg Smith's
-NormalToricVarieties package",
-     PARA{},     
-     "It contains routines to do compute the Chow ring and groups of a
-normal toric variety, plus compute the nef and effective cones of
-cycles." 
-     }  
+doc ///
+    Key
+        Chow
+    Headline
+        intersection theory for normal toric varieties
+    Description
+        Text
+            This is a subpackage for eventual inclusion into Greg Smith's NormalToricVarieties package
+        Text 
+            It contains routines to do compute the Chow ring and groups of a normal toric variety, plus compute the nef and effective cones of cycles.
+///
 
 -- document { 
 --      Key => {(cones, ZZ, NormalToricVariety)},
