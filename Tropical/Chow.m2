@@ -678,75 +678,70 @@ doc ///
             It contains routines to do compute the Chow ring and groups of a normal toric variety, plus compute the nef and effective cones of cycles.
 ///
 
--- document { 
---      Key => {(cones, ZZ, NormalToricVariety)},
---      Headline => "the i-dimensional cones of the fan of X",
---      Usage => "cones(i,X)",
---      Inputs => {"i" => ZZ, "X" => NormalToricVariety},
---      Outputs => {List => " of lists; each entry is the index set of
--- rays in an i-dimensional cone of the fan of X."},
---      "This procedure produces a list of the i-dimensional cone of the fan of a toric variety X",
---      EXAMPLE lines ///
--- 	  X = projectiveSpace 2;
--- 	  cones(2,X)
--- 	  max X
--- 	  cones(1,X)
--- 	  rays X
--- 	  ///,
--- 	  "Note that an i-dimensional cone may have more than i extreme rays",
---      EXAMPLE lines ///
--- 	  X=normalToricVariety({{1,0,0},{1,2,0},{1,2,2},{1,0,2},{-1,-1,-1}}, {{0,1,2,3},{0,1,4}, {1,2,4},{2,3,4},{0,3,4}});
--- 	  cones(3,X)
--- 	  ///,
---      }
 
+doc ///
+  Key
+      AA
+  Headline
+      Chow rings for toric varieties
+  Usage
+      AA(i,X)
+  Inputs
+      i:ZZ
+      X:NormalToricVariety
+  Outputs
+      :Module
+         the codim-i Chow group $A^i(X)$, an abelian group (a  ZZ-module)
+  Description
+      Text
+         This procedure computes the ith Chow group of the NormalToricVariety X. It produces it as the cokernel of a matrix, 
+	 following the description given in Proposition 2.1 of Fulton-Sturmfels
+	 Intersection Theory on toric varieties (Topology, 1996). 
+      Text
+         It is cached in X.cache.Chow#i.
+      Text 
+         ???say something about pruning map.
+      Text 
+         These groups are all one-dimensional for projective space.  
+      Example 
+         X = projectiveSpace 4
+	 rank AA(1,X) 
+	 rank AA(2,X) 
+	 rank AA(3,X)
+      Text
+         We next consider the blow-up of P^3 at two points.
+      Example
+         X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+         AA(1,X) 
+         AA(2,X)
+/// 	 
 
-document { 
-     Key => AA,
-     Headline => "Chow rings for toric varieties",
-     Usage => "AA(i,X)",
-     Inputs => {"i" => ZZ, "X" => NormalToricVariety},
-     Outputs => {"the codim-i Chow group $A^i(X)$, an abelian group (a  ZZ-module)"},
-     "This procedure computes the ith Chow group of the
-NormalToricVariety X.  It produces it as the cokernel of a matrix,
-following the description given in Proposition 2.1 of Fulton-Sturmfels
-\" Intersection Theory on toric varieties \" (Topology, 1996).",
-PARA{}, "It is cached in X.cache.Chow#i. ", 
-" ???say something about pruning map ", 
-PARA{},
-" These groups are all one-dimensional for projective space. ", 
-EXAMPLE lines /// 
-X = projectiveSpace 4 
-rank AA(1,X) 
-rank AA(2,X) 
-rank AA(3,X)
-///, 
-"We next consider the blow-up of P^3 at two points." ,
-EXAMPLE lines ///
-X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
-AA(1,X) 
-AA(2,X) 
-/// 
-}
-
-document {
-    Key => chowGroupBasis,
-    Headline => "the basis of the Chow group in dim i",
-    Usage => "chowGroupBasis(X) or chowGroupBasis(X,i)",
-    Inputs => {"X" => NormalToricVariety, "i" => ZZ},
-    Outputs => {"a basis for the ith Chow group (a ZZ-module)"},
-    "This method returns the cached basis for the Chow group of dimension-i cycles on X.  
-    If called without i, it returns a list so that chowGroupBasis(X)#i = chowGroupBasis(X,i).",
-    EXAMPLE lines ///
-    X = projectiveSpace 4 
-    chowGroupBasis(X)
-    ///,
-    EXAMPLE lines ///
-    X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
-    chowGroupBasis(X)
-    chowGroupBasis(X,2) -- a basis for divisors on this threefold
-    ///
-}
+doc ///
+    Key
+        chowGroupBasis
+    Headline
+        the basis of the Chow group in dim i
+    Usage
+        chowGroupBasis(X) or chowGroupBasis(X,i)
+    Inputs
+        X:NormalToricVariety
+	i:ZZ
+    Outputs
+        :Module
+	   a basis for the ith Chow group (a ZZ-module)
+    Description
+       Text 
+         This method returns the cached basis for the Chow group of dimension-i cycles on X.  
+	 If called without i, it returns a list so that chowGroupBasis(X)#i = chowGroupBasis(X,i).
+       Example
+         X = projectiveSpace 4 
+         chowGroupBasis(X)
+       Example
+         X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
+         chowGroupBasis(X)
+         chowGroupBasis(X,2) -- a basis for divisors on this threefold
+///
+end
 
 
 document {
