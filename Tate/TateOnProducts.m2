@@ -1773,10 +1773,10 @@ bgg Module := P -> (
 --define the modules as direct sums, with one degree per summand
     scan(toList(minM..maxM), i->
 	RM#(-i) = directSum apply(unique freeModuleDegs#(-i), d -> 
-	    S^(select(freeModuleDegs#(-i), k-> d ==k))));
+	    E^(select(freeModuleDegs#(-i), k-> d ==k))));
 --define the maps
-    tar:=E^0; sour := E^0; utar := {};usour := {}; a:= 0;a':=0;
-    u := L->unique degrees L;
+    tar=E^0; sour := E^0; utar := {};usour := {}; a:= 0;a':=0;
+    u = L->unique degrees L;
     scan(toList(min RM..max RM-1), k->(
 	    tar = RM_(k-1);
 	    sour = RM_k;
@@ -1798,11 +1798,20 @@ bgg Module := P -> (
 
 ///
 restart
-
+(RM.dd)^2
+betti RM
+apply(min RM..max RM-1, i-> HH_i RM)
+HH_0 RM
 loadPackage("TateOnProducts", Reload=>true)
 (S,E) = productOfProjectiveSpaces{1,1}
 P = module ideal vars S
 LengLim = 5
+#utar
+#usour
+i=0, j=0
+ring tar_[i]
+ring multMapE(M,a',a)
+ring (sour^[j])
 ///
 
 isSurjection = (A,B)->(
