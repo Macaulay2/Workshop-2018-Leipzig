@@ -1,53 +1,25 @@
--- newPackage(
---               "linearTruncations",
---               Version => "0.1", 
---               Date => "",
---               Authors => {{Name => "", 
---                         Email => "", 
---                         HomePage => ""}},
---               Headline => "",
---               DebuggingMode => false
---               )
+newPackage(
+    "LinearTruncations",
+    Version => "0.1",
+    Date => "June 6, 2018",
+    Authors => {
+	{ Name => "", Email => "", HomePage => "" }
+	},
+    Headline => "A new package",
+    DebuggingMode => false
+    )
 
-      export {}
+export {
+    "LL",
+    "linearTruncations",
+    "multigradedPolynomialRing",
+    "coarseMultigradedRegularity",
+    -- Options
+    "CoefficientField",
+    "Simple"
+    }
 
-      -- Code here
-
-      beginDocumentation()
-
--*
-      doc ///
-      Key
-        linearTruncations
-      Headline
-      Description
-        Text
-        Example
-      Caveat
-      SeeAlso
-      ///
-
-      doc ///
-      Key
-      Headline
-      Usage
-      Inputs
-      Outputs
-      Consequences
-      Description
-        Text
-        Example
-        Code
-        Pre
-      Caveat
-      SeeAlso
-      ///
-
-      TEST ///
-      -- test code and assertions here
-      -- may have as many TEST sections as needed
-      ///
-*-
+-- Code here
 
 multigradedPolynomialRing = method(Options=>
     {CoefficientField=>ZZ/32003,
@@ -82,6 +54,7 @@ findMins = L->(
     I := ideal apply(L, ell-> product(t, j-> P_j^(ell_j)));
     apply(flatten entries mingens I, m-> flatten exponents m)
     )
+
 ---------------
 
 coarseMultigradedRegularity = method()
@@ -142,13 +115,49 @@ isInterval = L-> (
 
 -------------------------
 
+beginDocumentation()
+
+-*
+doc ///
+Key
+  LinearTruncations
+Headline
+Description
+  Text
+  Example
+Caveat
+SeeAlso
+///
+
+doc ///
+Key
+Headline
+Usage
+Inputs
+Outputs
+Consequences
+Description
+  Text
+  Example
+  Code
+  Pre
+Caveat
+SeeAlso
+///
+
+TEST ///
+-- test code and assertions here
+-- may have as many TEST sections as needed
+///
+*-
+
 --------------------------------------------------------
 end--
 --------------------------------------------------------
 restart
-load"linearTruncations.m2"
-needsPackage"RandomIdeals"
-randomBinomialIdeal
+needsPackage "LinearTruncations"
+needsPackage "RandomIdeals"
+
 S = multigradedPolynomialRing{1,1}	
 S' = coefficientRing S[gens S]
 ran = L -> substitute(randomMonomialIdeal(L,S'), S)
@@ -210,4 +219,4 @@ M = S^1/ideal random(S^1, S^{2:{0,-2},2:-{2,3},2:-{2,0}})
 linearTruncations M
 coarseMultigradedRegularity M
 
-cokernel | x_(0,1)^2x_(1,0) x_(0,0)^2x_(0,1)x_(1,0) x_(1,0)^3x_(1,1)^2 x_(0,1)x_(1,0)^3x_(1,1) x_(0,0)^4x_(0,1) x_(0,1)x_(1,0)^5 
+cokernel | x_(0,1)^2x_(1,0) x_(0,0)^2x_(0,1)x_(1,0) x_(1,0)^3x_(1,1)^2 x_(0,1)x_(1,0)^3x_(1,1) x_(0,0)^4x_(0,1) x_(0,1)x_(1,0)^5
