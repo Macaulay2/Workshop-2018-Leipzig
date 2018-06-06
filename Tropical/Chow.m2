@@ -214,7 +214,7 @@ chowGroup=(i,X) -> (
 SR=X->(
      if not X.cache.?ChowRingIdeal then (
 	  z:=symbol z;
-     	  R:=QQ[z_1..z_#(rays X)];
+     	  R:=QQ[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
@@ -240,7 +240,7 @@ SR=X->(
 intersectionRing=X->(
      if not X.cache.?IntersectionRing then (
 	  z:=symbol z;
-     	  R:=QQ[z_1..z_#(rays X)];
+     	  R:=QQ[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
@@ -898,6 +898,27 @@ for i from 0 to 6 do
      assert(rank chowGroup(i,X) == hilbertFunction(i,R/I))
 ///
 
+--do P2 blown up at a point Z[H,E]/(H^3, E^2 + H^2, E^3)
+TEST ///
+rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+coneList={{0,1},{1,2},{2,3},{3,0}}
+X = normalToricVariety(rayList,coneList)
+assert(rank AA(0,X) == 1)
+assert(rank AA(1,X) == 2)
+assert(rank AA(2,X) == 1)
+///
+
+
+--do P1xP1 -> P3 Z[H,K]/(H^2, K^2)
+TEST ///
+rayList={{1,0},{0,1},{-1,0},{0,-1}}
+coneList={{0,1},{1,2},{2,3},{3,0}}
+X = normalToricVariety(rayList,coneList)
+assert(rank AA(1,X) == 2)
+assert(rank AA(2,X) == 1)
+assert(rank AA(0,X) == 1)
+///
+
 end
 
 ---------------------------------------------------------------------------
@@ -964,6 +985,6 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(chowGroup(i,X)))^2;));
 
 uninstallPackage "Chow"
 restart
---loadPackage "Chow"
+loadPackage "Chow"
 installPackage "Chow"
 check "Chow"
