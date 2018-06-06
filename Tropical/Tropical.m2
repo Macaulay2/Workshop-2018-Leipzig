@@ -142,21 +142,27 @@ isBalanced (TropicalCycle):= T->(
 tropicalPrevariety = method(TypicalValue => Fan,  Options => {
 --in the future, more strategies not dependent on "gfan" will be available
 	Strategy=> "gfan",
-	Symmetry=> {}
 	})
-
---- if symmetry is not null then call this with symmetry exploit = true and pass the symmetry at the end of the string  
+  
 tropicalPrevariety (List) := o -> L -> ( 
-	local gfanopt;
-	if o.Symmetry == {} then gfanopt=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
-	"symmetryExploit" => false,"restrict" => false,"stable" => false, "Symmetry"=>{}}
-	else 
-	gfanopt=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
-	"symmetryExploit" => true,"restrict" => false,"stable" => false, "Symmetry"=>o.Symmetry};
+	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => false,"restrict" => false,"stable" => false};
 	
 --using strategy gfan
     if (o.Strategy=="gfan") then (
     	F:= gfanTropicalIntersection(L, gfanopt); 
+--gives only the fan and not the fan plus multiplicities which are wrongly computed in gfan
+	if (Tropical#Options#Configuration#"tropicalMax" == true) then return F_0 else return minmaxSwitch (F_0))
+    else error "options not valid"
+)
+
+tropicalPrevariety (List, List) := o -> (L, symmetryList) -> ( 
+	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => true,"restrict" => false,"stable" => false};
+	
+--using strategy gfan
+    if (o.Strategy=="gfan") then (
+    	F:= gfanTropicalIntersection(L, symmetryList, gfanopt); 
 --gives only the fan and not the fan plus multiplicities which are wrongly computed in gfan
 	if (Tropical#Options#Configuration#"tropicalMax" == true) then return F_0 else return minmaxSwitch (F_0))
     else error "options not valid"
@@ -1410,20 +1416,20 @@ assert(isBalanced G == false)
 
 TEST///
 QQ[x,y,z,w]
-F:=tropicalPrevariety({x+y+z+w,x^2+y*z})
+F=tropicalPrevariety({x+y+z+w,x^2+y*z})
 assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
 ///
 
 TEST///
 QQ[x,y,z,w]
-F:=tropicalPrevariety({x+y+z+w,x^2+y*z}, Symmetry=>{{0,2,1,3}})
+F=tropicalPrevariety({x+y+z+w,x^2+y*z}, {{0,2,1,3}})
 assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
 ///
 
 
 TEST///
 QQ[x,y]
-F:=tropicalPrevariety({x+y+1}, Symmetry=>{{0,1}})
+F=tropicalPrevariety({x+y+1}, {{1,0}})
 assert((rays F) == matrix {{1,-1,0},{0,-1,1}})
 ///
 
@@ -1517,14 +1523,14 @@ assert ((rays T)== (matrix {{-1, 0, 3}, {1, -3, 0}, {0, -1, 1}}))
 assert((linealitySpace T)==( matrix {{0}, {0}, {1}} ))
 assert((maxCones T)==( {{1}, {0}, {2}}))
 assert((multiplicities T)==( {1, 1, 1}))
---symmetry and homogenious 
+--symmetry and homogeneous 
 QQ[x,y, z]
 I=ideal(x^2+y^2+z^2)
 G=tropicalVariety(I, Symmetry=>{{1, 0, 2}, {1, 2, 0}, {2, 0, 1}})
 assert ((rays G)==(matrix {{2, -1, -1},{-1, 2, -1}, {-1, -1, 2}}))
---symmetry and non-homogenious 
+--symmetry and non-homogeneous 
 QQ[x,y]
-G=tropicalVariety(ideal(x+y+1), Symmetry=>{{0,1}})
+G=tropicalVariety(ideal(x+y+1), Symmetry=>{{1,0}})
 assert((rays G) == matrix {{1,-1,0},{0,-1,1}})
 
 ///

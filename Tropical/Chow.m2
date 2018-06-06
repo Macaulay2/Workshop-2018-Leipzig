@@ -1,10 +1,4 @@
 
-
-needsPackage "FourierMotzkin";
-needsPackage "Polyhedra";
-needsPackage "NormalToricVarieties";
-
-
 newPackage(
      "Chow",
      Version => "0.5",
@@ -14,7 +8,9 @@ newPackage(
        	       Email => "D.Maclagan@warwick.ac.uk",
 	       HomePage => "http://www.warwick.ac.uk/staff/D.Maclagan"}},
      Headline => "Chow computations for toric varieties",
-     DebuggingMode => true
+     DebuggingMode => true,
+     PackageImports => {"FourierMotzkin", "Polyhedra"},
+     PackageExports => {"NormalToricVarieties"}
      )
 
 export { 
@@ -26,24 +22,20 @@ export {
      "isContainedCones",
      "nefEqualsIntersection",
      "chowGroupBasis",
-     "Mob",
      "Lcone",
      "Lconeb",
      "LconevsNef",
-     "IntersectionRing"
+     "IntersectionRing",
+     "intersectionRing"
      }
 
-
+protect Mob
 protect ChowGroupBas 
 protect ChowRingIdeal
 
 ---------------------------------------------------------------------------
 -- CODE
 ---------------------------------------------------------------------------
-
-needsPackage "FourierMotzkin";
-needsPackage "Polyhedra";
-needsPackage "NormalToricVarieties";
 
 --Is A contained in B?
 --A, B lists
@@ -118,7 +110,7 @@ intersectCones=(M,N)-> (
 
 --Chow
 -- i is codim
-AA=(i,X) -> ( 
+chowGroup=(i,X) -> ( 
      if i>dim(X) then error("i > dim(X)");
      if not(X.cache.?Chow) then X.cache.Chow = new MutableHashTable;
      if not(X.cache.Chow#?i) then (
@@ -220,10 +212,11 @@ AA=(i,X) -> (
 
 
 --Create SR ideal
-SR=X->(
-     if not X.cache.?ChowRingIdeal then (
+SR = method()
+SR(NormalToricVariety, Ring) := (X, S) -> (
+     if (not X.cache.?ChowRingIdeal) or (not coefficientRing(ring(X.cache.ChowRingIdeal)) === S) then (
 	  z:=symbol z;
-     	  R:=QQ[z_0..z_(#(rays X)-1)];
+     	  R:=S[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
@@ -243,13 +236,15 @@ SR=X->(
      );
      X.cache.ChowRingIdeal
 );
+SR(NormalToricVariety) := X -> (SR(X,QQ));
 
 
 --Create SR ideal
-intersectionRing=X->(
-     if not X.cache.?IntersectionRing then (
+intersectionRing = method()
+intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
+     if (not X.cache.?IntersectionRing) or (not coefficientRing(X.cache.IntersectionRing) === S) then (
 	  z:=symbol z;
-     	  R:=QQ[z_0..z_(#(rays X)-1)];
+     	  R:=S[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
@@ -269,7 +264,7 @@ intersectionRing=X->(
      );
      X.cache.IntersectionRing
 );
-
+intersectionRing(NormalToricVariety) := X -> (intersectionRing(X,QQ));
 
 --Compute a basis for the Chow ring
 chowGroupBasis = method()
@@ -300,7 +295,7 @@ nefCone=(i,X)->(
      I:=SR(X);
      R:=ring I;
      --Now create the multiplication map
-     --First get a basis for AA_i
+     --First get a basis for chowGroup_i
      chowBas:=chowGroupBasis(X,i);
      mono:=1_R;
      for i in (max X)_0 do mono=mono*R_i;
@@ -337,7 +332,7 @@ nefCone2=(k,i,X)->(
      I:=SR(X);
      R:=ring I;
      --Now create the multiplication map
-     --First get a basis for AA_k
+     --First get a basis for chowGroup_k
      if not X.cache.?ChowGroupBas then
      	  X.cache.ChowGroupBas = new MutableHashTable;
      if not X.cache.ChowGroupBas#?(n-k) then 	  
@@ -380,7 +375,7 @@ Mob=(k,i,X)->(
      K:=coefficientRing R;
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
-     --First get a basis for AA_k
+     --First get a basis for chowGroup_k
      chowBask:=chowGroupBasis(X,n-k);
      --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
      --???need to edit from here.	  
@@ -425,7 +420,7 @@ Lcone=(k,i,X)->(
      K:=coefficientRing R;
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
-     --First get a basis for AA_k
+     --First get a basis for chowGroup_k
      chowBask:=chowGroupBasis(X,n-k);
      --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
      --???need to edit from here.	  
@@ -483,7 +478,7 @@ Lconeb=(k,i,X)->(
      K:=coefficientRing R;
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
-     --First get a basis for AA_k
+     --First get a basis for chowGroup_k
      chowBask:=chowGroupBasis(X,n-k);
      --We loop through j from 0 to i, and compute for each j 
      --the facets of the cone pos(V(sigma) : V(sigma).V(tau) is effective for all
@@ -558,7 +553,7 @@ i:=k;
      K:=coefficientRing R;
      coeffMap:=map(K, R, apply(numgens R,m->1_K));
      --Now create the multiplication map
-     --First get a basis for AA_k
+     --First get a basis for chowGroup_k
      chowBask:=chowGroupBasis(X,n-k);
      --We loop through j from 0 to i, and compute for each j 
      --the facets of the cone pos(V(sigma) : V(sigma).V(tau) is effective for all
@@ -638,7 +633,7 @@ effCone=(i,X)->(
 --???temporary working code???
 
 nefEqualsIntersection=(i,X)->(
-     d:=rank(AA(i,X));
+     d:=rank(chowGroup(i,X));
      nefc:=nefCone(i,X);
      eff:=effCone(i,X);
      n:=rank source eff;
@@ -690,11 +685,11 @@ doc ///
 
 doc ///
   Key
-      AA
+      chowGroup
   Headline
       Chow rings for toric varieties
   Usage
-      AA(i,X)
+      chowGroup(i,X)
   Inputs
       i:ZZ
       X:NormalToricVariety
@@ -714,15 +709,15 @@ doc ///
          These groups are all one-dimensional for projective space.  
       Example 
          X = projectiveSpace 4
-	 rank AA(1,X) 
-	 rank AA(2,X) 
-	 rank AA(3,X)
+	 rank chowGroup(1,X) 
+	 rank chowGroup(2,X) 
+	 rank chowGroup(3,X)
       Text
          We next consider the blow-up of P^3 at two points.
       Example
          X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
-         AA(1,X) 
-         AA(2,X)
+         chowGroup(1,X) 
+         chowGroup(2,X)
 /// 	 
 
 doc ///
@@ -894,8 +889,8 @@ doc ///
 --Replace X by something more interesting
 TEST ///
 X=projectiveSpace 4
-assert(rank AA(3,X) == rank AA(1,X))
-assert(rank AA(3,X) == rank picardGroup X)
+assert(rank chowGroup(3,X) == rank chowGroup(1,X))
+assert(rank chowGroup(3,X) == rank picardGroup X)
 /// 
 
 TEST ///
@@ -904,7 +899,7 @@ X=kleinschmidt(6,A)
 R=QQ[x,y]
 I=ideal(x^4,y^4)
 for i from 0 to 6 do
-     assert(rank AA(i,X) == hilbertFunction(i,R/I))
+     assert(rank chowGroup(i,X) == hilbertFunction(i,R/I))
 ///
 
 --do P2 blown up at a point Z[H,E]/(H^3, E^2 + H^2, E^3)
@@ -927,6 +922,7 @@ assert(rank AA(1,X) == 2)
 assert(rank AA(2,X) == 1)
 assert(rank AA(0,X) == 1)
 ///
+
 
 end
 
@@ -988,7 +984,7 @@ X=resolveSingularities weightedProjectiveSpace(W);
 summ=0;
 I=SR(X);
 R=ring I;
-scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(AA(i,X)))^2;));
+scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(chowGroup(i,X)))^2;));
 <<summ<<endl;
 
 
