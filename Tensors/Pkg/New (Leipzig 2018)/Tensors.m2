@@ -180,6 +180,11 @@ TensorSpace ** TensorSpace := (V,W) -> (
 	}
     )
 
+factors = method()
+factors(TensorSpace) := V -> (
+	return for i in 0..#(V#dims)-1 list (tensorSpace(V#baseRing,symbol x,{(V#dims)#i}))
+	)
+
 TensorSpace k** TensorSpace := (V,W) -> (
     if V#baseRing =!= W#baseRing then (
 	return "error: base rings are different"
