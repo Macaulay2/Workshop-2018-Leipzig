@@ -9,25 +9,18 @@ peek loadedFiles
 check "TateOnProducts"
 ///
 newPackage(
-	"TateOnProducts",
-    	Version => "0.3", 
-    	Date => "Mai 31, 2018",
-    	Authors => { {Name => "Daniel Erman", 
-		  Email => "derman@math.wisc.edu", 
-		  HomePage => "http://www.math.wisc.edu/~derman/"},
-	         {Name => "David Eisenbud", 
-		  Email => "de@msri.org", 
-		  HomePage => "http://www.msri.org/~de/"},
-	         {Name => "Frank-Olaf Schreyer", 
-		  Email => "schreyer@math.uni-sb.de", 
-		  HomePage => "http://www.math.uni-sb.de/ag/schreyer/"},
-	          {Name => "Michael E. Stillman", 
-		   Email => "mike@math.cornell.edu", 
-		  HomePage => "http://www.math.cornell.edu/People/Faculty/stillman.html"}
-                    },          
-    	Headline => "Tate resolutions on products of projective spaces",
-    	DebuggingMode => true
-    	)
+    "TateOnProducts",
+    Version => "0.3",
+    Date => "Mai 31, 2018",
+    Headline => "Tate resolutions on products of projective spaces",
+    Authors => {
+	{ Name => "Daniel Erman",        Email => "derman@math.wisc.edu",    HomePage => "http://www.math.wisc.edu/~derman/" },
+	{ Name => "David Eisenbud",      Email => "de@msri.org",             HomePage => "http://www.msri.org/~de/" },
+	{ Name => "Frank-Olaf Schreyer", Email => "schreyer@math.uni-sb.de", HomePage => "http://www.math.uni-sb.de/ag/schreyer/" },
+	{ Name => "Michael E. Stillman", Email => "mike@math.cornell.edu",   HomePage => "http://www.math.cornell.edu/People/Faculty/stillman.html" }
+	},
+    DebuggingMode => true
+    )
 
 export {
     "symExt",
