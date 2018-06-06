@@ -254,13 +254,12 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 tropicalVariety (Ideal) := o -> (I) ->(
     local F;
     local T;
-    	
     newSym:= o.Symmetry;
-    
+     
     --If Symmetry present, check user has input permutations with the right length. If newSym is {}, any always returns false.
     M := #(gens ring I);
     if any(newSym, i ->  #i != M) then
-	return concatenate("Length of list of permutations should be ", toString M);
+	error ("Length of permutations should be " | M);
 	
     if o.IsHomogeneous==false then 
     (	 
@@ -279,9 +278,12 @@ tropicalVariety (Ideal) := o -> (I) ->(
 	I=J;
 	
 	--If Symmetry present, adjust the symmetry vectors to the right length and shift the values up by one. If not present, this operates on an empty list.
-	newSym= (i->prepend(0,i)) \
-	            (i -> (j -> j + 1) \ i) \ 
-		        newSym;	
+    	  --o.Symmetry is a list of lists. Iterate over each element. Each element is a list. Increase the values of these lists by 1.
+	newSym = for indexPermutation to (#newSym - 1) list --make a list with the following values 
+	             apply(newSym#indexPermutation, j -> j + 1);
+          --Prepend a 0.
+        newSym = apply(newSym, listRepresentingPermutation -> prepend(0, listRepresentingPermutation));
+	print newSym;
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
