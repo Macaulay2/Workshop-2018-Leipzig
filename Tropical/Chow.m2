@@ -25,7 +25,8 @@ export {
      "Lcone",
      "Lconeb",
      "LconevsNef",
-     "IntersectionRing"
+     "IntersectionRing",
+     "intersectionRing"
      }
 
 protect Mob
@@ -211,10 +212,11 @@ chowGroup=(i,X) -> (
 
 
 --Create SR ideal
-SR=X->(
-     if not X.cache.?ChowRingIdeal then (
+SR = method()
+SR(NormalToricVariety, Ring) := (X, S) -> (
+     if (not X.cache.?ChowRingIdeal) or (not coefficientRing(ring(X.cache.ChowRingIdeal)) === S) then (
 	  z:=symbol z;
-     	  R:=QQ[z_0..z_(#(rays X)-1)];
+     	  R:=S[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
@@ -234,13 +236,15 @@ SR=X->(
      );
      X.cache.ChowRingIdeal
 );
+SR(NormalToricVariety) := X -> (SR(X,QQ));
 
 
 --Create SR ideal
-intersectionRing=X->(
-     if not X.cache.?IntersectionRing then (
+intersectionRing = method()
+intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
+     if (not X.cache.?IntersectionRing) or (not coefficientRing(X.cache.IntersectionRing) === S) then (
 	  z:=symbol z;
-     	  R:=QQ[z_0..z_(#(rays X)-1)];
+     	  R:=S[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
@@ -260,7 +264,7 @@ intersectionRing=X->(
      );
      X.cache.IntersectionRing
 );
-
+intersectionRing(NormalToricVariety) := X -> (intersectionRing(X,QQ));
 
 --Compute a basis for the Chow ring
 chowGroupBasis = method()
@@ -918,6 +922,7 @@ assert(rank AA(1,X) == 2)
 assert(rank AA(2,X) == 1)
 assert(rank AA(0,X) == 1)
 ///
+
 
 end
 
