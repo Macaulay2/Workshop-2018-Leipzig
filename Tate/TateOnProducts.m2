@@ -1717,13 +1717,19 @@ betti m
 ///
 
 bgg = method(Options =>{LengthLimit => null})
-bgg Module := P -> (
+bgg Module := o -> P -> (
     (S,E) := (tateData ring P)#Rings;
+    D:= null; Ds:= null;
+    freeModulesDegs:=null;
+    tar:=null;sour:=null;
+    utar:=0;usour:=null;
+    a:=0;a':=0;u:=null;
     if ring P === E then(
-    D := (degrees basis P)_1;
-    Ds := sort apply(D, d->(sum d,d));
+    D = (degrees basis P)_1;
+    Ds = sort apply(D, d->(sum d,d));
     minP := min(Ds/first);
     maxP := max(Ds/first);
+    if o.LengthLimit != null then maxP=min(maxP,minP+1+o.LengthLimit);
     freeModuleDegs := hashTable apply(toList(minP..maxP), i-> 
 	    (-i=>select(Ds,d-> d_0 == i)/last)
 	    );
@@ -1734,8 +1740,7 @@ bgg Module := P -> (
 	LP#(-i) = directSum apply(unique freeModuleDegs#(-i), d -> 
 	    S^(select(freeModuleDegs#(-i), k-> d ==k))));
 --define the maps
-    tar:=S^0; sour := S^0; utar := {};usour := {}; a:= 0;a':=0;
-    u := L->unique degrees L;
+    u = L->unique degrees L;
     scan(toList(min LP+1..max LP), k->(
 	    tar = LP_(k-1);
 	    sour = LP_k;
@@ -1751,21 +1756,17 @@ bgg Module := P -> (
 		     )))
                )
 	);
-   return LP))
-///
-   
+   return LP);
    if ring P === S then (
-
-   if o.LengthLimit == null then LengLim = 1+numgens S else
+   if o.LengthLimit === null then LengLim := 1+numgens S else
                    LengLim = o.LengthLimit;
-   M =P/((ideal vars S)^(LengLim+1));
-
-    D = (degrees basis M)_1
-    Ds := sort apply(D, d->(sum d,d));
+    M := P/((ideal vars S)^(LengLim+1));
+    D = (degrees basis M)_1;
+    Ds = sort apply(D, d->(sum d,d));
     minM := min(Ds/first);
     maxM := max(Ds/first);
 --    (maxM - minM)
-    freeModuleDegs := hashTable apply(toList(minM..maxM), i-> 
+    freeModuleDegs = hashTable apply(toList(minM..maxM), i-> 
 	    (-i=>select(Ds,d-> d_0 == i)/last)
 	    );
     RM := new ChainComplex;
@@ -1775,7 +1776,6 @@ bgg Module := P -> (
 	RM#(-i) = directSum apply(unique freeModuleDegs#(-i), d -> 
 	    E^(select(freeModuleDegs#(-i), k-> d ==k))));
 --define the maps
-    tar=E^0; sour := E^0; utar := {};usour := {}; a:= 0;a':=0;
     u = L->unique degrees L;
     scan(toList(min RM..max RM-1), k->(
 	    tar = RM_(k-1);
@@ -1794,7 +1794,7 @@ bgg Module := P -> (
 	);
    return RM))
        
-///      
+
 
 ///
 restart
@@ -1894,8 +1894,7 @@ document {
        },
     
     SUBSECTION "Missing pieces",
-    UL{ "BGG functor R for complexes of S-modules",
-	"various composition of functions",
+    UL{	"various composition of functions",
 	"Example section:  examples from the paper, jumping lines", 
 	"$Rf_*sF$ for a coherent sheaf
 	$sF$ on $X subset P^{n_1}$ and a morphism $f:X -> P^{n_2}$."
@@ -3591,26 +3590,38 @@ doc ///
    Key
     bgg
     (bgg, Module)
+    [bgg,LengthLimit]
    Headline
-    make a linear free complex from an exterior module
+    make a linear free complex from an module
    Usage
     LP = bgg P
+    RM = bgg(M,LengthLimit=>4)
    Inputs
     P: Module
-     module over an exterior algebra 
+     module over an exterior algebra E
+    M: Module
+      module over an symmetric algebra S 
    Outputs
     LP:ChainComplex
-     over a symmetric algebra 
+     over a symmetric algebra
+    RM:ChainComplex
+     over a exterior algebra 
    Description
     Text
-     Here P is an E-module, and LP is a linear complex of free S-modules,
+     If P is an E-module, then LP becomes a linear complex of free S-modules,
      where (S,E) is the Koszul pair corresponding to a 
-     product of projective spaces. 
+     product of projective spaces.
+     Similarly, if M is an S-module, them RM becomes a linear free complex over 
+     the exterior algebra E of length bounded by the LengthLimit. 
      
      The complex LP is that produced from P by the 
      Bernstein-Gel'fand-Gel'fand functor called L in
      our paper
      @ HREF("http://arxiv.org/abs/","Tate Resolutions on Products of Projective Spaces") @.
+     Similarly, the complex RM produced from M is a bounded piece of the infinite complex of 
+     the Bernstein-Gel'fand-Gel'fand 
+     functor called R in loc.cit. L and R form a pair of adjoint 
+     functors.
     Example
      (S,E) = productOfProjectiveSpaces{1,2}
      P = prune truncate({1,2},E^1)**E^{{1,2}};
@@ -3618,10 +3629,16 @@ doc ///
      netList apply(toList(min LP..max LP), i-> decompose ann HH_i LP)
      M = prune HH_0 LP
      betti res M
-     high = {2,2}
+     high = {3,3}
      cohomologyMatrix(M, -high, high)
+    Example 
+     M=module ideal vars S
+     RM = bgg(M,LengthLimit=>3)
+     betti RM
+     tallyDegrees RM
    SeeAlso
     productOfProjectiveSpaces
+    tallyDegrees
 ///
 
 

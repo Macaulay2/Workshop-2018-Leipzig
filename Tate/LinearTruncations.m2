@@ -90,8 +90,10 @@ linearTruncations Module := M-> (
     candidates := set {};
     scan(L0, ell ->candidates =  candidates+set toList(ell..r));
     candidates = toList candidates;
+    print candidates;
     L := select(candidates, ell -> 
 	isLinearComplex res truncate(ell,M));
+    print L;
     findMins L
     )
 linearTruncations(Module,List) := (M, candidates) ->(
@@ -115,41 +117,118 @@ isInterval = L-> (
 
 -------------------------
 
-beginDocumentation()
-
 -*
-doc ///
-Key
-  LinearTruncations
-Headline
-Description
-  Text
-  Example
-Caveat
-SeeAlso
-///
-
-doc ///
-Key
-Headline
-Usage
-Inputs
-Outputs
-Consequences
-Description
-  Text
-  Example
-  Code
-  Pre
-Caveat
-SeeAlso
-///
-
 TEST ///
 -- test code and assertions here
 -- may have as many TEST sections as needed
 ///
 *-
+
+beginDocumentation()
+
+doc ///
+Key
+   LL
+  (LL,ZZ,ZZ)
+  (LL,ZZ,List)
+Headline
+  t-tuple numbers with sum equal to d
+Usage
+  LL(d,t)
+  LL(d,L)
+Inputs
+  d: ZZ
+    a number 
+  t: ZZ
+    a number
+  L: List
+    a List 
+Outputs
+  L: List
+    a List of t-tuple pairs.
+Description
+  Text
+    This function takes a two numbers (d,t) and gives all the t-tuples paris where the sum of each of them is equal to d.
+  Example
+    S = QQ[x,y,z,Degrees=>{{1,0}, {0,1},{0,1}}]
+    t = degreeLength S
+    d = 5
+    LL(d,t)
+  Text
+    it gives all pairs with total degree d in a ring S.
+///
+///Caveat
+  ?????
+SeeAlso
+  ???????
+///
+
+doc ///
+Key
+   linearTruncations
+  (linearTruncations,Module)
+  (linearTruncations,Module,List)
+Headline
+  compute the minimal pairs when we get linear resolution after truncation
+Usage
+  LinearTruncation(M)
+  LinearTruncation(M,L)
+Inputs
+  M: Module
+    the module that we want to truncate
+  L: List
+    a candidate list to chech if we get linear resolution after truncation or not
+Outputs
+  L: List
+    a List of multigraded degree
+Description
+  Text
+    this function computes the minimal multigraded degree when we get linear resolution after truncating at that multigraded degree. 
+  Example
+    S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
+    I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
+    t = degreeLength S
+    L = LL(regularity (S^1/I), t )
+    linearTruncations(S^1/I)
+    linearTruncations(S^1/I,L)	  
+  Text
+    Note that linearTruncation does not give all the minimal pairs. In the example, linearTruncation give {2,3} but we see that if we trancate at {4,1} we also have linear resolution.
+Caveat
+  ?????
+SeeAlso
+  truncate
+///
+
+doc ///
+Key
+   coarseMultigradedRegularity
+  (coarseMultigradedRegularity,Module)
+Headline
+  this function gives a multidegree where we are sure that truncation at this degree has a linear resolution
+Usage
+  coarseMultigradedRegularity(M)
+Inputs
+  M: Module
+    the module that we want to truncate
+Outputs
+  L: List
+    a list containing just only one multidegree
+Description
+  Text
+    this function gives a pair but probably non minimal when we truncate we get a linear resolution.
+  Example
+    S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
+    I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
+    t = degreeLength S
+    linearTruncations(S^1/I)	 
+    coarseMultigradedRegularity(S^1/I)
+  Text
+    we see that coarseMultigradedRegularity is not a minimal multidegree.
+Caveat
+  ?????
+SeeAlso
+  regularity
+///
 
 --------------------------------------------------------
 end--
@@ -164,6 +243,9 @@ ran = L -> substitute(randomMonomialIdeal(L,S'), S)
 I = ran{3,4,5,5,5,6};
 M = S^1/I
 linearTruncations M
+regularity M
+coarseMultigradedRegularity M
+
 
 netList apply(10, i->(
 I = ran{3,3,7,9};
