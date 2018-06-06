@@ -49,77 +49,10 @@
       ///
 *-
 
---loadPackage("TateOnProducts",Reload=>true)
-resMax = method()
-resMax ChainComplex :=  F -> (
-    --we assume F starts in homol degree 0.
-    el := length F;
-    r := degreeLength ring F;
-    D := apply((min F..max F-1), i-> unique degrees F_i);
-    --replace with D = hashTable
-    L := flatten apply(
-	length D, i-> apply(
-	    D_i, s -> s-toList(r:i)));
-    regs := apply(r, p-> max(apply(L, q-> q_p)));
---    d := max(regularity F, sum regs);
-    d := regularity F;
-    e := d-sum regs;
-    e' := floor(e/r);
-    f := e-r*e';
-    (regs, d, regs + toList(#regs:e') + (toList(f:1)|toList((#regs-f):0)))
-    )
-
-resMax1 = method()
-resMax1 ChainComplex := F -> (
-    --we assume F starts in homol degree 0.
-    el := length F;
-    r := degreeLength ring F;
-    D := apply((min F..max F-1), i-> findMins unique degrees F_i);
-    --replace with D = hashTable
-    L := flatten apply(
-	length D, i-> apply(
-	    D_i, s -> s-toList(r:i)));
-    regs := apply(r, p-> max(apply(L, q-> q_p)));
---    d := max(regularity F, sum regs);
-    d := regularity F;
-    e := d-sum regs;
-    e' := floor(e/r);
-    f := e-r*e';
-    (regs, d, regs + toList(#regs:e') + (toList(f:1)|toList((#regs-f):0)))
-    )
-
-resMax Module := o->M->resMax(res prune M)
-resMax1 Module := o->M->resMax(res prune M)
-
-
-coarseSet = M ->(
-    (twistreg,d,reg) := resMax M;
-    d' := d-sum twistreg;
-    d'' := max(d',0);
-    apply(d''+1, i-> {twistreg_0+i,twistreg_1+d'-i}))
-coarseSet1 = M ->(
-    (twistreg,d,reg) := resMax1 M;
-    d' := d-sum twistreg;
-    d'' := max(d',0);
-    apply(d''+1, i-> {twistreg_0+i,twistreg_1+d'-i}))
-
-
-
-findLins= M->(
-    t := degreeLength ring M;
-    r :=regularity M;
-    L := LL(r,t);
-    select(L,c->(
-	F := res prune truncate(c,M);
-    	all(toList(min F..max F-1),i-> 
-	    max apply(degrees F_i, d->sum d) == i+sum c
-	    )
-	))
-)
---export{"CoefficientField"}
 multigradedPolynomialRing = method(Options=>
     {CoefficientField=>ZZ/32003,
     Variables=>getSymbol "x"})
+
 multigradedPolynomialRing(List) := opts -> n -> (
      kk := opts.CoefficientField;
      x:= opts.Variables; -- symbol x;
@@ -129,7 +62,6 @@ multigradedPolynomialRing(List) := opts -> n -> (
      kk[xx,Degrees=>degs])
     
 multigradedPolynomialRing ZZ := opt -> n -> (multigradedPolynomialRing(toList(n:1)))
-
 
 --prep for linearTruncations
 LL = method()
@@ -145,64 +77,69 @@ LL (ZZ,List) := (d,n) -> (
     )
 
 findMins = L->(
-    t := #L_0;
+    t := #(L_0);
     P := ZZ/101[vars(0..t-1)];
     I := ideal apply(L, ell-> product(t, j-> P_j^(ell_j)));
     apply(flatten entries mingens I, m-> flatten exponents m)
     )
 ---------------
-linearTruncations = method()
-linearTruncations Module := M-> (
+
+coarseMultigradedRegularity = method()
+coarseMultigradedRegularity Module := M-> 
+    coarseMultigradedRegularity res prune M
+
+coarseMultigradedRegularity ChainComplex := F-> (
     t := degreeLength M;
-    F := res prune M;
     range := toList(min F..max F-1);
     degsF := apply(range,i -> degrees (F_i));
-    lowerbounds := flatten flatten apply(range, i->(
-	    apply(degsF_i, d -> apply(LL(i,t), ell -> d-ell))
-	    ));
-    print lowerbounds;
-    m := apply(t, i-> max apply(lowerbounds, ell->ell_i));
-    r := regularity F;
-    L1 := LL(r,t);
-    L2 :=  apply(L1, ell-> toList(ell..m));
-    L3 := toList sum(L2, ell->set ell);
-    L4 := select(L3,c->(
-	    F = res prune truncate(c,M);
-    	all(range,i-> 
-	    max apply(degrees F_i, d->sum d) == i+sum c
-	    )));
-    if (L4 == {}) then toString M else L4
---    findMins L4
-    )
-
-linearTruncations(Module,List) := (M, candidates) ->(
-    L := select(candidates, c->(
-        F := res prune truncate(c, M);
-    	all(toList(min F..max F-1),i-> 
-	    max apply(degrees F_i, d->sum d) == i+sum c
-	    )
-	);
-    findMins L))
-
-
-coarseMultigradedRegularity = method(Options =>{Strategy=>Simple})
-coarseMultigradedRegularity Module := o->M-> (
-    t := degreeLength M;
-    F := res prune M;
-    range := toList(min F..max F-1);
-    degsF := apply(range,i -> degrees (F_i));
-    if o.Strategy == Simple then(
-       apply(t, s-> 
-	   apply(range, i->
-	       max((degrees F_i)/(ell->ell_s))-i
-                )
-	    )/max
-	                        ) else(
     lowerbounds := flatten flatten apply(range, i->(
 	    apply(degsF_i, d -> apply(LL(i,t), ell -> d-ell))
 	    ));
     apply(t, i-> max apply(lowerbounds, ell->ell_i))
-    ))
+    )
+
+isLinearComplex = F->(
+    if F == 0 then return true;
+    t := degreeLength ring F;
+    range := toList(min F..max F-1);
+    dF := apply(range, i-> (degrees(F_i))/sum);
+    mindF := min(dF_(min F));
+    all(range, i->max(dF_i) === mindF+i-min F)
+    )
+
+linearTruncations = method()
+linearTruncations Module := M-> (
+    t := degreeLength M;
+    F := res prune M;
+    r := coarseMultigradedRegularity F;
+    d := regularity F;
+    L0 := LL(d,t);
+    candidates := set {};
+    scan(L0, ell ->candidates =  candidates+set toList(ell..r));
+    candidates = toList candidates;
+    L = select(candidates, ell -> 
+	isLinearComplex res truncate(ell,M));
+    findMins L
+    )
+linearTruncations(Module,List) := (M, candidates) ->(
+    L := select(candidates, c->(
+        isLinearComplex res prune truncate(c, M)));
+    findMins L)
+
+isSameWeight = L ->(
+        d := sum L_0;
+        all(L, ell->sum ell == d))
+
+isInterval = L-> (
+    --L is a list of lists, of length 2.
+    --the script reports whether they all have the same 
+    --total weight, and, if so, whether they form an "interval"
+    a := first L_0;
+    all(#L, i -> first L_i == i+a)
+    )
+    
+
+
 -------------------------
 
 --------------------------------------------------------
@@ -211,35 +148,55 @@ end--
 restart
 load"linearTruncations.m2"
 needsPackage"RandomIdeals"
-
+randomBinomialIdeal
 S = multigradedPolynomialRing{1,1}	
 S' = coefficientRing S[gens S]
 ran = L -> substitute(randomMonomialIdeal(L,S'), S)
-
-netList apply(10, i->(
 I = ran{3,4,5,5,5,6};
-M = S^1/I;
-r = coarseMultigradedRegularity M;
-print betti res truncate(r,M);
---lin = linearTruncations M
-))
-use S
-M = cokernel matrix {{x_(0,0)^2*x_(1,1), x_(0,0)*x_(0,1)*x_(1,0)^2, x_(0,1)*x_(1,0)^3*x_(1,1), x_(0,1)*x_(1,0)^4, x_(0,0)^2*x_(0,1)^2*x_(1,0), x_(0,1)^5*x_(1,0)}} 
-coarseMultigradedRegularity M
-betti res(truncate(coarseMultigradedRegularity M, M))
-regularity M
-netList apply (LL(8,2), ell -> (ell, betti res prune truncate (ell, M)))
---good tuples are {5,3},{6,2},{7,1}
-
-coarseMultigradedRegularity M
-
-S = multigradedPolynomialRing{2,2}	
-S' = coefficientRing S[gens S]
-ran = L -> substitute(randomMonomialIdeal(L,S'), S)
-
-I = ideal random(S^1, S^{2:{0,-2},2:-{3,0}})
 M = S^1/I
 linearTruncations M
+
+netList apply(10, i->(
+I = ran{3,3,7,9};
+M = S^1/I;
+{rseMultigradedRegularity M, linearTruncations M}
+))
+
+tally apply(10, i->(
+I = ran apply(5,i-> 2+random (2+random 7));
+M = S^1/I;
+L = linearTruncations M
+coarseMultigradedRegularity M
+betti res prune truncate({5,3},M)
+{isSameWeight L,isInterval L}
+))
+
+
+if not isLinearComplex res truncate(r,M) then print toString M
+--lin = linearTruncations M
+
+use S
+M1 = cokernel matrix {{x_(1,0)^2*x_(1,1), x_(0,0)*x_(0,1)^3, x_(0,0)^2*x_(0,1)*x_(1,1)^2, x_(0,0)*x_(0,1)^2*x_(1,1)^2, x_(0,1)^3*x_(1,0)^2, x_(0,0)^3*x_(1,0)^3}}
+M2 = cokernel matrix {{x_(0,0)^2*x_(1,1), x_(0,0)^2*x_(0,1)^2, x_(0,0)^2*x_(1,0)^3, x_(0,0)^3*x_(1,0)^2, x_(0,1)^3*x_(1,0)^2, x_(0,1)^2*x_(1,0)*x_(1,1)^3}}
+linearTruncations M1
+linearTruncations M2
+
+
+S = multigradedPolynomialRing({2,2}, CoefficientField => ZZ/5)
+S' = coefficientRing S[gens S]
+M' = coker map(S'^1,,sub(presentation M, S'))
+isHomogeneous M'
+minimalBetti M'
+elapsedTime tally apply(100, i->(
+a = sort apply(2+random 8,i->-{1+random 5, 1+random 5});
+<<a<<endl;
+flush;
+I = ideal random(S^1, S^a);
+M = S^1/I;
+L = linearTruncations M;
+{isSameWeight L,isInterval L}
+))
+
 
 M = S^1/ran{2,3,4,5}
 linearTruncations M
