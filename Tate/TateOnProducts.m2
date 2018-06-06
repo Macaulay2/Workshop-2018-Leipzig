@@ -31,8 +31,7 @@ export {
     "lowerCorner",
     "upperCorner",
     "beilinsonWindow",
-    "tateExtension",  -- actually doesn't exist!!
-    "sloppyTateExtension",
+    "tateExtension",
     "pushAboveWindow",
     "firstQuadrantComplex",
     "lastQuadrantComplex",
@@ -1128,8 +1127,8 @@ pushAboveWindow ChainComplex := C -> (
     )
 
 
-sloppyTateExtension=method()
-sloppyTateExtension(ChainComplex) := W -> (
+tateExtension=method()
+tateExtension(ChainComplex) := W -> (
     -- input W : a Beilinson representative of an object in D^b(PP)
     -- output :  an Tate extension in a bounded range
     -- compute the TateExtension in a sloppy way: the Beilinson window of the extension is only
@@ -1657,7 +1656,7 @@ cornerCohomologyTablesOfUa(List) := n-> (
 	    {a,W})
 	));
         Ts:=apply(Us,aW->( 
-	T=sloppyTateExtension aW_1;
+	T=tateExtension aW_1;
 	T=trivialHomologicalTruncation(T,-2*sum n,2*sum n);
 	append(aW,T)));
     apply(Ts,aT-> (
@@ -1683,7 +1682,7 @@ cornerCohomologyTablesOfUa(List,List) :=(n,a)-> (
     U:=0;W:=0;T:=0;cTa:=0;cTb:=0;cTb1:=0;
             U=E^{ -a};
             W=(chainComplex {map(E^0,U,0),map(U,E^0,0)})[1];
-	T=sloppyTateExtension W;
+	T=tateExtension W;
 	T=trivialHomologicalTruncation(T,-2*sum n,2*sum n);
 	cTa=cornerComplex(T,-a);
 	--cTb=dual cornerComplex(dual T,a-{1,1});
@@ -1821,14 +1820,8 @@ document {
   Headline => "Computation of parts of the Tate resolution on products",
   "This package contains implementations of the algorithm from our paper ",
   HREF("https://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces"),
-  ". It allows to compute the direct image complexes of a coherent sheaf along the projection onto a product 
+  ". It allows computing the direct image complexes of a coherent sheaf along the projection onto a product 
   of any of the factors.",
-  PARA{},
-     "In the moment the function tateExtension is not completed, a version sloppyTateExtension works 
-     however nicely in examples. 
-
-     The documentation and comments in the code are in a preliminary shape.
-     Some function have to be removed, other wait for their implementation ",
    PARA{},"The main differences from the paper are:",
    UL{  "the exterior algebra E is positively graded ",
         "we use E instead of omega_E ",
@@ -1871,12 +1864,12 @@ document {
     SUBSECTION "Beilinson monads",
     UL{ 
 	TO beilinsonWindow,
-	TO sloppyTateExtension,
 	TO tateExtension,
 	TO pushAboveWindow,
 	TO beilinsonBundle,
 	TO beilinsonContraction,
 	TO beilinson,
+	TO bgg,
         },
     
     SUBSECTION "Examples from the papers",
@@ -2729,59 +2722,6 @@ doc ///
 --------------------------
 -- subcomplexes         --
 --------------------------
-{*
-doc ///
-  Key
-    regionComplex
-    (regionComplex,ChainComplex,List,List,List,List)
-  Headline
-    form the region complex 
-  Usage
-    regionComplex(T,c,I,J,K)
-  Inputs
-    T: ChainComplex
-       a (part of a) Tate resolution on a product of t projective spaces
-    c: List
-       a degree
-    I: List
-    J: List
-    K: List 
-       disjoint subsets of the List 1..t  
-  Outputs
-     : ChainComplex
-  Description
-     Text
-       Forms the region complex T_c(I,J,K) as defined in section 3 of 
-       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @. 
-     Example
-       (S,E) = 	productOfProjectiveSpaces {1,2}
-///
-
-doc ///
-  Key
-    strand
-    (strand,ChainComplex,List,List)
-  Headline
-    form the strand 
-  Usage
-    strand(T,c,I)
-  Inputs
-    T: ChainComplex
-       a (part of a) Tate resolution on a product of t projective spaces
-    c: List
-       a degree
-    I: List
-    subsets of the List 1..t  
-  Outputs
-     : ChainComplex
-  Description
-     Text
-       Form the I-th strand through c as defined  
-       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @. 
-     Example
-        (S,E) = productOfProjectiveSpaces {1,2}     
-        ///
-*}
 
 doc ///
   Key
@@ -2813,7 +2753,7 @@ doc ///
 	T1 = (dual res trim (ideal vars E)^2)[1];
 	a=-{2,2};T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-        T=sloppyTateExtension W;
+        T=tateExtension W;
 	cohomologyMatrix(T,-{3,3},{3,3})
 	c={1,0}
 	rT0=regionComplex(T,c,({},{0,1},{})); --a single position
@@ -2828,6 +2768,15 @@ doc ///
     	cohomologyMatrix(rT4,-{3,3},{3,3})
 	rT5=regionComplex(T,c,({1},{},{0})); --a south west quadrant
     	cohomologyMatrix(rT5,-{3,3},{3,3})
+  SeeAlso
+    upperCorner
+    lowerCorner
+    beilinsonWindow
+    tateExtension
+    removeZeroTrailingTerms
+    firstQuadrantComplex
+    lastQuadrantComplex
+    cohomologyMatrix
 ///
 
 
@@ -2862,7 +2811,7 @@ doc ///
 	T1 = (dual res trim (ideal vars E)^2)[1];
 	a=-{2,2};T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-        T=sloppyTateExtension W;
+        T=tateExtension W;
 	cohomologyMatrix(T,-{3,3},{3,3})
 	sT1=strand(T,-{1,1},{1});
 	cohomologyMatrix(sT1,-{3,3},{3,3})
@@ -2870,7 +2819,15 @@ doc ///
 	cohomologyMatrix(sT2,-{3,3},{3,3})
 	sT3=removeZeroTrailingTerms strand(T,{1,-1},{0,1})
 	cohomologyMatrix(sT3,-{3,3},{3,3})
-	
+  SeeAlso
+    upperCorner
+    lowerCorner
+    beilinsonWindow
+    tateExtension
+    removeZeroTrailingTerms    
+    firstQuadrantComplex
+    lastQuadrantComplex
+    cohomologyMatrix	
 ///
 
 
@@ -2911,6 +2868,12 @@ doc ///
 	cT=cornerComplex(T,-{2,1});
 	betti cT	
 	cohomologyMatrix(cT,-{4,4},{3,2})
+  SeeAlso
+    upperCorner
+    lowerCorner
+    
+    lastQuadrantComplex
+    cohomologyMatrix	
 ///
 
 doc ///
@@ -2948,7 +2911,12 @@ doc ///
 	cohomologyMatrix(lqT,-{3,2},-{2,1})
 	cT=cornerComplex(T,-{2,1});
 	betti cT	
-	cohomologyMatrix(cT,-{4,4},{3,2})	
+	cohomologyMatrix(cT,-{4,4},{3,2})
+  SeeAlso
+    upperCorner
+    lowerCorner    
+    firstQuadrantComplex
+    cohomologyMatrix	
 ///
 
 doc ///
@@ -3034,7 +3002,7 @@ doc ///
 	from lqT to fqT spread over several homological degrees.
 -----------------
      Text
-        Putting the corner in c = \{,\} we get a different 
+        Putting the corner in c = \{-1,-1 \} we get a different 
 	picture:
      Example
         c = {-1,-1}
@@ -3060,6 +3028,12 @@ doc ///
      Text
         In general the corner map is a chain complex map
 	from lqT to fqT spread over several homological degrees.
+  SeeAlso
+    upperCorner
+    lowerCorner    
+    firstQuadrantComplex
+    lastQuadrantComplex
+    cohomologyMatrix
 ///
 
 -------------------------------------------------
@@ -3088,24 +3062,27 @@ doc ///
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
         W=(chainComplex {map(E^0,E^1,0),map(E^1,E^0,0)})[1]
-        time T=sloppyTateExtension W;
+        time T=tateExtension W;
         cohomologyMatrix(T,-{3,3},{3,3})
 	W=beilinsonWindow T
 	cohomologyMatrix(W,-{2,2},{2,2})
         a={2,-3}
         W2=removeZeroTrailingTerms beilinsonWindow (T**E^{a}[sum a])
         cohomologyMatrix(W2,-{2,2},{2,2})
-        cohomologyMatrix(sloppyTateExtension W2,-{2,2},{2,2})
+        cohomologyMatrix(tateExtension W2,-{2,2},{2,2})
+  SeeAlso
+    beilinsonWindow
+    cohomologyMatrix 
 ///
 
 doc ///
   Key
-    sloppyTateExtension
-    (sloppyTateExtension,ChainComplex)
+    tateExtension
+    (tateExtension,ChainComplex)
   Headline
     extend the terms in the Beilinson window to a part of a corner complex of the corresponding Tate resolution
   Usage
-    T=sloppyTateExtension W
+    T=tateExtension W
   Inputs
     W: ChainComplex
        terms in the Beilinson window of a Tate resolution 
@@ -3121,8 +3098,6 @@ doc ///
        @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
        computes part of a suitable choosen corner complex of the Tate resolution T(F). 
        
-       The phrase sloppy refers to the fact that the Beilinson window of T is not equal, 
-       but only isomorphic to W. Moreover the bounds in the computation are only a guess and certainly not optimal.
      Example
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
@@ -3132,10 +3107,18 @@ doc ///
 	T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2
 	cohomologyMatrix(W,-2*n,2*n)
-        T=sloppyTateExtension W
+        T=tateExtension W
 	cohomologyMatrix(T,-3*n,4*n)
 	cohomologyMatrix(beilinsonWindow T,-n,n)
 	cohomologyMatrix(T,-5*n,4*n) -- the view including the corner
+  Caveat
+     Note that the Beilinson window of tateExtension of the beilinson window W is not equal but just
+     isomorphic to the original W. 
+     
+     The implicit bounds in the computation are only a guess and certainly not optimal. This should be improved.
+  SeeAlso 
+     cohomologyMatrix
+     beilinsonWindow     
 ///
 
 doc ///
@@ -3176,7 +3159,7 @@ doc ///
 	T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2
 	cohomologyMatrix(W,-2*n,2*n)
-        T=sloppyTateExtension W;
+        T=tateExtension W;
 	cohomologyMatrix(T,-5*n,4*n) -- a view with the corner
 	puT=trivialHomologicalTruncation(pushAboveWindow W,-1, 6)
 	cohomologyMatrix(puT,-3*n,{1,1})
@@ -3781,7 +3764,7 @@ n={1,2}; (S,E) = productOfProjectiveSpaces n;
 	W=(chainComplex {map(E^0,U,0),map(U,E^0,0)})[1]
 	tallyDegrees W
 	cohomologyMatrix(W,-{3,3},{3,3})
-        time T=trivialHomologicalTruncation(sloppyTateExtension W,0,3)
+        time T=trivialHomologicalTruncation(tateExtension W,0,3)
 	cohomologyMatrix(T,-{3,3},{3,3})
 	cohomologyMatrix(T,-{2,3},{3,3})	
 low = {-3,-3};high = {3,3}
@@ -4172,7 +4155,7 @@ restart
   a=-{2,2};
   T2=T1**E^{a}[sum a];
   W=removeZeroTrailingTerms beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-  T = sloppyTateExtension W
+  T = tateExtension W
   cohomologyMatrix(oo,-3*n,3*n)
 elapsedTime  beilinsonWindow(T ** E^{{1,1}}[2])
 elapsedTime  beilinsonWindow(T ** E^{{1,1}}[2], 1)
@@ -4286,7 +4269,7 @@ restart
   T2=T1**E^{a}[sum a];
   cohomologyMatrix(T2,-3*n,3*n)
   W=removeZeroTrailingTerms beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-  T = sloppyTateExtension W 
+  T = tateExtension W 
   cohomologyMatrix(T,-3*n,3*n)
   UF = beilinson W
   UF.dd^2
@@ -4318,7 +4301,7 @@ restart
   T2=T1**E^{a}[sum a];
   cohomologyMatrix(T2,-3*n,3*n)
   W=removeZeroTrailingTerms beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-  T = sloppyTateExtension W 
+  T = tateExtension W 
   cohomologyMatrix(T,-3*n,3*n)
   UF = beilinson W
   Hs = prune HH UF;
@@ -4385,7 +4368,7 @@ n={1,2}
 a={0,1}
 Ua=E^{ -a}
 W=chainComplex(map(E^0,Ua,0),map(Ua,E^0,0))[1] 
-time T=sloppyTateExtension(W) 
+time T=tateExtension(W) 
 betti (qT=firstQuadrantComplex(T,{0,0}))
 cohomologyMatrix(qT,-n,2*n),cohomologyMatrix(T,-2*n,2*n)
 -------------
