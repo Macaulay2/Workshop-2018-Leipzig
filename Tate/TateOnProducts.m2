@@ -1894,8 +1894,7 @@ document {
        },
     
     SUBSECTION "Missing pieces",
-    UL{ "BGG functor R for complexes of S-modules",
-	"various composition of functions",
+    UL{	"various composition of functions",
 	"Example section:  examples from the paper, jumping lines", 
 	"$Rf_*sF$ for a coherent sheaf
 	$sF$ on $X subset P^{n_1}$ and a morphism $f:X -> P^{n_2}$."
