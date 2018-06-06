@@ -4425,8 +4425,98 @@ isHomogeneous C
 
 --------------
 
- 
+restart
+loadPackage("TateOnProducts",Reload=>true)
+(S,E) = productOfProjectiveSpaces {1,2} 
+xx = apply(2, i->S_i) 
+yy = select(gens S, v -> degree v =={0,1})
+ee = select(gens E, v -> degree v =={1,0})
+ff = select(gens E, v -> degree v =={0,1})
+up = random(E^{5:{1,0}}, E^3)
+right = random(E^{3:{0,1}}, E^3)
+tot = up||right
+T1 = res(coker tot, LengthLimit => 12);
+high = {6,6}
+low = -high
+cohomologyMatrix(T1,low,high)
+T2=cornerComplex(T1, -{5,5})
+--why the numbering of T2?
+betti T2
+phi = transpose T2.dd_9;
+T = dual res(image phi, LengthLimit=>15)**E^{{3,4}}
+high = high+{3,4}
+low = low+{3,4}
+cohomologyMatrix(T,low, high)
+sT = strand(T, {4,4}, {0})
+cohomologyMatrix(sT, low, high)
+(S1,E1) = productOfProjectiveSpaces{2}
+p = map(E1,E,matrix{{0,0}}|vars E1)
+sT' = p sT
+isHomogeneous sT'
+betti sT'
+tar = (sT'_(-15)); s = chainComplex for i from min sT'+1 to max sT'-1 list(
+	phi = map(tar,,sT'.dd_(i+1));
+	tar = source phi;
+	phi);
+betti s    
+betti(s[5]**E1^{{5}})
+B = beilinsonWindow (s[6]**E1^{{6}})
+betti B
+ann (HH_(-1) beilinson B)
+eulerPolynomialTable(B,{-5},{5})
 
 
+-------------------------------------
+(S,E) = productOfProjectiveSpaces{1,2}
+M = S^1/random({3,1},S)
+RM = bgg(M)
+high = {3,3}
+low = -high
+cohomologyMatrix(RM,low,high)
+cohomologyMatrix(M,low,high)
+C = cornerComplex(M,low,high)
+cohomologyMatrix(C,low,high)
+BC = beilinson C
+betti BC
+tallyDegrees BC
+M' = HH_0 BC
+isIsomorphic(truncate({3,1},M), truncate({3,1},M'))
+isIsomorphic(truncate({2,0},M), truncate({2,0},M'))
+cohomologyMatrix(M,low,high) 
+cohomologyMatrix(RM,low,high)
+
+(S,E) = productOfProjectiveSpaces{1,2}
+M = S^1/random({1,3},S)
+RM = bgg(M)
+high = {3,3}
+low = -high
+cohomologyMatrix(RM,low,high)
+cohomologyMatrix(M,low,high)
+T = cornerComplex(M,low,high)
+betti T
+cohomologyMatrix(T,low,high)
+BT = beilinson T
+betti BT
+tallyDegrees BT
+M' = HH_0 BT
+isIsomorphic(truncate({3,0},M), truncate({3,0},M'))
+isIsomorphic(truncate({2,1},M), truncate({2,1},M'))
+
+C = cornerComplex(T,{0,0})
+cohomologyMatrix(C,low,high)
+betti C
+ann HH_(-8)(bgg ker C.dd_0)
+betti(bgg image C.dd_0)
+netList apply(values(HH (bgg image C.dd_0)), v->ann v)
+apply(betti C.dd_0)
+
+(values HH)
+(apply(8, i->ann HH_(-i)(bgg image C.dd_0)))/codim
+M' = HH_(-4)(bgg image C.dd_0);
+isIsomorphic(truncate({2,2},M), truncate({2,2},M'))
+cohomologyMatrix (M', low, high)
+cohomologyMatrix (M, low, high)
 
 
+cohomologyMatrix(M,low,high) 
+cohomologyMatrix(RM,low,high)
