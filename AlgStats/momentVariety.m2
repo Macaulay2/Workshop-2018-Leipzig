@@ -11,11 +11,18 @@ listOfMoments = (d,R) -> (
 )
 
 --Gaussian
-momentIdeal = d->(
-    R=QQ[mn,sd,m_0..m_d][t]/t^(d+1);
-    series:=exp(mn*t+(1/2)*sd^2*t^2);
-    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
-    eliminate({mn,sd},I)
+
+momentIdeal = (d, R)->(
+    -- Append auxilliary vars to construct power series
+    (S, phi) :=  flattenRing(R[mn, sd]);
+    T := S[t]/t^(d+1);
+    use T;
+    g := gens R;
+    series := exp(phi(mn)*t+(1/2)*phi(sd)^2*t^2);
+    I := ideal for i from 1 to d list i!*coefficient(t^i,series)-phi(g#i);
+    -- Construct map from S back to the original ring R
+    psi := map(R, S, (for i from 0 to #g-1 list phi(g#i) => g#i) | {phi(mn) => 0, phi(sd) => 0});
+    psi(eliminate({phi(mn),phi(sd)},I))
     )
 
 --Exponential mixture
@@ -60,6 +67,21 @@ momentMapGaussians =  (n,d) -> (
   C = matrix(C);
   C=lift(C,R);
   return matrix({(reverse((entries(transpose(C)))_0))});   
+)
+
+--Gaussian Mixtures Test
+--written to eliminate a_mix
+momentIdealGaussianTest = (mix,d)->(
+    R=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
+    if mix == 1 then(
+    	series:=sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2);
+    	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(a_1 - 1);
+    	return homogenize(eliminate({a_1}|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);)
+    else( 
+    	amix := 1 - sum for i from 1 to mix-1 list a_i;
+    	series:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
+    	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
+    	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0))
 )
 
 momentIdealExponential(1,3)
