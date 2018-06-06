@@ -223,7 +223,7 @@ AA=(i,X) -> (
 SR=X->(
      if not X.cache.?ChowRingIdeal then (
 	  z:=symbol z;
-     	  R:=QQ[z_1..z_#(rays X)];
+     	  R:=QQ[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
@@ -249,7 +249,7 @@ SR=X->(
 intersectionRing=X->(
      if not X.cache.?IntersectionRing then (
 	  z:=symbol z;
-     	  R:=QQ[z_1..z_#(rays X)];
+     	  R:=QQ[z_0..z_(#(rays X)-1)];
        	  I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
