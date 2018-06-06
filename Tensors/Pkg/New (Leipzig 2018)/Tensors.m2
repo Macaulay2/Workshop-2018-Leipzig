@@ -131,6 +131,35 @@ TensorSpace ** TensorSpace := (V,W) -> (
 	}
     )
 
+TensorSpace k** TensorSpace := (V,W) -> (
+    if V#baseRing =!= W#baseRing then (
+	return "error: base rings are different"
+    );
+    if #(V#dims) =!= #(W#dims) then (
+	return "error: the number of factors of the given tensor spaces are not equal"
+    );
+    N = for i in 0..#(V#dims)-1 list (V#dims)#i*((W#dims)#i);
+    R = ring (first V#tensorBasis) ** ring (first W#tensorBasis);--work in progress
+    
+ new TensorSpace from hashTable{
+	baseRing => V#baseRing,
+	dims => N,
+	tensorBasis => first entries basis(toList(#N:1),R)
+	}
+    )
+
+Tensor ** Tensor := (T,U) -> (
+    M = flatten for i in T#coeff list for j in U#coeff list i*j;
+    R = T#tensorSpace ** U#tensorSpace;
+    return makeTensor(M,R)
+	)
+
+Tensor ^** ZZ := (T,n) -> (
+    if n == 0 then return 1_((T#tensorSpace).baseRing);
+    U := T;
+    for i from 1 to n-1 do U = U**T;
+    U
+    )
 
 
 --- Tensor operations
