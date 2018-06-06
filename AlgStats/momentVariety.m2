@@ -30,7 +30,8 @@ momentIdeal = (d, R)->(
 --NEEDS TO EB HOMOGENISED, NEEDS TO FIX DOUBLE ELIMINATE
 momentIdealExponential = (mix,d) ->(
     R:=QQ[lam_1..lam_mix,alp_1..alp_mix,m_0..m_d];
-    I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list alp_j*lam_j^i)+ideal(-1+sum for i from 1 to mix list alp_i);
+    I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list alp_j*lam_j^i*i!) +
+       ideal(-1+sum for i from 1 to mix list alp_i);
     eliminate ((for j from 1 to mix list alp_j)|(for i from 1 to mix list lam_i) ,I)
 )
 
