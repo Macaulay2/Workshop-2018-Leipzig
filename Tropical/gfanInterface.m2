@@ -2279,33 +2279,38 @@ gfanTropicalIntersection = method( Options => {
 	"symmetryExploit" => false,
 	"restrict" => false,
 	"stable" => false,
-	"Symmetry" => {}
 	}
 )
 
 gfanTropicalIntersection (List) := opts -> (L) -> (
-	local newOpts;
-	newOpts=new OptionTable from {	
-	"tropicalbasistest" => opts#"tropicalbasistest",
-	"tplane" => opts#"tplane",
-	"symmetryPrinting" => opts#"symmetryPrinting",
-	"symmetryExploit" => opts#"symmetryExploit",
-	"restrict" => opts#"restrict",
-	"stable" => opts#"stable"};
 
 	(ringMap, newL) := gfanConvertToNewRing(L);
 	L = newL;
 	input := gfanRingToString(ring first L) | gfanPolynomialListToString(L);
 	
-	local s;
+	s:=runGfanCommand("gfan _tropicalintersection", opts, input);
 
-	if opts#"Symmetry" == {} then
-		s=runGfanCommand("gfan _tropicalintersection", newOpts, input)
-	else (
-		stringSymmetry:=gfanVectorListToString(opts#"Symmetry");
-		newInput := input | stringSymmetry;
-		s=runGfanCommand("gfan _tropicalintersection", newOpts, newInput);
-	);
+	tropicalBasisOutput:=s_0;--this is 0 if not tropical basis and 1 otherwise.
+	if ((opts#"tropicalbasistest")==false) then (return gfanParsePolyhedralFan s)
+	else 
+	
+	 if ((tropicalBasisOutput_0)=="0") then false
+	    else (
+		if (tropicalBasisOutput_0=="1") then true
+--In case something has changed in 'gfan' or 'gfanInterface'
+	        else error "Algorithm fail"
+		)
+	    
+
+)
+
+gfanTropicalIntersection (List,List) := opts -> (L, symmetryList) -> (
+
+	(ringMap, newL) := gfanConvertToNewRing(L);
+	L = newL;
+	input := gfanRingToString(ring first L) | gfanPolynomialListToString(L) | gfanVectorListToString(symmetryList);
+	
+	s:=runGfanCommand("gfan _tropicalintersection", opts, input);
 
 	tropicalBasisOutput:=s_0;--this is 0 if not tropical basis and 1 otherwise.
 	if ((opts#"tropicalbasistest")==false) then (return gfanParsePolyhedralFan s)
