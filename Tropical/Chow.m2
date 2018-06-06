@@ -29,7 +29,6 @@ export {
      "intersectionRing"
      }
 
-protect Mob
 protect ChowGroupBas 
 protect ChowRingIdeal
 
@@ -243,23 +242,8 @@ SR(NormalToricVariety) := X -> (SR(X,QQ));
 intersectionRing = method()
 intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
      if (not X.cache.?IntersectionRing) or (not coefficientRing(X.cache.IntersectionRing) === S) then (
-	  z:=symbol z;
-     	  R:=S[z_0..z_(#(rays X)-1)];
-       	  I:= ideal apply(max X, sigma->(
-	       	    mono:=1_R;
-	       	    for j from 0 to #(rays X)-1 do 
-		        if not(member(j,sigma)) then mono=mono*R_j;
-	       	    mono
-		    ));
-     	  squaresIdeal:=ideal apply(gens R, xx->xx^2);       
-     	  I=ideal flatten entries ((gens (squaresIdeal : I)) % squaresIdeal);
-     	  I=I+ ideal apply(transpose rays X, a->(
-	       genJ:=0_R;
-	       for j from 0 to #a-1 do (
-		    genJ=genJ+a#j*R_j;
-	       );
-	       genJ    
-     	  ));
+	  I:=SR(X,S);
+	  R:=ring(I);
      X.cache.IntersectionRing=R/(ideal mingens I);
      );
      X.cache.IntersectionRing
