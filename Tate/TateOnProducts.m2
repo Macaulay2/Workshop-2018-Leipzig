@@ -32,7 +32,7 @@ export {
     "upperCorner",
     "beilinsonWindow",
     "tateExtension",
-    "pushAboveWindow",
+--    "pushAboveWindow",
     "firstQuadrantComplex",
     "lastQuadrantComplex",
     "cornerComplex",
@@ -51,7 +51,7 @@ export {
     "QuotientBundle", 
     "SubBundle",
     --
-    "cornerCohomologyTablesOfUa",
+--    "cornerCohomologyTablesOfUa",
     "coarseMultigradedRegularity",
     "CoefficientField",
     "CohomologyVariables",
@@ -62,17 +62,17 @@ export {
     "bgg",
     --the following could all be part of ChainComplexExtras
 --    "isIsomorphic",
-    "prependZeroMap",
-    "appendZeroMap",
-    "removeZeroTrailingTerms",
+--    "prependZeroMap",
+--    "appendZeroMap",
+--    "removeZeroTrailingTerms",
     "trivialHomologicalTruncation",
-    "isChainComplex",
-    "nonzeroMin", 
-    "nonzeroMax",
-    "minimize",
-    "isMinimalChainComplex",
-    "resolutionOfChainComplex",
-    "chainComplexMap",
+--    "isChainComplex",
+--    "nonzeroMin", 
+--    "nonzeroMax",
+--    "minimize",
+--    "isMinimalChainComplex",
+--    "resolutionOfChainComplex",
+--    "chainComplexMap",
     "InitialDegree",
     "isQuism"
     --    Check
@@ -1849,9 +1849,6 @@ document {
     UL{ 
 	TO beilinsonWindow,
 	TO tateExtension,
---	TO pushAboveWindow,
---	TO beilinsonBundle,
---	TO beilinsonContraction,
 	TO beilinson,
 	TO bgg,
         },
@@ -1876,30 +1873,12 @@ document {
        TO firstQuadrantComplex,
        TO lastQuadrantComplex
       },
-    SUBSECTION "formal ChainComplex manipulations",
-    UL{
-	TO prependZeroMap,
-        TO appendZeroMap,
-        TO removeZeroTrailingTerms,
-	TO trivialHomologicalTruncation,
-	TO nonzeroMin,
-	TO nonzeroMax,
-        TO isChainComplex,
-	TO minimize
-	},      
-    
-    SUBSECTION "Examples from the papers",
-    UL{ 
-	TO cornerCohomologyTablesOfUa,
-       },
-    
     SUBSECTION "Missing pieces",
     UL{	"various composition of functions",
 	"Example section:  examples from the paper, jumping lines", 
 	"$Rf_*sF$ for a coherent sheaf
 	$sF$ on $X subset P^{n_1}$ and a morphism $f:X -> P^{n_2}$."
 	} 
-         
    }
 
 doc ///
@@ -2460,7 +2439,39 @@ doc ///
 	tallyDegrees C	
 ///
 
+doc ///
+  Key
+    trivialHomologicalTruncation
+    (trivialHomologicalTruncation,ChainComplex,ZZ,ZZ)    
+  Headline
+    return the trivial truncation of a chain complex 
+  Usage
+    trivialHomologicalTruncation(ChainComplex,d,e)
+  Inputs
+    C: ChainComplex
+    d: ZZ
+    e: ZZ
+       homological indices
+  Outputs
+     : ChainComplex
+  Description
+     Text
+       Given a chain complex
+        
+        ... <- C_{k-1} <- C_k <- C_{k+1} <- ...
+	
+       return the trivial truncation
+       
+       0 <- C_d <- C_{d+1} <- ... < C_e <- 0
+     Example
+       E=ZZ/101[e_0,e_1,SkewCommutative=>true];F=res ideal vars E;
+       C=dual res (coker transpose F.dd_3,LengthLimit=>8)[-3]
+       C1=trivialHomologicalTruncation(C,-2,2)
+       C2=trivialHomologicalTruncation(C1,-3,3)
+       C3=trivialHomologicalTruncation(C2,2,2)             
+///
 
+-*
 -----------------------------------------
 --- formal chain complex manipulations --
 -----------------------------------------
@@ -2486,7 +2497,6 @@ doc ///
      Example
        S=ZZ/101[x,y]/ideal(x*y)
        C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1] 
-       isChainComplex C
        C'=prependZeroMap appendZeroMap C
        min C', nonzeroMin C'
        max C', nonzeroMax C'
@@ -2593,38 +2603,6 @@ doc ///
        removeZeroTrailingTerms C      
 ///
 
-doc ///
-  Key
-    trivialHomologicalTruncation
-    (trivialHomologicalTruncation,ChainComplex,ZZ,ZZ)    
-  Headline
-    return the trivial truncation of a chain complex 
-  Usage
-    trivialHomologicalTruncation(ChainComplex,d,e)
-  Inputs
-    C: ChainComplex
-    d: ZZ
-    e: ZZ
-       homological indices
-  Outputs
-     : ChainComplex
-  Description
-     Text
-       Given a chain complex
-        
-        ... <- C_{k-1} <- C_k <- C_{k+1} <- ...
-	
-       return the trivial truncation
-       
-       0 <- C_d <- C_{d+1} <- ... < C_e <- 0
-     Example
-       E=ZZ/101[e_0,e_1,SkewCommutative=>true];F=res ideal vars E;
-       C=dual res (coker transpose F.dd_3,LengthLimit=>8)[-3]
-       C1=trivialHomologicalTruncation(C,-2,2)
-       C2=trivialHomologicalTruncation(C1,-3,3)
-       C3=removeZeroTrailingTerms C2
-       C4=trivialHomologicalTruncation(C3,2,2)             
-///
 
 
 doc ///
@@ -2729,7 +2707,7 @@ doc ///
      isChainComplex E'
      isMinimalChainComplex E'
 ///
-
+*-
 
 
 --------------------------
@@ -2786,7 +2764,6 @@ doc ///
     lowerCorner
     beilinsonWindow
     tateExtension
-    removeZeroTrailingTerms
     firstQuadrantComplex
     lastQuadrantComplex
     cohomologyMatrix
@@ -2825,19 +2802,19 @@ doc ///
 	a=-{2,2};T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
         T=tateExtension W;
-	cohomologyMatrix(T,-{3,3},{3,3})
-	sT1=strand(T,-{1,1},{1});
-	cohomologyMatrix(sT1,-{3,3},{3,3})
-	sT2=strand(T,{1,1},{0});
-	cohomologyMatrix(sT2,-{3,3},{3,3})
-	sT3=removeZeroTrailingTerms strand(T,{1,-1},{0,1})
-	cohomologyMatrix(sT3,-{3,3},{3,3})
+    	low = -{2,2};high = {2,2};
+	cohomologyMatrix(T,low,high)
+	sT1=strand(T,{-1,0},{1});
+	cohomologyMatrix(sT1,low,high)
+	sT2=strand(T,{-1,0},{0});
+	cohomologyMatrix(sT2,low,high)
+	sT3=strand(T,{-1,0},{0,1});
+	cohomologyMatrix(sT3, low,high)
   SeeAlso
     upperCorner
     lowerCorner
     beilinsonWindow
     tateExtension
-    removeZeroTrailingTerms    
     firstQuadrantComplex
     lastQuadrantComplex
     cohomologyMatrix	
@@ -2949,6 +2926,10 @@ doc ///
        cohomological degree of upper corner of the  last quadrant complex which is part of the corner complex   
     M: Module
        multi-graded module representing a sheaf F
+    low:List
+       a multidegree
+    high:List
+       a multidegree
   Outputs
     C : ChainComplex
        The corner complex
@@ -2958,8 +2939,9 @@ doc ///
        
        cornerComplex(M,low,high)
        
-       forms the corner complex of the sheaf F represented by M, at {0,0}
-       computed in such a way that all the cohomology groups of
+       forms the corner complex of the sheaf F represented by M, at a position sufficiently
+       above the degree "high" so that
+       all the cohomology groups of
        twists F(a) of F can be computed for low <= a <= high.
        
        The call
@@ -3038,9 +3020,9 @@ doc ///
      	betti lqT	
 	betti cT
      Text
-        Here the corner map is cT.dd_2
+        Here the corner map is cT.dd_1
      Example
-        betti (cT.dd_2)
+        betti (cT.dd_1)
      Text
         In general the corner map is a chain complex map
 	from lqT to fqT spread over several homological degrees.
@@ -3083,7 +3065,7 @@ doc ///
 	W=beilinsonWindow T
 	cohomologyMatrix(W,-{2,2},{2,2})
         a={2,-3}
-        W2=removeZeroTrailingTerms beilinsonWindow (T**E^{a}[sum a])
+        W2=beilinsonWindow (T**E^{a}[sum a])
         cohomologyMatrix(W2,-{2,2},{2,2})
         cohomologyMatrix(tateExtension W2,-{2,2},{2,2})
   SeeAlso
@@ -3118,7 +3100,6 @@ doc ///
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
 	T1 = (dual res trim (ideal vars E)^2)[1];
-    	isChainComplex T1
 	a=-{2,2};
 	T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2
@@ -3136,7 +3117,7 @@ doc ///
      cohomologyMatrix
      beilinsonWindow     
 ///
-
+-*
 doc ///
   Key
     pushAboveWindow
@@ -3187,7 +3168,7 @@ doc ///
     	betti T	
 	puT.dd_3_{0}
 ///
-
+*-
 
 doc ///
   Key
@@ -3392,6 +3373,7 @@ doc ///
     BundleType
     SubBundle
 ///
+-*
 --------------------------------------------------------------
 -- Examples of the paper
 --------------------------------------------------------------
@@ -3438,9 +3420,9 @@ doc ///
         netList cornerCohomologyTablesOfUa({1,2},{1,1})
 ///
 
+*-
 
-
-
+-*
      doc ///
         Key
 	 resolutionOfChainComplex
@@ -3494,7 +3476,7 @@ doc ///
 	 minimize
      ///
 
-
+*-
 
 document {
      Key => {isQuism, (isQuism,ChainComplexMap)},
@@ -3519,6 +3501,7 @@ document {
 	     }
      }
 
+-*
 document {
      Key => {chainComplexMap, (chainComplexMap,ChainComplex,ChainComplex,List),
      [chainComplexMap,InitialDegree]},
@@ -3541,6 +3524,9 @@ document {
 	     "multBya2 == multBya",
 	     }
      }
+*-
+
+-*
 doc ///
    Key
     isMinimalChainComplex
@@ -3558,6 +3544,7 @@ doc ///
      The script tests whether all the differentials of C become zero when
      we substitute 0 for each variable of ring C
 ///
+*-
 
 doc ///
    Key
@@ -4395,10 +4382,8 @@ netList cornerCohomologyTablesOfUa({1,2})
         isHomogeneous m
         dual m
     	fm=res coker m
-	isChainComplex fm
 	betti fm
 	dualfm = dual fm	
-	isChainComplex dualfm
 	f2=res( coker dualfm.dd_(-1),LengthLimit=> 5)[2]
 	betti f2
 	betti dual fm
@@ -4412,10 +4397,8 @@ netList cornerCohomologyTablesOfUa({1,2})
 	m1 = syz transpose syz transpose m
     	fm=res (coker m, LengthLimit =>10)
     	fm1=res (coker m, LengthLimit =>10)	
-	isChainComplex fm
 	betti fm
 	dualfm = dual fm	
-	isChainComplex dualfm
 	f2=res( coker dualfm.dd_(-1),LengthLimit=> 10)[2]
 	f2.dd_0
 	betti f2
@@ -4438,7 +4421,6 @@ methods res
 S=ZZ/101[x,y,z]/ideal(x*y)
 M0=((S^1/ideal y)**S^{2}), M1=S^1, M2=S^{ -1}
 C=chainComplex({map(M0,M1,matrix{{x^2}}),map(M1,M2,matrix{{y}})})
-isChainComplex C
 isHomogeneous C
 
 --------------
