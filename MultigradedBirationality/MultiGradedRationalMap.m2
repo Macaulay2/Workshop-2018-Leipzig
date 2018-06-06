@@ -449,14 +449,21 @@ degreeOfMapIter = method()
 -- INPUT: A multi-graded ideal. 
 -- INPUT: The number of steps for computing the saturated special fiber ring.
 -- OUTPUT: The degree of the rational map represented by the generators of I.
+--         If the map is not generically finite then the output is 0.
 -- CAVEAT: It only gives a correct answer if nsteps is bigger than the highest degree of the generators of the 
 --       saturated special fiber ring.
 degreeOfMapIter(Ideal, ZZ) := (I, nsteps) -> (
-    checkMultiGraded(I);
+    grading := checkMultiGraded(I);
+    r := (sum grading) - (length grading);
+    S := specialFiber I;
+    
+    -- if the map is not genericaly finite, then return 0   
+    if dim S < r then return 0;
+    
     satFib := satSpecialFiber(I, nsteps);
     N := numerator reduceHilbert hilbertSeries satFib;
     mult := sub(N, { (vars ring N)_(0,0) => 1 });
-    degIm := degree specialFiber I;
+    degIm := degree S;
     
     mult // degIm
 )
@@ -750,7 +757,7 @@ doc ///
     	          };
         I = minors(2, A)  -- a non birational
         isBiratMap I
-	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
+	I = ideal(x*u^2, y*u^2, x*v^2) -- a non birational map
         isBiratMap I
     Text	
     	Next, we test some rational maps over three projective spaces.
@@ -1217,6 +1224,8 @@ doc ///
        	   Depending on this strategy the function "degreeOfMap" computes the degree of a map by two different approaches.
 
 ///
+
+
 
 
 end--
