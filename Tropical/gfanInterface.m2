@@ -2501,6 +2501,15 @@ gfanVersion  = () -> (
 -- documentation
 beginDocumentation()
 
+--Still to document:
+--gfanParsePolyhedralFan
+--gfanStableIntersection
+--gfanTropicalHyperSurfaceReconstruction 
+--gfanVersion
+--multiplicitiesReorder  (does this need to be exported?)
+--toPolymakeFormat  (does this need to be exported?)
+
+
 gfanFunctions = hashTable {
 	gfan => "gfan",
 	gfanBuchberger => "gfan _buchberger",
@@ -4328,25 +4337,51 @@ doc ///
 doc ///
 	Key
                 gfanOverIntegers
+		(gfanOverIntegers,Ideal)
+		(gfanOverIntegers,Ideal,List)
 	Headline
-		all reduced Grobenr bases of a poynomial ideal with coefficients in ZZ
+		all reduced Groebner bases of a poynomial ideal with coefficients in ZZ
 	Usage
 		G = gfanOverIntegers(I)
 	Inputs
 		I:Ideal
-			contained in a polynomial ring with coefficients in ZZ
+			contained in a polynomial ring with coefficients in ZZ.  The optional second list 
+		   
 	Outputs
+	    	F:Fan 
 		G:List
 		        all @TO2 {"Marked Groebner Basis Example", "marked reduced Groebner bases"}@ of {\tt I}.
+		L:List
 	Description
 		Text
-		    	????some text will go here
+		   This method produces all reduced Groebner basis of
+		   a polynomial ideal with coefficients in ZZ.  The
+		   input is given as an {\tt Ideal}.  If just the
+		   ideal is given then the option "groebnerFan" =>
+		   true" should also be added.  For the second
+		   version, the list w is a weight vector for which
+		   the initial ideal or Groebner basis will be
+		   computed (depending on whether "initialIdeal=>true"
+		   or "groebnerBasis"=>true is set).  Only one of
+		   these two can be set.  Note that the Groebner fan
+		   over ZZ is more refined than the Groebner fan of
+		   the corresponding ideal with coefficients in QQ.
 		Example
-		    1+1
+    		    R=ZZ[x,y]
+    		    I=ideal(x^2-y^2,2*x)
+    		    F=gfanOverIntegers(I,"groebnerFan"=>true)
+		    rays F
+		    linealitySpace F
+		    maxCones F
+		    G=gfanOverIntegers(I,{1,0},"groebnerBasis"=>true)
+		    H=gfanOverIntegers(I,{1,0},"initialIdeal"=>true)
 		Text
 		    @STRONG "gfan Documentation"@
 		    @gfanHelp "gfan _overintegers"@
 ///
+
+
+
 
 
 
