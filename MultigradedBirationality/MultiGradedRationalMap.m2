@@ -449,14 +449,21 @@ degreeOfMapIter = method()
 -- INPUT: A multi-graded ideal. 
 -- INPUT: The number of steps for computing the saturated special fiber ring.
 -- OUTPUT: The degree of the rational map represented by the generators of I.
+--         If the map is not generically finite then the output is 0.
 -- CAVEAT: It only gives a correct answer if nsteps is bigger than the highest degree of the generators of the 
 --       saturated special fiber ring.
 degreeOfMapIter(Ideal, ZZ) := (I, nsteps) -> (
-    checkMultiGraded(I);
+    grading := checkMultiGraded(I);
+    r := (sum grading) - (length grading);
+    S := specialFiber I;
+    
+    -- if the map is not genericaly finite, then return 0   
+    if dim S < r then return 0;
+    
     satFib := satSpecialFiber(I, nsteps);
     N := numerator reduceHilbert hilbertSeries satFib;
     mult := sub(N, { (vars ring N)_(0,0) => 1 });
-    degIm := degree specialFiber I;
+    degIm := degree S;
     
     mult // degIm
 )
@@ -579,10 +586,7 @@ Key
 Description 
   Text
    MultiGradedRationalMap provides functions for computing the degree of a multi-graded rational map.
-    
-    
-  
-   
+       
    In the paper  @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps") @, a new algebra called the {\bf saturated special fiber ring} was introduced.
    This algebra is related to several features in the study of rational maps. 
 
@@ -638,7 +642,7 @@ doc ///
       A = matrix{ {x, x^2 + y^2},
                   {-y, y^2 + z*x},
 	          {0, x^2}
-	   };
+	        };
       I = minors(2, A) -- a birational map
       degreeOfMap I
       A = matrix{ {x^2, x^2 + y^2},
@@ -753,7 +757,7 @@ doc ///
     	          };
         I = minors(2, A)  -- a non birational
         isBiratMap I
-	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
+	I = ideal(x*u^2, y*u^2, x*v^2) -- a non birational map
         isBiratMap I
     Text	
     	Next, we test some rational maps over three projective spaces.
@@ -796,7 +800,21 @@ doc ///
 	 
 	 The local cohomology module $H_{m}^1(\mathcal{R}(I))$ with respect to the maximal irrelevant ideal $\mathbf{m}$ is actually a bigraded $\mathcal{A}$-module.  
     	 We denote by $[H_m^1(Rees(I))]_0$ the restriction to degree zero part in the $R$-grading, that is $[H_m^1(Rees(I))]_0=[H_m^1(Rees(I))]_{(0,*)}$.     
-    	 So we have that $[H_m^1(Rees(I))]_0$ is naturally a graded $S$-module.
+       	 So we have that $[H_m^1(Rees(I))]_0$ is naturally a graded $S$-module.
+       Example
+         R = QQ[x,y,z]
+	 A = matrix{ {x, x^6 + y^6 + z*x^5},
+                     {-y, y^6 + z*x^3*y^2},
+	             {0, x^6 + x*y^4*z}
+	           };
+         I = minors(2, A) -- a birational map
+         prune Hm1Rees0 I
+         A = matrix{ {x^2, x^2 + y^2},
+                     {-y^2, y^2 + z*x},
+	             {0, x^2}
+	           };
+         I = minors(2, A) -- a non birational map
+	 Hm1Rees0 I	  
     Caveat
     	To call the method "Hm1Rees0(I)", the ideal $I$ should be in a single graded polynomial ring.
     
@@ -1143,7 +1161,7 @@ doc ///
       A = matrix{ {x, x^2 + y^2},
                   {-y, y^2 + z*x},
 	          {0, x^2}
-	   };
+	        };
       I = minors(2, A) -- a birational map
       degreeOfMap I
       upperBoundDegreeSingleGraded I
@@ -1208,10 +1226,12 @@ doc ///
 ///
 
 
+
+
 end--
 
-restart
 uninstallPackage "MultiGradedRationalMap"
+restart
 installPackage "MultiGradedRationalMap"
 viewHelp "MultiGradedRationalMap"
 
