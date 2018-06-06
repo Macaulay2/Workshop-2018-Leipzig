@@ -45,7 +45,9 @@ export {
   "isTropicalBasis",
   "multiplicities",
   "IsHomogeneous",
-  "Symmetry"}
+  "Symmetry",
+  "visualizeHypersurface"
+  }
 
 
 if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not present\n"
@@ -54,6 +56,25 @@ if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not pr
 ------------------------------------------------------------------------------
 -- CODE
 ------------------------------------------------------------------------------
+
+--Polymake visualization for tropical hypersurfaces
+visualizeHypersurface = method()
+
+visualizeHypersurface (String) := (S)->(
+	filename := temporaryFileName();
+	filename << "use application 'tropical';" << endl << concatenate("visualize_in_surface(new Hypersurface<Min>(POLYNOMIAL=>toTropicalPolynomial(\"",S,"\")));") << close;
+	runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
+	run runstring;
+	removeFile (filename|".err");
+	removeFile (filename|".out");
+	removeFile (filename);
+)
+
+--Example hypersurface
+--visualizeHypersurface("min(12+3*x0,-131+2*x0+x1,-67+2*x0+x2,-9+2*x0+x3,-131+x0+2*x1,-129+x0+x1+x2,-131+x0+x1+x3,-116+x0+2*x2,-76+x0+x2+x3,-24+x0+2*x3,-95+3*x1,-108+2*x1+x2,-92+2*x1+x3,-115+x1+2*x2,-117+x1+x2+x3,-83+x1+2*x3,-119+3*x2,-119+2*x2+x3,-82+x2+2*x3,-36+3*x3)")
+--opens in browser
+
+
 
 --Setting up the data type TropicalCycle
 
@@ -578,7 +599,6 @@ isPure TropicalCycle := Boolean => T->( isPure(fan(T)))
 isSimplicial TropicalCycle:= Boolean => T->( isSimplicial(fan(T)))
 
 
-
 ------------------------------------------------------------------------------
 -- DOCUMENTATION
 ------------------------------------------------------------------------------
@@ -602,6 +622,28 @@ doc ///
 
 ///
 
+
+doc ///
+	Key	
+		visualizeHypersurface
+		(visualizeHypersurface,String)
+	Headline
+		visualize the tropical hypersurface of the given polynomial
+	Usage
+		visualizeHypersurface(S)
+	Inputs
+		S:String
+	Description
+		Text
+			This function wraps the Polymake visualization for a 
+			tropical hypersurface given an input polynomial. The 
+			input should be in the format "min(f_1,f_2,...,f_n)"
+			where each f_i is a linear polynomial. Image appears
+			in browser.
+		Example
+			visualizeHypersurface("min(12+3*x0,-131+2*x0+x1,-67+2*x0+x2,-9+2*x0+x3,-131+x0+2*x1,-129+x0+x1+x2,-131+x0+x1+x3,-116+x0+2*x2,-76+x0+x2+x3,-24+x0+2*x3,-95+3*x1,-108+2*x1+x2,-92+2*x1+x3,-115+x1+2*x2,-117+x1+x2+x3,-83+x1+2*x3,-119+3*x2,-119+2*x2+x3,-82+x2+2*x3,-36+3*x3)")
+///
+			
 
 doc ///
     Key 
@@ -1173,6 +1215,7 @@ doc///
 			L=linealitySpace T
 			    
 ///	    
+
     	
 ----- TESTS -----
 
