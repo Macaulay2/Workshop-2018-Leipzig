@@ -78,7 +78,11 @@ expression (Tensor) := T -> (
 )
 
 net (Tensor) := T -> net expression T
-
+Tensor#{Standard,AfterPrint} = T -> (
+    << endl;
+    << toString(class(T)) | " in " | net(T#tensorSpace)
+    << endl;
+    )
 ------------------------------------------------------------------------
 -- ALGEBRA OF TENSORS
 ------------------------------------------------------------------------
