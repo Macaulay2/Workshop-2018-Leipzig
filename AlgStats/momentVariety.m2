@@ -11,30 +11,20 @@ listOfMoments = (d,R) -> (
 )
 
 --Gaussian
-momentIdeal = (d, R)->(
-    (S, phi) :=  flattenRing(R[mn, sd]);
-    T := S[t]/t^(d+1);
-    use T;
-    g := gens R;
-    series := exp(phi(mn)*t+(1/2)*phi(sd)^2*t^2);
-    I := ideal for i from 1 to d list i!*coefficient(t^i,series)-phi(g#i);
-    psi := map(R, S, (for i from 0 to #g-1 list phi(g#i) => g#i) | {phi(mn) => 0, phi(sd) => 0});
-    psi(eliminate({phi(mn),phi(sd)},I))
+momentIdeal = d->(
+    R=QQ[mn,sd,m_0..m_d][t]/t^(d+1);
+    series:=exp(mn*t+(1/2)*sd^2*t^2);
+    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
+    eliminate({mn,sd},I)
     )
-
--- TEST Gaussian moment ideal --
-d=20
-R=QQ[m_0..m_d]
-momentIdeal(10, R)
-
 
 --Exponential mixture
 --takes highest  degree d of moments and number of mixtures
 --NEEDS TO EB HOMOGENISED, NEEDS TO FIX DOUBLE ELIMINATE
-momentIdealExponential = (d,mix) ->(
+momentIdealExponential = (mix,d) ->(
     R:=QQ[lam_1..lam_mix,alp_1..alp_mix,m_0..m_d];
     I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list alp_j*lam_j^i)+ideal(-1+sum for i from 1 to mix list alp_i);
-    eliminate for j from 1 to mix list alp_j,eliminate(for i from 1 to mix list lam_i ,I))
+    eliminate ((for j from 1 to mix list alp_j)|(for i from 1 to mix list lam_i) ,I)
 )
 
 --Gaussian Mixtures
@@ -57,7 +47,6 @@ momentMapGaussians =  (n,d) -> (
   R := QQ[par];
   mu := matrix({toList(x_1..x_n)});
   Sigma := genericSymmetricMatrix(R,s_(1,1),n);
-     
   S := R[t_1..t_n]/((ideal(t_1..t_n))^(d+1));
   use S;
   a := vars(S)*transpose(mu) + (1/2) * vars(S)*Sigma*transpose(vars(S));
@@ -72,3 +61,5 @@ momentMapGaussians =  (n,d) -> (
   C=lift(C,R);
   return matrix({(reverse((entries(transpose(C)))_0))});   
 )
+
+momentIdealExponential(1,3)
