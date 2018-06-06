@@ -24,13 +24,16 @@ export {
     "tensorSpace",
     "makeTensor",
     -- symbols
-    "dims", "coeff", "baseRing", "tensorBasis"
+    "dims", "coeff", "baseRing", "tensorBasis", "tensorSpaceDim", "tensorSpaceOrder", "tensorOrder"
     }
 
 protect dims
 protect coeff
 protect baseRing
 protect tensorBasis
+protect tensorSpaceDim
+protect tensorSpaceOrder
+protect tensorOrder
 
 -- DOCUMENTATION ------------------------------------------------
 beginDocumentation()
@@ -78,7 +81,7 @@ tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> (
     new TensorSpace from hashTable{
 	baseRing => R,
 	dims => N,
-	tensorSpaceOrder => #(V#dims),
+	tensorSpaceOrder => #N,
 	tensorSpaceDim => product N,
 	tensorBasis => first entries basis(toList(#N:1),Tmod)
 	}
@@ -106,7 +109,7 @@ makeTensor (VisibleList,TensorSpace) := (L,V) -> (
     new Tensor from hashTable{
 	coeff => toList(L) / (i -> sub(i, V#baseRing)),
 	tensorSpace => V,
-	tensorOrder => #((T#tensorSpace)#dims)
+	tensorOrder => #(V#dims)
 	}
     )
 
@@ -197,28 +200,44 @@ TensorSpace ** TensorSpace := (V,W) -> (
 
 factorsTensor = method()
 factorsTensor(TensorSpace) := V -> (
-	return for i in 0..#(V#dims)-1 list (tensorSpace(V#baseRing,symbol x,{(V#dims)#i}))
+	return for i in 0..#(V#dims)-1 list (tensorSpace(V#baseRing,first(V#tensorBasis),{(V#dims)#i}))
 	)
 
-mergeTensor = method()
-mergeTensor(TensorSpace) := V -> (
-	return tensorSpace(V#baseRing,symbol x,{product for i in V#dims list i})
-	)
+--factorsTensor = method()
+--factorsTensor(TensorSpace) := V -> (
+--	return for i in 0..#(V#dims)-1 list (
+--	    new TensorSpace from hashTable{
+--		baseRing => V#baseRing,
+--		dims => (V#dims)#i,
+--		tensorSpaceOrder => 1,
+--		tensorSpaceDim => (V#dims)#i,
+--		tensorBasis => first entries basis(apply(toList((#(V#dims)):0),j->if j==i then 1 else 0),R)
+--		}
+--	    )
+--	)
+--
+--	    tensorSpace(V#baseRing,first(V#tensorBasis),{(V#dims)#i}))
+--	)
 
-kronecker = method()
-kronecker(TensorSpace,TensorSpace) := (V,W) -> (
-    if V#baseRing =!= W#baseRing then (
-	return "error: base rings are different"
-    );
-    if #(V#dims) =!= #(W#dims) then (
-	return "error: the number of factors of the given tensor spaces are not equal"
-    );
-	L=factorsTensor(V);
-	M=factorsTensor(W);
-	Z=mergeTensor((L#0)**(M#0));
-	for i in 1..#L-1 do Z=Z**mergeTensor((L#i)**(M#i));
-	return Z
-	)
+--mergeTensor = method()
+--mergeTensor(TensorSpace) := V -> (
+--    return tensorSpace(V#baseRing,"x",{product for i in V#dims list i})
+--    )
+
+--kronecker = method()
+--kronecker(TensorSpace,TensorSpace) := (V,W) -> (
+--    if V#baseRing =!= W#baseRing then (
+--	return "error: base rings are different"
+--	);
+--   if #(V#dims) =!= #(W#dims) then (
+--	return "error: the number of factors of the given tensor spaces are not equal"
+--	);
+--    L := factorsTensor(V);
+--    M := factorsTensor(W);
+--    Z := mergeTensor((L#0)**(M#0));
+--    for i in 1..#L-1 do Z=Z**mergeTensor((L#i)**(M#i));
+--    return Z
+--    )
 
 --kronecker = method()
 --kronecker(TensorSpace,TensorSpace) := (V,W) -> (
@@ -232,8 +251,8 @@ kronecker(TensorSpace,TensorSpace) := (V,W) -> (
 --	)
 
 Tensor ** Tensor := (T,U) -> (
-    M = flatten for i in T#coeff list for j in U#coeff list i*j;
-    R = T#tensorSpace ** U#tensorSpace;
+    M := flatten for i in T#coeff list for j in U#coeff list i*j;
+    R := T#tensorSpace ** U#tensorSpace;
     return makeTensor(M,R)
 	)
 
