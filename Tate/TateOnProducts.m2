@@ -2275,6 +2275,8 @@ doc ///
      Text	
 	and the "1+h" in the Northeast (= upper right) corner signifies that
 	that $h^0(\mathcal O_E) = h^1(\mathcal O_E) = 1.$
+  SeeAlso
+   cohomologyHashTable
 ///
 
 doc ///

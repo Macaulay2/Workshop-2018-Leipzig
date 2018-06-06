@@ -230,3 +230,4 @@ I = minors(2,m);
 M = S^1/I;
 coarseMultigradedRegularity M --{7,7}
 linearTruncations M
+
