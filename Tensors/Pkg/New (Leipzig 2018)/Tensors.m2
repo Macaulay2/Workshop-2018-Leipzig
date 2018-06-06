@@ -78,6 +78,8 @@ tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> (
     new TensorSpace from hashTable{
 	baseRing => R,
 	dims => N,
+	tensorSpaceOrder => #(V#dims),
+	tensorSpaceDim => product N,
 	tensorBasis => first entries basis(toList(#N:1),Tmod)
 	}
     )
@@ -103,7 +105,8 @@ makeTensor (VisibleList,TensorSpace) := (L,V) -> (
 	);
     new Tensor from hashTable{
 	coeff => toList(L) / (i -> sub(i, V#baseRing)),
-	tensorSpace => V
+	tensorSpace => V,
+	tensorOrder => #((T#tensorSpace)#dims)
 	}
     )
 
@@ -122,6 +125,16 @@ expression (Tensor) := T -> (
     );
     return expression (expr)
 )
+
+--orderTensor = method()
+--orderTensor (Tensor) := T -> (
+--    return #((T#tensorSpace)#dims)
+--    )
+
+--orderTensorSpace = method()
+--orderTensorSpace (TensorSpace) := V -> (
+--    return #(V#dims)
+--    )
 
 net (Tensor) := T -> net expression T
 Tensor#{Standard,AfterPrint} = T -> (
@@ -176,6 +189,8 @@ TensorSpace ** TensorSpace := (V,W) -> (
     new TensorSpace from hashTable{
 	baseRing => V#baseRing,
 	dims => N,
+	tensorSpaceOrder => #(V#dims)+#(W#dims),
+	tensorSpaceDim => (V#tensorSpaceDim)*(W#tensorSpaceDim),
 	tensorBasis => first entries basis(toList(#N:1),R)
 	}
     )
@@ -221,6 +236,12 @@ Tensor ** Tensor := (T,U) -> (
     R = T#tensorSpace ** U#tensorSpace;
     return makeTensor(M,R)
 	)
+
+--kronProduct(Tensor,Tensor) := (T,U) -> (
+--    M = flatten for i in T#coeff list for j in U#coeff list i*j;
+--    R = T#tensorSpace ** U#tensorSpace;
+--    return makeTensor(M,R)
+--	)
 
 Tensor ^** ZZ := (T,n) -> (
     if n == 0 then return 1_((T#tensorSpace).baseRing);
