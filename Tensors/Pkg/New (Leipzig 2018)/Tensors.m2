@@ -180,27 +180,41 @@ TensorSpace ** TensorSpace := (V,W) -> (
 	}
     )
 
-factors = method()
-factors(TensorSpace) := V -> (
+factorsTensor = method()
+factorsTensor(TensorSpace) := V -> (
 	return for i in 0..#(V#dims)-1 list (tensorSpace(V#baseRing,symbol x,{(V#dims)#i}))
 	)
 
-TensorSpace k** TensorSpace := (V,W) -> (
+mergeTensor = method()
+mergeTensor(TensorSpace) := V -> (
+	return tensorSpace(V#baseRing,symbol x,{product for i in V#dims list i})
+	)
+
+kronecker = method()
+kronecker(TensorSpace,TensorSpace) := (V,W) -> (
     if V#baseRing =!= W#baseRing then (
 	return "error: base rings are different"
     );
     if #(V#dims) =!= #(W#dims) then (
 	return "error: the number of factors of the given tensor spaces are not equal"
     );
-    N = for i in 0..#(V#dims)-1 list (V#dims)#i*((W#dims)#i);
-    R = ring (first V#tensorBasis) ** ring (first W#tensorBasis);--work in progress
-    
- new TensorSpace from hashTable{
-	baseRing => V#baseRing,
-	dims => N,
-	tensorBasis => first entries basis(toList(#N:1),R)
-	}
-    )
+	L=factorsTensor(V);
+	M=factorsTensor(W);
+	Z=mergeTensor((L#0)**(M#0));
+	for i in 1..#L-1 do Z=Z**mergeTensor((L#i)**(M#i));
+	return Z
+	)
+
+--kronecker = method()
+--kronecker(TensorSpace,TensorSpace) := (V,W) -> (
+--    if V#baseRing =!= W#baseRing then (
+--	return "error: base rings are different"
+--    );
+--    if #(V#dims) =!= #(W#dims) then (
+--	return "error: the number of factors of the given tensor spaces are not equal"
+--    );
+--	return tensorSpace(V#baseRing,symbol x, for i in 0..#(V#dims)-1 list (((V#dims)#i)*((W#dims)#i)))
+--	)
 
 Tensor ** Tensor := (T,U) -> (
     M = flatten for i in T#coeff list for j in U#coeff list i*j;
@@ -214,7 +228,6 @@ Tensor ^** ZZ := (T,n) -> (
     for i from 1 to n-1 do U = U**T;
     U
     )
-
 
 --- Tensor operations
 
