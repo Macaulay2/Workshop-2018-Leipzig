@@ -78,12 +78,13 @@ momentMapGaussians =  (n,d) -> (
 --Gaussian Mixtures Test
 --written to eliminate a_mix
 momentIdealGaussianTest = (mix,d)->(
-    R=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     if mix == 1 then(
-    	series:=sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2);
-    	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(a_1 - 1);
-    	return homogenize(eliminate({a_1}|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);)
+	R=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
+    	series:= exp(mn_1*t+(1/2)*sd_1^2*t^2);
+    	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
+    	return homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);)
     else( 
+	R=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
     	amix := 1 - sum for i from 1 to mix-1 list a_i;
     	series:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
     	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
