@@ -3,6 +3,48 @@
 --    It is based on the previous file "Tensors.m2" written during
 --    	  the Macaulay2 Workshop in Boise (2015).
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- PREAMBLE -----------------------------------------------------
+-- -*- coding: utf-8 -*-
+newPackage(
+    "Tensors",
+    Version => "0.1",
+    Date => "5 June 2018",
+    Authors => {}, -- TODO
+    Headline => "some tensor constructions",
+    AuxiliaryFiles => false,
+    DebuggingMode => true
+    )
+
+-- EXPORT LIST --------------------------------------------------
+export {
+    -- Types
+    "TensorSpace",
+    "Tensor",
+    -- methods
+    "tensorSpace",
+    "makeTensor",
+    -- symbols
+    "dims", "coeff", "baseRing", "tensorBasis"
+    }
+
+protect dims
+protect coeff
+protect baseRing
+protect tensorBasis
+
+-- DOCUMENTATION ------------------------------------------------
+beginDocumentation()
+doc ///
+  Key
+    Tensors
+  Headline
+     some tensor constructions
+  Description
+   Text
+    {\em Tensors} is work in progress.
+///
+
+-- CODE ---------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- CONSTRUCTIONS OF TENSOR SPACES AND TENSORS
@@ -60,7 +102,7 @@ makeTensor (VisibleList,TensorSpace) := (L,V) -> (
 	return "error: coefficients do not match the dimension"
 	);
     new Tensor from hashTable{
-	coeff => toList(L),
+	coeff => toList(L) / (i -> sub(i, V#baseRing)),
 	tensorSpace => V
 	}
     )
@@ -99,7 +141,7 @@ TensorSpace _ Sequence := (V,s) -> (
     N := V#dims;
     i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list N_h);
     i = i + last(s);
-    I = apply(toList(0..(product N - 1)), j -> if j == i then 1 else 0);    
+    I := apply(toList(0..(product N - 1)), j -> if j == i then 1 else 0);    
     return makeTensor(I,V)
     )
 TensorSpace _ ZZ := (V,z) -> (
@@ -168,27 +210,25 @@ Tensor * Thing := (T,r) -> (
 Tensor - Tensor := (T,T') -> (
      return T + (-T')
      )
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- --  TEST:
-V = tensorSpace(QQ,symbol X,{2,2,2})
-W = tensorSpace(QQ,Y,{3,3,3})
-T1 = makeTensor(1..8,V)
-T2 = makeTensor(1..8,V)
-T1 + T2
-2*T1 == T1+T2
-T1 == T2
-V_(1,1,1)
-T_(0,0,1)
-V**W
 
-V_(0,0,0)
-V_(0,0,1)
+-- TESTS --------------------------------------------------------
+
+TEST ///
+    V = tensorSpace(QQ,symbol X,{2,2,2})
+    W = tensorSpace(QQ,Y,{3,3,3})
+    T1 = makeTensor(1..8,V)
+    T2 = makeTensor(1..8,V)
+    assert(2*T1 == T1+T2)
+    assert(T1 == T2)
+    assert(class V_(1,1,1) === Tensor)
+    assert(class T1_(0,0,1) === T1#tensorSpace#baseRing)
+    V**W
+///
+
+end--------------------------------------------------------------
+
+uninstallPackage "Tensors"
+restart
+installPackage "Tensors"
+check "Tensors"
+viewHelp "Tensors"
