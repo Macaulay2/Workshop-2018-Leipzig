@@ -12,12 +12,14 @@ listOfMoments = (d,R) -> (
 
 --Gaussian
 momentIdeal = (d, R)->(
+    -- Append auxilliary vars to construct power series
     (S, phi) :=  flattenRing(R[mn, sd]);
     T := S[t]/t^(d+1);
     use T;
     g := gens R;
     series := exp(phi(mn)*t+(1/2)*phi(sd)^2*t^2);
     I := ideal for i from 1 to d list i!*coefficient(t^i,series)-phi(g#i);
+    -- Construct map from S back to the original ring R
     psi := map(R, S, (for i from 0 to #g-1 list phi(g#i) => g#i) | {phi(mn) => 0, phi(sd) => 0});
     psi(eliminate({phi(mn),phi(sd)},I))
     )
