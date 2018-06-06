@@ -26,7 +26,7 @@ export {
     "symExt",
     "cohomologyMatrix",
     "cohomologyHashTable",    
-    "cohomologyPolynomialTable",
+    "eulerPolynomialTable",
     "tallyDegrees",
     "lowerCorner",
     "upperCorner",
@@ -437,8 +437,8 @@ cohomologyMatrix(Module, List, List) := (M, low, high) -> (
     cohomologyMatrix(C, low , high))
 
 
-cohomologyPolynomialTable = method()
-cohomologyPolynomialTable HashTable := H ->(
+eulerPolynomialTable = method()
+eulerPolynomialTable HashTable := H ->(
     nonzeros := unique ((keys H)/first);
     low := {min (nonzeros/first), min(nonzeros/last)};
     high := {max (nonzeros/first), max(nonzeros/last)};    
@@ -452,10 +452,10 @@ cohomologyPolynomialTable HashTable := H ->(
 		if p>=0 then (H#cp)*(coh_0)^p else (H#cp)*(coh_1)^(-p)
 		     ))))
     )
-cohomologyPolynomialTable(Module, List, List) := (M,low,high) ->
-    cohomologyPolynomialTable cohomologyHashTable(M,low,high)
-cohomologyPolynomialTable(ChainComplex, List, List) := (T,low,high) ->
-    cohomologyPolynomialTable cohomologyHashTable(T,low,high)
+eulerPolynomialTable(Module, List, List) := (M,low,high) ->
+    eulerPolynomialTable cohomologyHashTable(M,low,high)
+eulerPolynomialTable(ChainComplex, List, List) := (T,low,high) ->
+    eulerPolynomialTable cohomologyHashTable(T,low,high)
 
 cohomologyHashTable=method()
 
@@ -1849,16 +1849,16 @@ document {
     UL{ 
 	TO beilinsonWindow,
 	TO tateExtension,
-	TO pushAboveWindow,
-	TO beilinsonBundle,
-	TO beilinsonContraction,
+--	TO pushAboveWindow,
+--	TO beilinsonBundle,
+--	TO beilinsonContraction,
 	TO beilinson,
 	TO bgg,
         },
    SUBSECTION "Numerical Information",
    UL{ 
       TO cohomologyMatrix,
-      TO cohomologyPolynomialTable,
+      TO eulerPolynomialTable,
       TO cohomologyHashTable,
       TO tallyDegrees
      },
@@ -2244,7 +2244,7 @@ doc ///
        
        In the case of a product of more (or fewer) projective spaces, or if a hash table
        output is desired, use
-       cohomologyHashTable or cohomologyPolynomialTable instead.
+       cohomologyHashTable or eulerPolynomialTable instead.
               
        The script computes a sufficient part of the Tate resolution for F, and then
        calls itself in the version for a Tate resolution. More generally,
@@ -2343,7 +2343,7 @@ doc ///
         In the case of more factors, the same format is available
 	through the command
      Example
-	cohomologyPolynomialTable H'
+	eulerPolynomialTable H'
   Caveat
         In case of hypercohomology, we write k 
 	instead of h^{-1}, and use the cohomology ring
@@ -2351,30 +2351,30 @@ doc ///
   SeeAlso
         productOfProjectiveSpaces
      	cohomologyMatrix
-        cohomologyPolynomialTable
+        eulerPolynomialTable
 	cornerComplex
 ///
 
 doc ///
   Key
-    cohomologyPolynomialTable
-    (cohomologyPolynomialTable,Module,List,List)
-    (cohomologyPolynomialTable,ChainComplex,List,List)
-    (cohomologyPolynomialTable,HashTable)    
+    eulerPolynomialTable
+    (eulerPolynomialTable,Module,List,List)
+    (eulerPolynomialTable,ChainComplex,List,List)
+    (eulerPolynomialTable,HashTable)    
   Headline
     cohomology groups of a sheaf on a product of projective spaces, or of (part) of a Tate resolution
   Usage
-    H=cohomologyPolynomialTable H'      
-    H=cohomologyPolynomialTable(M,low,high)      
-    H=cohomologyPolynomialTable(T,low,high)
+
+    H=eulerPolynomialTable(M,low,high)      
+    H=eulerPolynomialTable(T,low,high)
+    H=eulerPolynomialTable H'      
   Inputs
-    H': HashTable
-       output of cohomologyHashTable
     M: Module
        graded module representing a sheaf on a product of projective spaces
     T: ChainComplex
        free complex over the exterior algebra 
-    low: List
+    H': HashTable
+       output of cohomologyHashTable  low: List
     high: List
        two lists representing multi-degrees, the range for computation.
   Outputs
@@ -2384,7 +2384,7 @@ doc ///
      Text
        If M is a multi-graded module representing a coherent sheaf F on $P^n := P^{n_0} x .. x P^{n_{t-1}}$, 
        the script returns a hash table with entries 
-       a => sum_h^i(F(a))*h^i \in ZZ[h,k], 
+       a => sum_i h^i(F(a))*h^i \in ZZ[h,k], 
        where k represents h^{-1},
        where a is a multi-index, low<=a<=high in the partial order 
        (thus the value is 0 when i is not in the range 0..sum n.)
@@ -2393,7 +2393,8 @@ doc ///
        the values can be nonzero in a wider range.
        
        In case the number of factors t is 2, the output of @ TO cohomologyMatrix @ is 
-       easier to parse.
+       easier to parse. In general the script @ TO cohomologyHashTable @ gives the same
+       information as this script, but in a less compact form.
               
        The script computes a sufficient part of the Tate resolution for F, and then
        calls itself in the version for a Tate resolution. 
@@ -2409,8 +2410,8 @@ doc ///
 	M = S^1
 	low = {-3,-3};high = {3,3};
 	H' = cohomologyHashTable(M, low,high);
-	H = cohomologyPolynomialTable H'
-	H = cohomologyPolynomialTable (M, low, high)
+	H = eulerPolynomialTable H'
+	H = eulerPolynomialTable (M, low, high)
      Text
         We can print just the entries representing nonzero cohomology
 	groups:
@@ -2957,7 +2958,7 @@ doc ///
        
        cornerComplex(M,low,high)
        
-       forms the corner complex of the sheaf F represented by M,
+       forms the corner complex of the sheaf F represented by M, at {0,0}
        computed in such a way that all the cohomology groups of
        twists F(a) of F can be computed for low <= a <= high.
        
@@ -2967,19 +2968,16 @@ doc ///
        
        forms the corner complex with corner c of a (part of a) Tate resolution T as defined in
        @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @. 
-       
-       In the following we will produce a corner complex cT with
-       corner at c =\{-2,-1\}. To do this we need a big enough part
-       T of a Tate resolution so that all the strands around
-       the corner are exact. This example corresponds to the
-       Example of Section 4 of our paper referenced above. The Tate resolution
-       in question is that corresponding to a rank 3 natural
-       sheaf on P^1xP^1.
      Example
         (S,E) = productOfProjectiveSpaces{1,1}
 	low = {-4,-4};high = {3,2};
 	T1= (dual res( trim (ideal vars E)^2,LengthLimit=>8))[1];
 	T2=res(coker upperCorner(T1,{4,3}),LengthLimit=>13)[7];
+	C = cornerComplex(S^{{-2,-2}}, low,high)
+     Text
+        To see the corner in this case we do
+     Example
+    	cohomologyMatrix (C,low,2*high)
      Text
         Finally, we can define T, 
 	the sufficient part of the Tate resolution:
@@ -2987,7 +2985,13 @@ doc ///
         T=trivialHomologicalTruncation (T2,-5,6);
 	cohomologyMatrix(T,low,high)	
      Text
-        Now the corner complex at c:
+       In the following we will produce a corner complex cT with
+       corner at c =\{-2,-1\}. To do this we need a big enough part
+       T of a Tate resolution so that all the strands around
+       the corner are exact. This example corresponds to the
+       Example of Section 4 of our paper referenced above. The Tate resolution
+       in question is that corresponding to a rank 3 natural
+       sheaf on P^1xP^1.
      Example
         c =  -{2,1};
 	cT=cornerComplex(T,c);
@@ -3193,7 +3197,7 @@ doc ///
     (beilinson,ChainComplex)
     [beilinson,BundleType]
   Headline
-    apply the beilinson funcor
+    apply the beilinson functor
   Usage
     M=beilinson F
     phi=beilison psi
@@ -3592,7 +3596,7 @@ doc ///
     (bgg, Module)
     [bgg,LengthLimit]
    Headline
-    make a linear free complex from an module
+    make a linear free complex from an module over an exterior algebra or a symmetric algebra
    Usage
     LP = bgg P
     RM = bgg(M,LengthLimit=>4)
@@ -3833,7 +3837,7 @@ betti F
 tallyDegrees F
 cohomologyMatrix(M, low,high)
 H = cohomologyHashTable(M, low,high)
-cohomologyPolynomialTable H
+eulerPolynomialTable H
 
 
 ///
