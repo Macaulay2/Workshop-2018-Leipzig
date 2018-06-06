@@ -38,7 +38,7 @@ momentIdealExponential = (mix,d) ->(
 --takes as input the number of mixtures and the highest degree of moments appearing
 --computes the homogeneous moment ideal by eliminating the means and standard deviations
 momentIdealGaussian = (mix,d)->(
-    R=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
+    R:=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     series:=sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2);
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
     homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0)
@@ -81,16 +81,36 @@ momentIdealPoisson = (mix,d)->(
 --written to eliminate a_mix
 momentIdealGaussianTest = (mix,d)->(
     if mix == 1 then(
-	R=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
+	R:=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
     	series:= exp(mn_1*t+(1/2)*sd_1^2*t^2);
     	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
     	return homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);)
     else( 
-	R=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
+	R:=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
     	amix := 1 - sum for i from 1 to mix-1 list a_i;
     	series:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
     	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
     	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0))
 )
 
-momentIdealExponential(1,3)
+
+--computing the moment ideal for the multinomial distribution
+--k = #possible outcomes
+--n = #trials
+--p_1,..,p_k are the probabilities of each outcome so that their sum is 1
+--t_1..t_k are the variables of the moment generating function
+--d is the truncation order
+momentIdealMultinomial = (k,n,d) -> (
+    S := QQ[t_1..t_k];
+    exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
+    quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
+    Mons := ideal(apply(quotientExps, e->S_e));
+    R := QQ[p_1..p_k,apply(exps,i->m_i)][t_1..t_k];
+    Mons = sub(Mons,R);
+    R = R / Mons;
+    use R;
+    series := (sum apply(toList(1..k), j-> p_j*exp(t_j)))^n; --moment gen fxn of the multinomial distribution
+    I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + ideal( 1 - sum apply(toList(1..k), i -> p_i));
+    T := QQ[apply(exps,i->m_i)];
+    homogenize(sub((eliminate(toList(p_1..p_k),I),T)),m_(exps#0))
+)
