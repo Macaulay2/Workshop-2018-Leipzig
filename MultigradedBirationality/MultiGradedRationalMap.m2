@@ -458,7 +458,7 @@ degreeOfMapIter(Ideal, ZZ) := (I, nsteps) -> (
     S := specialFiber I;
     
     -- if the map is not genericaly finite, then return 0   
-    if dim S < r then return 0;
+    if (dim S) - 1 < r then return 0;
     
     satFib := satSpecialFiber(I, nsteps);
     N := numerator reduceHilbert hilbertSeries satFib;
@@ -742,7 +742,7 @@ doc ///
 	$$
 	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
 	$$
-	This method calls "jDRank" in order to obtain the full Jacobian dual rank  and then it tests the birationality of $\mathbb{F}$ (see Theorem 4.4). 
+	This method calls "jDRank" in order to obtain the full Jacobian dual rank  and then it tests the birationality of $\mathbb{F}$ (see Theorem 4.4 in @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps")@). 
     
         First, we compute some examples in the bigraded setting.  
     Example
@@ -921,7 +921,7 @@ doc ///
     	 
 	 If nsteps is specified then "satSpecialFiberIdeal(I,stpeps)" is called, else "satSpecialFiberIdeal(I)" is used instead.
          
-	 In the following examples the saturated special fiber ring is a polynomial ring when the map is birational (see Theorem 2.4).
+	 In the following examples the saturated special fiber ring is a polynomial ring when the map is birational (see Theorem 2.4 in @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps")@).
 	 First, we compute some examples of plane rational maps. 
        Example 
        	 R = QQ[x,y,z]
@@ -1037,7 +1037,7 @@ doc ///
 	$$
 	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
 	$$
-	This function computes the full Jacobian dual rank of $\mathbb{F}$ (see Notation 4.2). 
+	This function computes the full Jacobian dual rank of $\mathbb{F}$ (see Notation 4.2 in @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps")@). 
     
         First, we compute some examples in the bigraded setting.  
     Example
@@ -1091,7 +1091,7 @@ doc ///
 	$$
 	(x_{1,0} : ... : x_{1,r_1}; ...... ;x_{m,0} : ... : x_{m,r_m}) \to (f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m}), ..... , f_0(x_{1,0},...,x_{1,r_1}, ...... ,x_{m,0},...,x_{m,r_m})).
 	$$
-	This function computes the partial Jacobian dual ranks of $\mathbb{F}$ (see Notation 4.2). 
+	This function computes the partial Jacobian dual ranks of $\mathbb{F}$ (see Notation 4.2 in @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps")@). 
     
         First, we compute some examples in the bigraded setting.  
     Example
@@ -1146,7 +1146,7 @@ doc ///
 	$$
 	(x_0: ... :x_r) \to (f_0(x_0,...,x_r), f_1(x_0,...,x_r), ..... , f_s(x_0,...,x_r)).
 	$$
-        Using certain Hilbert functions the degree of the map is bounded (see Theorem 3.22).
+        Using certain Hilbert functions the degree of the map is bounded (see Theorem 3.22 in @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps")@).
     
         The following example is a rational map without base points: 
     Example
@@ -1195,7 +1195,7 @@ doc ///
     Description
     	Text
 	    When this strategy is used then the degree of the map is computed directly from the multiplicity of $[H_m^1(Rees(I))]_0$.
-    	    It contains an implementation of Corollary 2.12.
+    	    It contains an implementation of Corollary 2.12 in @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps")@.
 ///
 
 
@@ -1208,7 +1208,7 @@ doc ///
     Description
     	Text
 	    When this strategy is used then the degree of the map is computed directly from the multiplicity of the saturated special fiber ring of $I$.
-	    The degree of the rational map then can be obtained from Theorem 2.4.
+	    The degree of the rational map then can be obtained from Theorem 2.4 in @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps")@.
 ///
 
 
@@ -1218,14 +1218,192 @@ doc ///
    Headline
        Choose a strategy for computing the degree of map
    Usage
-       degreeOfMap(...,Strategy => X)
+       degreeOfMap(...,Strategy => ...)
    Description
        Text
        	   Depending on this strategy the function "degreeOfMap" computes the degree of a map by two different approaches.
+	   The two strategies are "Hm1Rees0Strategy" and "SatSpecialFibStrategy".
 
 ///
 
 
+TEST ///
+    R = QQ[x,y,z]
+      I = ideal(random(4, R), random(4, R), random(4, R));
+      betti res I
+      degreeOfMap I
+      A = matrix{ {x, x^2 + y^2},
+                  {-y, y^2 + z*x},
+	          {0, x^2}
+	        };
+      I = minors(2, A) -- a birational map
+      degreeOfMap I
+      A = matrix{ {x^2, x^2 + y^2},
+                  {-y^2, y^2 + z*x},
+	          {0, x^2}
+	        };
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+      A = matrix{ {x^3, x^2 + y^2},
+                  {-y^3, y^2 + z*x},
+	          {0, x^2}
+	        };
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+      A = matrix{ {x^3, x^4},
+                  {-y^3, y^4},
+	          {z^3, x^4}
+	        };
+      I = minors(2, A) -- a non birational map
+      degreeOfMap I 
+      R = QQ[x,y,z,v,w]
+      I = ideal(random(1, R), random(1, R), random(1, R), random(1, R), random(1, R));
+      degreeOfMap(I, Strategy=>SatSpecialFibStrategy)    	
+      I = ideal(29*x^3 + 55*x*y*z, 7*y^3, 14*z^3, 17*v^3, 12*w^3)
+      degreeOfMap(I, Strategy=>SatSpecialFibStrategy)
+ 
+///
+
+
+TEST ///
+    R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+    I = ideal(x*u, y*u, y*v) -- a birational map
+    degreeOfMapIter(I, 5)
+    I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+    degreeOfMapIter(I, 5)
+    A = matrix{ {x^5*u,  x^2*v^2},
+                {y^5*v, x^2*u^2},
+                {0,     y^2*v^2}
+              };
+    I = minors(2, A)  -- a non birational
+    degreeOfMapIter(I, 5)
+    
+///
+
+TEST ///
+     R = QQ[x,y,z]
+     A = matrix{ {x, x^2 + y^2},
+                  {-y, y^2 + z*x},
+                  {0, x^2}
+               };
+     I = minors(2, A) -- a birational map
+     gensSatSpecialFib I
+     gensSatSpecialFib(I, 5)
+     A = matrix{ {x^3, x^2 + y^2},
+                 {-y^3, y^2 + z*x},
+                 {0, x^2}
+                };
+     I = minors(2, A) -- a non birational map
+     gensSatSpecialFib I
+     gensSatSpecialFib(I, 5)
+     R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+     I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+     gensSatSpecialFib(I, 5)
+    
+///
+
+
+TEST ///
+     R = QQ[x,y,z]
+     A = matrix{ {x, x^5 + y^5},
+                 {-y, y^5 + z*x^2*y^2},
+                 {0, x^5}
+               };
+     I = minors(2, A) -- a birational map
+     satSpecialFiber I
+     A = matrix{ {x^3, x^2 + y^2},
+                 {-y^3, y^2 + z*x},
+                 {0, x^2}
+               };
+     I = minors(2, A) -- a non birational map
+     satSpecialFiber I 
+     R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+     I = ideal(x*u, y*u, y*v) -- a birational map
+     satSpecialFiber(I, 5)
+     I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+     satSpecialFiber(I, 5) 
+
+///
+
+
+TEST ///
+     R = QQ[x,y,z]
+     A = matrix{ {x, x^5 + y^5},
+                 {-y, y^5 + z*x^2*y^2},
+                 {0, x^5}
+               };
+     I = minors(2, A) -- a birational map
+     satSpecialFiberIdeal I
+     A = matrix{ {x^3, x^2 + y^2},
+                 {-y^3, y^2 + z*x},
+                 {0, x^2}
+                };
+     I = minors(2, A) -- a non birational map
+     satSpecialFiberIdeal I 
+     R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+     I = ideal(x*u, y*u, y*v) -- a birational map
+     satSpecialFiberIdeal(I, 5)
+     I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+     satSpecialFiberIdeal(I, 5) 
+	
+///
+
+
+TEST ///
+    	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+        I = ideal(x*u, y*u, y*v) -- a birational map
+        jDRank I
+     	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+        jDRank I
+	A = matrix{ {x^5*u,  x^2*v^2},
+    	            {y^5*v, x^2*u^2},
+	            {0,     y^2*v^2}
+    	          };
+        I = minors(2, A)  -- a non birational
+        jDRank I
+	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
+        jDRank I 
+    	R = QQ[x,y,z,w]
+        A = matrix{ {x + y,  x, x},
+                    {3*z - 4*w, y, z},
+	            {w,  z, z + w}, 
+	            {y - z,  w, x + y}
+	          };
+        I = minors(3, A) -- a birational map
+        jDRank I
+        I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
+        jDRank I
+
+///
+
+
+TEST ///
+      	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
+        I = ideal(x*u, y*u, y*v) -- a birational map
+        partialJDRs I
+     	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
+        partialJDRs I
+	A = matrix{ {x^5*u,  x^2*v^2},
+    	            {y^5*v, x^2*u^2},
+	            {0,     y^2*v^2}
+    	          };
+        I = minors(2, A)  -- a non birational
+        partialJDRs I
+	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
+        partialJDRs I
+    	R = QQ[x,y,z,w]
+        A = matrix{ {x + y,  x, x},
+                    {3*z - 4*w, y, z},
+	            {w,  z, z + w}, 
+	            {y - z,  w, x + y}
+	          };
+        I = minors(3, A) -- a birational map
+        partialJDRs I
+        I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
+        partialJDRs I
+
+
+///
 
 
 end--
@@ -1236,3 +1414,4 @@ installPackage "MultiGradedRationalMap"
 viewHelp "MultiGradedRationalMap"
 
 loadPackage "MultiGradedRationalMap"
+
