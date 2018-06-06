@@ -65,30 +65,40 @@ momentMapGaussians =  (n,d) -> (
   (M,C):=coefficients(MGF);
   use R;
   C = mutableMatrix(C);
+  lM :=  flatten (entries M);
+  lexpM := flatten (apply(lM,mon->exponents(mon)));
   c := 1;
   for i from 0 to numColumns(M)-1 do (
-      (for m in ( (entries vars S)_0 ) do c = c*((degree(m,M_(0,i)))!));
+      (for e in lexpM_i do c = c*(e!));
+      -- (for m in ( (entries vars S)_0 ) do c = c*((degree(m,M_(0,i)))!));
       C_(i,0) = c*C_(i,0);
       c=1;
       );
   C = matrix(C);
   C=lift(C,R);
-  return matrix({(reverse((entries(transpose(C)))_0))});
+  
+  momvars := toSequence reverse (apply(lexpM,e->m_e));
+  
+  return (matrix({(reverse((entries(transpose(C)))_0))}),momvars);
      
 )   	    	    	
 
 -- This computes the homogeneous ideal of the moment variety.
 
 momentVarietyGaussians = (n,d) -> (
-  C := momentMapGaussians(n,d);   
+    
+  (C,momvars) := momentMapGaussians(n,d);   
   R := ring(C);
   k := coefficientRing(R);
-  nmom := numColumns(C);
-  PPM := k[m_0..m_(nmom-1)];
+    
+  PPM := k[momvars];
+  varmoms := gens PPM;
   f := map(R,PPM,C);
   I := kernel f;
-  I = homogenize(I,m_0);
-  return I;   
+  I = homogenize(I,varmoms_0);
+  
+  return I;  
+   
 )
 
 -------------------------------------------------------------------------------------
