@@ -115,24 +115,63 @@ Tensor _ ZZ := (T,z) -> (
     return T_s
     )
 
--- FIXME!!
 -- tensor product
+
 TensorSpace ** TensorSpace := (V,W) -> (
     if V#baseRing =!= W#baseRing then (
 	return "error: base rings are different"
+    );
+    N = V#dims | W#dims;
+    R = ring (first V#tensorBasis) ** ring (first W#tensorBasis);
+    
+ new TensorSpace from hashTable{
+	baseRing => V#baseRing,
+	dims => N,
+	tensorBasis => first entries basis(toList(#N:1),R)
+	}
     )
-    A := V#antiSym | W#antiSym;
-    D := V#degs | W#degs;
-    N := V#dims | W#dims;
-    Tmod := ring (first V#tensorBasis) ** ring (first W#tensorBasis);
-)
 
---  EXAMPLE:
---    construction of a general tensor in sym^1(CC^2) ** sym^2(CC^2)
-a = symbol a
-S = QQ[a_0..a_6];
-V = tensorSpace(QQ,{{x,y},{z,t}},{1,2}) -- tensor space
-W = tensorSpace(QQ,{symbol u_0..symbol u_4},{2}) -- tensor space
-T = makeTensor(toList(a_1..a_6),V)     -- make the tensor
-peek V	      	      	      	       -- to look at attributes of V
-peek T	      	      	      	       -- to look at attributes of T
+
+
+--- Tensor operations
+
+TensorSpace == TensorSpace := (W,V) -> (
+   if  W.baseRing === V.baseRing and W.dims == V.dims then true
+   else false
+    )
+    
+Tensor == Tensor := (T,T') -> (
+    if T'#tensorSpace == T#tensorSpace and T'#coeff == T#coeff then true
+    else false 
+    )
+
+Tensor + Tensor := (T,T') -> (
+     if not  T'#tensorSpace ===  T#tensorSpace then error "Tensor+Tensor not from the same TensorSpace";
+     makeTensor(T#coeff + T'#coeff, T'#tensorSpace)
+     )
+ 
+Thing * Tensor := (r,T) -> (
+    return makeTensor(sub(r,(T#tensorSpace).baseRing)*(T#coeff), T#tensorSpace)
+    )
+
+Tensor * Thing := (T,r) -> (
+    return makeTensor(sub(r,(T#tensorSpace).baseRing)*(T#coeff), T#tensorSpace)
+    )
+
+- Tensor := T -> (-1)*T
+ 
+ 
+Tensor - Tensor := (T,T') -> (
+     return T + (-T')
+     )
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ --  TEST:
