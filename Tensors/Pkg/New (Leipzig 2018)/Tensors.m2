@@ -68,8 +68,12 @@ makeTensor (VisibleList,TensorSpace) := (L,V) -> (
 expression (Tensor) := T -> (
     Tspace := T#tensorSpace;
     Tcoeff := T#coeff;
-    expr := expression toString(Tcoeff_0*(Tspace#tensorBasis)_0);
-    for i from 1 to #(Tspace.tensorBasis)-1 do (
+    i0 := 0;
+    while ((T#coeff)_i0 == 0_(Tspace#baseRing) and i0 < product(Tspace#dims)-1) do (
+	    i0 = i0+1;
+	    );
+    expr := expression toString(Tcoeff_i0 * (Tspace#tensorBasis)_i0);
+    for i from i0+1 to #(Tspace.tensorBasis)-1 do (
 	if Tcoeff_i != 0_(Tspace.baseRing) then (
 	    expr = expression expr + expression (toString(Tcoeff_i * (Tspace#tensorBasis)_i));
 	);
@@ -125,17 +129,14 @@ TensorSpace ** TensorSpace := (V,W) -> (
     if V#baseRing =!= W#baseRing then (
 	return "error: base rings are different"
     );
-    N = V#dims | W#dims;
-    R = ring (first V#tensorBasis) ** ring (first W#tensorBasis);
-    
- new TensorSpace from hashTable{
+    N := V#dims | W#dims;
+    R := ring (first V#tensorBasis) ** ring (first W#tensorBasis);   
+    new TensorSpace from hashTable{
 	baseRing => V#baseRing,
 	dims => N,
 	tensorBasis => first entries basis(toList(#N:1),R)
 	}
     )
-
-
 
 --- Tensor operations
 
@@ -164,7 +165,6 @@ Tensor * Thing := (T,r) -> (
 
 - Tensor := T -> (-1)*T
  
- 
 Tensor - Tensor := (T,T') -> (
      return T + (-T')
      )
@@ -179,3 +179,16 @@ Tensor - Tensor := (T,T') -> (
  
  
  --  TEST:
+V = tensorSpace(QQ,symbol X,{2,2,2})
+W = tensorSpace(QQ,Y,{3,3,3})
+T1 = makeTensor(1..8,V)
+T2 = makeTensor(1..8,V)
+T1 + T2
+2*T1 == T1+T2
+T1 == T2
+V_(1,1,1)
+T_(0,0,1)
+V**W
+
+V_(0,0,0)
+V_(0,0,1)
