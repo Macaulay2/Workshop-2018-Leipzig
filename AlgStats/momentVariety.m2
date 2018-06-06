@@ -39,8 +39,7 @@ momentIdealGaussian = (mix,d)->(
 
 -- This computes the moment map up to order d for an n-dimensional Gaussian. 
 -- The parameters for the mean are x_1,..,x_n and for the covariance matrix are s_(i,j)
-
-momentMapGaussians =  (n,d) -> (  
+momentMapGaussians =  (n,d) -> (
   par:=toList(x_1..x_n);
   for i from 1 to n do (for j from i to n do (par=append(par,s_(i,j))) );
   par=toSequence(par);
@@ -52,8 +51,7 @@ momentMapGaussians =  (n,d) -> (
   use S;
   a := vars(S)*transpose(mu) + (1/2) * vars(S)*Sigma*transpose(vars(S));
   MGF := exp(a_(0,0));
-  
-  
+ 
   (M,C):=coefficients(MGF);
   use R;
   C = mutableMatrix(C);
@@ -62,3 +60,16 @@ momentMapGaussians =  (n,d) -> (
   C=lift(C,R);
   return matrix({(reverse((entries(transpose(C)))_0))});   
 )
+
+--Poisson Mixtures
+--takes as input the number of mixtures and the highest degree of moments appearing
+--computes the homogeneous moment ideal 
+momentIdealPoisson = (mix,d)->(
+    R:=QQ[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
+    series:=sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
+    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
+    homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list lambda_i),I),m_0)
+)
+
+
+
