@@ -30,7 +30,8 @@ momentIdeal = (d, R)->(
 --NEEDS TO EB HOMOGENISED, NEEDS TO FIX DOUBLE ELIMINATE
 momentIdealExponential = (mix,d) ->(
     R:=QQ[lam_1..lam_mix,alp_1..alp_mix,m_0..m_d];
-    I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list alp_j*lam_j^i)+ideal(-1+sum for i from 1 to mix list alp_i);
+    I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list alp_j*lam_j^i*i!) +
+       ideal(-1+sum for i from 1 to mix list alp_i);
     eliminate ((for j from 1 to mix list alp_j)|(for i from 1 to mix list lam_i) ,I)
 )
 
@@ -44,28 +45,63 @@ momentIdealGaussian = (mix,d)->(
     homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0)
 )
 
--- This computes the moment map up to order d for an n-dimensional Gaussian. 
--- The parameters for the mean are x_1,..,x_n and for the covariance matrix are s_(i,j)
+--------------------------------------------------------------------------------------
+
 momentMapGaussians =  (n,d) -> (
+      
   par:=toList(x_1..x_n);
   for i from 1 to n do (for j from i to n do (par=append(par,s_(i,j))) );
   par=toSequence(par);
   R := QQ[par];
   mu := matrix({toList(x_1..x_n)});
   Sigma := genericSymmetricMatrix(R,s_(1,1),n);
+     
   S := R[t_1..t_n]/((ideal(t_1..t_n))^(d+1));
   use S;
   a := vars(S)*transpose(mu) + (1/2) * vars(S)*Sigma*transpose(vars(S));
   MGF := exp(a_(0,0));
- 
+  
+  
   (M,C):=coefficients(MGF);
   use R;
   C = mutableMatrix(C);
-  for i from 0 to numColumns(M)-1 do (C_(i,0) = (((degree(M_(0,i)))_0)!)*C_(i,0));
+  lM :=  flatten (entries M);
+  lexpM := flatten (apply(lM,mon->exponents(mon)));
+  c := 1;
+  for i from 0 to numColumns(M)-1 do (
+      (for e in lexpM_i do c = c*(e!));
+      -- (for m in ( (entries vars S)_0 ) do c = c*((degree(m,M_(0,i)))!));
+      C_(i,0) = c*C_(i,0);
+      c=1;
+      );
   C = matrix(C);
   C=lift(C,R);
-  return matrix({(reverse((entries(transpose(C)))_0))});   
+  
+  momvars := toSequence reverse (apply(lexpM,e->m_e));
+  
+  return (matrix({(reverse((entries(transpose(C)))_0))}),momvars);
+     
+)   	    	    	
+
+-- This computes the homogeneous ideal of the moment variety.
+
+momentVarietyGaussians = (n,d) -> (
+    
+  (C,momvars) := momentMapGaussians(n,d);   
+  R := ring(C);
+  k := coefficientRing(R);
+    
+  PPM := k[momvars];
+  varmoms := gens PPM;
+  f := map(R,PPM,C);
+  I := kernel f;
+  I = homogenize(I,varmoms_0);
+  
+  return I;  
+   
 )
+
+-------------------------------------------------------------------------------------
 
 --Poisson Mixtures
 --takes as input the number of mixtures and the highest degree of moments appearing
