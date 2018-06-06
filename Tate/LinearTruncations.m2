@@ -62,7 +62,7 @@ coarseMultigradedRegularity Module := M->
     coarseMultigradedRegularity res prune M
 
 coarseMultigradedRegularity ChainComplex := F-> (
-    t := degreeLength M;
+    t := degreeLength ring F;
     range := toList(min F..max F-1);
     degsF := apply(range,i -> degrees (F_i));
     lowerbounds := flatten flatten apply(range, i->(
@@ -90,7 +90,7 @@ linearTruncations Module := M-> (
     candidates := set {};
     scan(L0, ell ->candidates =  candidates+set toList(ell..r));
     candidates = toList candidates;
-    L = select(candidates, ell -> 
+    L := select(candidates, ell -> 
 	isLinearComplex res truncate(ell,M));
     findMins L
     )
@@ -220,3 +220,13 @@ linearTruncations M
 coarseMultigradedRegularity M
 
 cokernel | x_(0,1)^2x_(1,0) x_(0,0)^2x_(0,1)x_(1,0) x_(1,0)^3x_(1,1)^2 x_(0,1)x_(1,0)^3x_(1,1) x_(0,0)^4x_(0,1) x_(0,1)x_(1,0)^5
+
+-----
+--possible counterexample to the interval conjecture
+S = multigradedPolynomialRing{2,2}	
+m = 2
+m = random(S^{3:{m,m}}, S^{{1,-1},{-1,1}});
+I = minors(2,m);
+M = S^1/I;
+coarseMultigradedRegularity M --{7,7}
+linearTruncations M

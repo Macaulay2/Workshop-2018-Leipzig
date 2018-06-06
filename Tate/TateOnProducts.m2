@@ -47,21 +47,21 @@ export {
     "productOfProjectiveSpaces",
     "contractionData", -- probably doesn't need to be exported
     "BundleType",
-    "PrunedQuotient", "QuotientBundle", "SubBundle",
+    "PrunedQuotient", 
+    "QuotientBundle", 
+    "SubBundle",
     --
     "cornerCohomologyTablesOfUa",
     "coarseMultigradedRegularity",
-    "Characteristic",
-    "VariableName",
     "CoefficientField",
     "CohomologyVariables",
     "Rings",
-    "CohomRing",
-    "TateRingData",
+--    "CohomRing",
+--    "TateRingData",
     "TateData",
     "bgg",
     --the following could all be part of ChainComplexExtras
-    "isIsomorphic",
+--    "isIsomorphic",
     "prependZeroMap",
     "appendZeroMap",
     "removeZeroTrailingTerms",
@@ -266,42 +266,6 @@ minimalBetti truncate(R, M)
 apply(1+ length G, i-> tally degrees G_i)
 ///
 
--*
-setupRings=method(Options=>{Variables=>{getSymbol "x", getSymbol "e"}})
-setupRings(Ring,List) := opts -> (kk,n) -> (
-     t:= #n;
-     x:= symbol x;
-     xx:=flatten apply(t,i->apply(n_i+1,j->x_(i,j)));
-     degs:=flatten apply(t,i->apply(n_i+1,k->apply(t,j->if i==j then 1 else 0)));
-     Sloc:=kk[xx,Degrees=>degs];
-     e:= symbol e;
-     ee:=flatten apply(t,i->apply(n_i+1,j->e_(i,j)));
-     Eloc:=kk[ee,Degrees=>degs,SkewCommutative=>true];
---     h:=symbol h;
---     H:=ZZ[h];
-     return(Sloc,Eloc))
-
-setupRings(Ring,List) := opts -> (kk,n) -> (
-     x:= opts.Variables#0; -- symbol x;
-     e:= opts.Variables#1; -- symbol e;
-     h := getSymbol "h";
-     k := getSymbol "k";
-     t:= #n;
-     xx:=flatten apply(t,i->apply(n_i+1,j->x_(i,j)));
-     degs:=flatten apply(t,i->apply(n_i+1,k->apply(t,j->if i==j then 1 else 0)));
-     S:=kk[xx,Degrees=>degs];
-     ee:=flatten apply(t,i->apply(n_i+1,j->e_(i,j)));
-     E:=kk[ee,Degrees=>degs,SkewCommutative=>true];
-     CohomRing := ZZ[h,k];
-     tateData := new MutableHashTable;
-     tateData.Rings = (S,E);
-     tateData.CohomRing = CohomRing;
-     tateData.BeilinsonBundles = new MutableHashTable;
-     S.TateData = tateData;
-     E.TateData = tateData;
-     (S,E)
-     )
- *-
  
 tateData = method()
 tateData Ring := (S) -> if not S.?TateData then 
@@ -1537,7 +1501,7 @@ contractionSequence ChainComplex := (T) -> (
     (hashTable Cdegrees, hashTable Ddegrees, C, D)
     )
 ///
--- XX
+-- end
 restart
 debug needsPackage "TateOnProducts"
   n = {2,1}
@@ -1707,27 +1671,6 @@ betti M'
 
 --preliminaries for bgg:
 multMap = method()
-
--*
-multMap(Module,List,List):= (P,a',a) ->(
-    --produces a map from 
-    --a sum of copies of S^a to a sum of copies of S^a'.
-    --If the grading is changed to the "correct" one for E,
-    --this code will need fixing!
-    if sum a' - sum a != 1 then error"Sums must differ by 1";
-    (S,E) := (tateData ring P)#Rings;
-    pos := positions(gens E, e-> degree e == a'-a);
-    Ba := matrix basis(a,P);
-    Ba' := matrix basis(a',P);
-    map(S^{(numcols Ba'):a'}, S^{(numcols Ba):a},
-	 sum(pos,i-> 
-	     S_i*
-	   (sum(numrows Ba, ell-> 
-		   sub(contract((transpose Ba')_{ell},E_i*Ba^{ell}),S))))
-       )
-)
-*-
-
 multMap(Module,List,List):= (P,a',a) ->(
     --produces a map from 
     --a sum of copies of S^a to a sum of copies of S^a'.
@@ -1744,6 +1687,23 @@ multMap(Module,List,List):= (P,a',a) ->(
 	 )
        )
 
+multMapE = method()
+multMapE(Module,List,List):= (M,a',a) ->(
+    --produces a map from 
+    --a sum of copies of S^a to a sum of copies of S^a'.
+    --If the grading is changed to the "correct" one for E,
+    --this code will need fixing!
+    if sum a' - sum a != 1 then error"Sums must differ by 1";
+    (S,E) := (tateData ring M)#Rings;
+    pos := positions(gens S, e-> degree e == a'-a);
+    ee := apply(gens S, e->map(M,M**S^{degree e},e));
+    Ba := basis(a,M)**S^{a'-a};
+    Ba' :=basis(a',M);
+    map(E^{(numcols Ba'):a'}, E^{(numcols Ba):a},
+	 sum(pos, p->E_p*sub(ee_p*Ba//Ba', E))
+	 )
+       )
+
 ///
 
 (S,E) = productOfProjectiveSpaces{1,2}
@@ -1756,9 +1716,10 @@ degrees target m
 betti m
 ///
 
-bgg = method()
+bgg = method(Options =>{LengthLimit => null})
 bgg Module := P -> (
     (S,E) := (tateData ring P)#Rings;
+    if ring P === E then(
     D := (degrees basis P)_1;
     Ds := sort apply(D, d->(sum d,d));
     minP := min(Ds/first);
@@ -1790,12 +1751,58 @@ bgg Module := P -> (
 		     )))
                )
 	);
-   LP)
+   return LP))
+///
+   
+   if ring P === S then (
 
+   if o.LengthLimit == null then LengLim = 1+numgens S else
+                   LengLim = o.LengthLimit;
+   M =P/((ideal vars S)^(LengLim+1));
+
+    D = (degrees basis M)_1
+    Ds := sort apply(D, d->(sum d,d));
+    minM := min(Ds/first);
+    maxM := max(Ds/first);
+--    (maxM - minM)
+    freeModuleDegs := hashTable apply(toList(minM..maxM), i-> 
+	    (-i=>select(Ds,d-> d_0 == i)/last)
+	    );
+    RM := new ChainComplex;
+    RM.ring = E;
+--define the modules as direct sums, with one degree per summand
+    scan(toList(minM..maxM), i->
+	RM#(-i) = directSum apply(unique freeModuleDegs#(-i), d -> 
+	    S^(select(freeModuleDegs#(-i), k-> d ==k))));
+--define the maps
+    tar:=E^0; sour := E^0; utar := {};usour := {}; a:= 0;a':=0;
+    u := L->unique degrees L;
+    scan(toList(min RM..max RM-1), k->(
+	    tar = RM_(k-1);
+	    sour = RM_k;
+	    utar = u tar;
+	    usour = u sour;
+	    RM.dd#k = sum(#utar, i-> 
+		      sum(#usour, j->(
+	              a' = -utar_i;
+	              a = -usour_j;
+                      map(tar,sour,
+    		         tar_[i]*multMapE(M,a',a)*(sour^[j])
+		         )
+		     )))
+               )
+	);
+   return RM))
+       
+///      
 
 ///
 restart
+
 loadPackage("TateOnProducts", Reload=>true)
+(S,E) = productOfProjectiveSpaces{1,1}
+P = module ideal vars S
+LengLim = 5
 ///
 
 isSurjection = (A,B)->(
@@ -1829,12 +1836,16 @@ document {
 	},
 
    PARA{},
-   SUBSECTION "From graded modules to Tate resolutions",  
-   UL{   TO productOfProjectiveSpaces,
-	 TO symExt,
-	 TO lowerCorner,
-	 TO upperCorner
-      },
+    SUBSECTION "Beilinson monads",
+    UL{ 
+	TO beilinsonWindow,
+	TO tateExtension,
+	TO pushAboveWindow,
+	TO beilinsonBundle,
+	TO beilinsonContraction,
+	TO beilinson,
+	TO bgg,
+        },
    SUBSECTION "Numerical Information",
    UL{ 
       TO cohomologyMatrix,
@@ -1842,6 +1853,12 @@ document {
       TO cohomologyHashTable,
       TO tallyDegrees
      },
+   SUBSECTION "From graded modules to Tate resolutions",  
+   UL{   TO productOfProjectiveSpaces,
+	 TO symExt,
+	 TO lowerCorner,
+	 TO upperCorner
+      },
     SUBSECTION "Subcomplexes",
     UL{
        TO cornerComplex,
@@ -1861,16 +1878,6 @@ document {
         TO isChainComplex,
 	TO minimize
 	},      
-    SUBSECTION "Beilinson monads",
-    UL{ 
-	TO beilinsonWindow,
-	TO tateExtension,
-	TO pushAboveWindow,
-	TO beilinsonBundle,
-	TO beilinsonContraction,
-	TO beilinson,
-	TO bgg,
-        },
     
     SUBSECTION "Examples from the papers",
     UL{ 
@@ -1879,13 +1886,10 @@ document {
     
     SUBSECTION "Missing pieces",
     UL{ "BGG functor R for complexes of S-modules",
-	"projective resolutions of complexes",
-	"BGG functor L for complexes of E-modules",
 	"various composition of functions",
-	TO cornerCohomologyTablesOfUa,
-	"Example section:  examples from the paper, jumping lines, 
-	$R pi_* sO_X$ for a resolution of singularities, $Rf_*sF$ for a coherent sheaf
-	$sF$ on $X subset P^{n_1}$ and a morphism $f:X -> P^{n_2}$.",
+	"Example section:  examples from the paper, jumping lines", 
+	"$Rf_*sF$ for a coherent sheaf
+	$sF$ on $X subset P^{n_1}$ and a morphism $f:X -> P^{n_2}$."
 	} 
          
    }
@@ -1929,37 +1933,6 @@ doc ///
     tallyDegrees
 ///
 
--*
-doc ///
-  Key
-    setupRings
-    (setupRings,Ring,List)
-  Headline
-    setup the Cox ring of a product of t projective space, and its exterior dual 
-  Usage
-    (S,E)=setup(kk,n)
-  Inputs
-    kk: Ring
-       the ground field 
-    n: List
-       the list \{n_1,...,n_t\} \, of the dimensions of the factors
-  Outputs
-    S: PolynomialRing
-       the homogeneous coordinate of  P^{n_1}x ... x P^{n_t} of t 
-       projective spaces
-    E: PolynomialRing
-       the corresponding exterior algebra   
-  Description
-     Text
-     Example
-        n={1,1}
-	kk=ZZ/101 -- the ground field
-        (S,E)=setupRings(ZZ/101,n)
-	(coefficientRing S) === (coefficientRing E)
-	trim (ideal vars S)^2
-        trim (ideal vars E)^2	
-///
-*-
 doc ///
   Key
     productOfProjectiveSpaces
@@ -2009,9 +1982,14 @@ doc ///
 	trim (ideal vars S)^2
         trim (ideal vars E)^2	
 	peek S.TateData
-	S.TateData#CohomRing
 ///
 
+doc ///
+   Key
+    InitialDegree
+   Headline
+    Option for chainComplexMap
+///
 doc ///
    Key
     CoefficientField
@@ -2020,6 +1998,30 @@ doc ///
    Description
     Text
      Base field for the two polynomial rings
+///
+doc ///
+   Key
+    ContractionData
+   Headline
+    name of a cached datum
+///
+
+doc ///
+   Key
+    QuotientBundle
+   Headline
+    symbol used in beilinson
+   SeeAlso
+    beilinson
+///
+
+doc ///
+   Key
+    TateData
+   Headline
+    symbol used in beilinsonBundle
+   SeeAlso
+    beilinsonBundle
 ///
 
 
@@ -3290,6 +3292,7 @@ doc ///
   Key
     beilinsonContraction
     (beilinsonContraction,RingElement,List,List)
+    [beilinsonContraction,BundleType]
   Headline
     compute a Beilinson contraction
   Usage
@@ -3428,6 +3431,7 @@ doc ///
         Key
 	 resolutionOfChainComplex
 	 (resolutionOfChainComplex, ChainComplex)
+	 [resolutionOfChainComplex,LengthLimit]
         Headline
 	 free resolution of a chain complex
         Usage
@@ -3502,7 +3506,8 @@ document {
      }
 
 document {
-     Key => {chainComplexMap, (chainComplexMap,ChainComplex,ChainComplex,List)},
+     Key => {chainComplexMap, (chainComplexMap,ChainComplex,ChainComplex,List),
+     [chainComplexMap,InitialDegree]},
      Headline => "Defines a ChainComplexMap via a list of matrices.",
      Usage => "chainComplexMap(D,C,mapList)",
      Inputs => {
@@ -3568,7 +3573,6 @@ doc ///
      T === E.TateData
    SeeAlso
     productOfProjectiveSpaces
-    BeilinsonBundles
 ///
 
 
@@ -3607,6 +3611,30 @@ doc ///
      cohomologyMatrix(M, -high, high)
    SeeAlso
     productOfProjectiveSpaces
+///
+
+
+doc ///
+   Key
+    contractionData
+    (contractionData, List, List, Ring)
+    [contractionData,BundleType]
+   Headline
+    Compute the action of monomials in the exterior algebra on the Beilinson monad
+   Usage
+    contractionData(a, b, E)
+   Inputs
+    a:List
+     row degrees
+    b:List
+     degrees
+    E: Ring
+     exterior algebra
+   Outputs
+    :List 
+     maps from U^a to U^b
+   Caveat
+    Mike will finish this some day
 ///
 
 ------------------------------------
