@@ -580,7 +580,10 @@ Description
   Text
    MultiGradedRationalMap provides functions for computing the degree of a multi-graded rational map.
     
-   In the paper "Degree and birationality of multi-graded rational maps", Laurent Busé, Yairon Cid Ruiz, Carlos D'Andrea, arXiv:1805.05180, a new algebra called the {\bf saturated special fiber ring}.
+    
+  
+   
+   In the paper  @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps") @, a new algebra called the {\bf saturated special fiber ring} was introduced.
    This algebra is related to several features in the study of rational maps. 
 
    Some functions of this package are capable of working in the multi-graded setting.
@@ -633,27 +636,27 @@ doc ///
     	In the following examples we play with the relations of the Hilbert-Burch presentation and the degree of $\mathbb{F}$ (see Proposition 5.2 and Theorem 5.12):
     Example 	
       A = matrix{ {x, x^2 + y^2},
-            {-y, y^2 + z*x},
-	    {0, x^2}
-	   }
+                  {-y, y^2 + z*x},
+	          {0, x^2}
+	   };
       I = minors(2, A) -- a birational map
       degreeOfMap I
       A = matrix{ {x^2, x^2 + y^2},
                   {-y^2, y^2 + z*x},
 	          {0, x^2}
-	        }
+	        };
       I = minors(2, A) -- a non birational map
       degreeOfMap I 
       A = matrix{ {x^3, x^2 + y^2},
                   {-y^3, y^2 + z*x},
 	          {0, x^2}
-	        }
+	        };
       I = minors(2, A) -- a non birational map
       degreeOfMap I 
       A = matrix{ {x^3, x^4},
                   {-y^3, y^4},
 	          {z^3, x^4}
-	        }
+	        };
       I = minors(2, A) -- a non birational map
       degreeOfMap I 
     Text
@@ -704,7 +707,7 @@ doc ///
 	A = matrix{ {x^5*u,  x^2*v^2},
     	            {y^5*v, x^2*u^2},
 	            {0,     y^2*v^2}
-    	          }
+    	          };
         I = minors(2, A)  -- a non birational
         degreeOfMapIter(I, 5)
 
@@ -747,7 +750,7 @@ doc ///
 	A = matrix{ {x^5*u,  x^2*v^2},
     	            {y^5*v, x^2*u^2},
 	            {0,     y^2*v^2}
-    	          }
+    	          };
         I = minors(2, A)  -- a non birational
         isBiratMap I
 	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
@@ -760,7 +763,7 @@ doc ///
                     {3*z - 4*w, y, z},
 	            {w,  z, z + w}, 
 	            {y - z,  w, x + y}
-	          }
+	          };
         I = minors(3, A) -- a birational map
         isBiratMap I
         I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
@@ -838,14 +841,14 @@ doc ///
     	 A = matrix{ {x, x^2 + y^2},
                      {-y, y^2 + z*x},
 	             {0, x^2}
-	           }
+	           };
          I = minors(2, A) -- a birational map
          gensSatSpecialFib I
 	 gensSatSpecialFib(I, 5)
     	 A = matrix{ {x^3, x^2 + y^2},
                      {-y^3, y^2 + z*x},
 	             {0, x^2}
-	           }
+	           };
          I = minors(2, A) -- a non birational map
   	 gensSatSpecialFib I
 	 gensSatSpecialFib(I, 5)
@@ -907,13 +910,13 @@ doc ///
          A = matrix{ {x, x^5 + y^5},
                      {-y, y^5 + z*x^2*y^2},
 	             {0, x^5}
-	           }
+	           };
          I = minors(2, A) -- a birational map
          satSpecialFiber I
 	 A = matrix{ {x^3, x^2 + y^2},
                      {-y^3, y^2 + z*x},
  	             {0, x^2}
-	           }
+	           };
          I = minors(2, A) -- a non birational map
          satSpecialFiber I 
        Text
@@ -969,13 +972,13 @@ doc ///
          A = matrix{ {x, x^5 + y^5},
                      {-y, y^5 + z*x^2*y^2},
 	             {0, x^5}
-	           }
+	           };
          I = minors(2, A) -- a birational map
          satSpecialFiberIdeal I
 	 A = matrix{ {x^3, x^2 + y^2},
                      {-y^3, y^2 + z*x},
  	             {0, x^2}
-	           }
+	           };
          I = minors(2, A) -- a non birational map
          satSpecialFiberIdeal I 
        Text
@@ -1028,7 +1031,7 @@ doc ///
 	A = matrix{ {x^5*u,  x^2*v^2},
     	            {y^5*v, x^2*u^2},
 	            {0,     y^2*v^2}
-    	          }
+    	          };
         I = minors(2, A)  -- a non birational
         jDRank I
 	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
@@ -1041,7 +1044,7 @@ doc ///
                     {3*z - 4*w, y, z},
 	            {w,  z, z + w}, 
 	            {y - z,  w, x + y}
-	          }
+	          };
         I = minors(3, A) -- a birational map
         jDRank I
         I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
@@ -1082,7 +1085,7 @@ doc ///
 	A = matrix{ {x^5*u,  x^2*v^2},
     	            {y^5*v, x^2*u^2},
 	            {0,     y^2*v^2}
-    	          }
+    	          };
         I = minors(2, A)  -- a non birational
         partialJDRs I
 	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
@@ -1095,7 +1098,7 @@ doc ///
                     {3*z - 4*w, y, z},
 	            {w,  z, z + w}, 
 	            {y - z,  w, x + y}
-	          }
+	          };
         I = minors(3, A) -- a birational map
         partialJDRs I
         I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
@@ -1138,23 +1141,23 @@ doc ///
     	In the following examples we play with the relations of the Hilbert-Burch presentation and the degree of $\mathbb{F}$ (see Proposition 5.2 and Theorem 5.12):
     Example 	
       A = matrix{ {x, x^2 + y^2},
-            {-y, y^2 + z*x},
-	    {0, x^2}
-	   }
+                  {-y, y^2 + z*x},
+	          {0, x^2}
+	   };
       I = minors(2, A) -- a birational map
       degreeOfMap I
       upperBoundDegreeSingleGraded I
       A = matrix{ {x^2, x^2 + y^2},
                   {-y^2, y^2 + z*x},
 	          {0, x^2}
-	        }
+	        };
       I = minors(2, A) -- a non birational map
       degreeOfMap I 
       upperBoundDegreeSingleGraded I
       A = matrix{ {x^3, x^2 + y^2},
                   {-y^3, y^2 + z*x},
 	          {0, x^2}
-	        }
+	        };
       I = minors(2, A) -- a non birational map
       degreeOfMap I 
       upperBoundDegreeSingleGraded I
