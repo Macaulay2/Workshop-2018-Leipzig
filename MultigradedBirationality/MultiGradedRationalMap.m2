@@ -579,10 +579,7 @@ Key
 Description 
   Text
    MultiGradedRationalMap provides functions for computing the degree of a multi-graded rational map.
-    
-    
-  
-   
+       
    In the paper  @ HREF("https://arxiv.org/abs/1805.05180", "Degree and birationality of multi-graded rational maps") @, a new algebra called the {\bf saturated special fiber ring} was introduced.
    This algebra is related to several features in the study of rational maps. 
 
@@ -638,7 +635,7 @@ doc ///
       A = matrix{ {x, x^2 + y^2},
                   {-y, y^2 + z*x},
 	          {0, x^2}
-	   };
+	        };
       I = minors(2, A) -- a birational map
       degreeOfMap I
       A = matrix{ {x^2, x^2 + y^2},
@@ -796,7 +793,21 @@ doc ///
 	 
 	 The local cohomology module $H_{m}^1(\mathcal{R}(I))$ with respect to the maximal irrelevant ideal $\mathbf{m}$ is actually a bigraded $\mathcal{A}$-module.  
     	 We denote by $[H_m^1(Rees(I))]_0$ the restriction to degree zero part in the $R$-grading, that is $[H_m^1(Rees(I))]_0=[H_m^1(Rees(I))]_{(0,*)}$.     
-    	 So we have that $[H_m^1(Rees(I))]_0$ is naturally a graded $S$-module.
+       	 So we have that $[H_m^1(Rees(I))]_0$ is naturally a graded $S$-module.
+       Example
+         R = QQ[x,y,z]
+	 A = matrix{ {x, x^6 + y^6 + z*x^5},
+                     {-y, y^6 + z*x^3*y^2},
+	             {0, x^6 + x*y^4*z}
+	           };
+         I = minors(2, A) -- a birational map
+         prune Hm1Rees0 I
+         A = matrix{ {x^2, x^2 + y^2},
+                     {-y^2, y^2 + z*x},
+	             {0, x^2}
+	           };
+         I = minors(2, A) -- a non birational map
+	 Hm1Rees0 I	  
     Caveat
     	To call the method "Hm1Rees0(I)", the ideal $I$ should be in a single graded polynomial ring.
     
@@ -1143,7 +1154,7 @@ doc ///
       A = matrix{ {x, x^2 + y^2},
                   {-y, y^2 + z*x},
 	          {0, x^2}
-	   };
+	        };
       I = minors(2, A) -- a birational map
       degreeOfMap I
       upperBoundDegreeSingleGraded I
@@ -1210,8 +1221,8 @@ doc ///
 
 end--
 
-restart
 uninstallPackage "MultiGradedRationalMap"
+restart
 installPackage "MultiGradedRationalMap"
 viewHelp "MultiGradedRationalMap"
 

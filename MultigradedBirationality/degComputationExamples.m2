@@ -97,6 +97,9 @@ A = matrix{ {x, x^6 + y^6 + z*x^5},
 	   }
 I = minors(2, A) -- a birational map
 degree rationalMap gens I 
+prune Hm1Rees0 I
+M = oo
+length M
 degreeOfMap I 
 degreeOfMap(I, Strategy=>SatSpecialFibStrategy)
 degreeOfMapIter(I, 5)
@@ -116,8 +119,8 @@ degreeOfMap(I, Strategy=>SatSpecialFibStrategy)
 degreeOfMapIter(I, 5)
 isBiratMap I
 jDRank I
-satSpecialFiber I
-
+H = satSpecialFiber I
+degrees H
 
 A = matrix{ {x^3, x^2 + y^2},
             {-y^3, y^2 + z*x},
@@ -506,6 +509,7 @@ degreeOfMapIter(I, 5)
 isBiratMap I
 jDRank I
 partialJDRs I
+satSpecialFiber(I, 5)
 
 I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
 degreeOfMapIter(I, 5)
