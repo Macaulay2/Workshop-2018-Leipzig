@@ -28,6 +28,7 @@ export {
     "mergeTensor",
     "glAction",
     "flattening",
+    "symmetrize",
     "slice",
     "contraction",
     -- symbols
