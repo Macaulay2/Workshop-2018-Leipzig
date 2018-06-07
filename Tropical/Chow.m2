@@ -358,12 +358,22 @@ Vector * Vector := (a,b) -> (
 ToricDivisor * List := (D, C) -> (
     -- D is a divisor on X
     -- C is a cone in the fan of X
-    if not isTransverse(D,C) then (
-        u := vector(random(ZZ^(#(first rays variety D)),ZZ^1));
-        D = D + tDivisor(u,variety D);
-    );
     assert(isCartier(D));
     X := variety D;
+    if not isTransverse(D,C) then (
+        -- u := vector(random(ZZ^(#(first rays variety D)),ZZ^1));
+        d := # rays X;
+        l := C | toList (set(0..(d-1)) - C);  -- reorder ray indices to put C first
+        Ds := l / (i -> X_i);  -- reorder divisors
+        m := transpose matrix ( l / (i -> (rays X)#i) );  -- reorder rays
+        M := inverse(m_{0,numRows m-1}) * m;  -- gaussian elim
+        eqs := for r in entries M list (
+            sum (apply(r,Ds, (e,Di) -> e*Di))
+        );
+        for i from 0 to # eqs - 1 do (
+            D = D - (entries D)#(l#i) * (eqs#i)
+        );
+    );
     local i;
     for k in keys(orbits X) do (
         if member(C,orbits(X,k)) then i = k
@@ -981,6 +991,7 @@ uninstallPackage "Chow"
 uninstallPackage "NormalToricVarieties"
 restart
 loadPackage "Chow"
+needsPackage "Chow"
 installPackage "NormalToricVarieties"
 installPackage "Chow"
 check "Chow"
@@ -997,6 +1008,8 @@ X = normalToricVariety(rayList,coneList)
 D = X_0 + 2*X_1+3*X_2+4*X_3
 C = (orbits X)#1#0
 D*C
+E = X_3
+E * {3}
 
 u = vector({-3,2})
 cs = for r in rays X list (
@@ -1026,5 +1039,3 @@ restart
 loadPackage "Chow"
 installPackage "Chow"
 check "Chow"
-
-
