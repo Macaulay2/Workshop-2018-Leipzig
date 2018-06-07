@@ -341,7 +341,7 @@ ToricDivisor * List := (D, C) -> (
     -- D is a divisor on X
     -- C is a cone in the fan of X
     if not isTransverse(D,C) then (
-        u := vector(random(ZZ^(#(rays variety X)),ZZ^1));
+        u := vector(random(ZZ^(#(rays variety D)),ZZ^1));
         D = D + tDivisor(u,variety D);
     );
     assert(isCartier(D));
