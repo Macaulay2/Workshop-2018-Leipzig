@@ -46,10 +46,10 @@ listOfMoments (ZZ,Ring) := List => (d,R) -> (
 momentIdeal = method()
 momentIdeal (ZZ, Ring) := Ideal => (d, R)->(
     -- Append auxilliary vars to construct power series
-    mn := local mn;
-    sd := local sd;
+    mn := symbol mn;
+    sd := symbol sd;
     (S, phi) :=  flattenRing(R[mn, sd]);
-    t := local t;
+    t := symbol t;
     T := S[t]/t^(d+1);
     use T;
     g := gens R;
@@ -63,9 +63,9 @@ momentIdeal (ZZ, Ring) := Ideal => (d, R)->(
 --Exponential mixture
 --takes highest  degree d of moments and number of mixtures
 momentIdealExponential = (mix,d) ->(
-    l := local l;
-    a := local a;
-    m := local m;
+    l := symbol l;
+    a := symbol a;
+    m := symbol m;
     R:=QQ[l_1..l_mix,a_1..a_mix,m_0..m_d];
     I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list a_j*l_j^i*i!) +
        ideal(-1+sum for i from 1 to mix list a_i);
@@ -93,7 +93,7 @@ momentIdealGaussian (ZZ, ZZ) := Ideal => (mix,d)->(
 --------------------------------------------------------------------------------------
 
 momentMapGaussians =  (n,d) -> (
-  x := local x;    
+  x := symbol x;    
   par:=toList(x_1..x_n);
   for i from 1 to n do (for j from i to n do (par=append(par,s_(i,j))) );
   par=toSequence(par);
@@ -153,10 +153,10 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
 --computes the homogeneous moment ideal 
 momentIdealPoisson = method()
 momentIdealPoisson (ZZ, ZZ) := Ideal => (mix,d)->(
-    lambda := local lambda;
-    a := local a;
-    m := local m;
-    t := local t;
+    lambda := symbol lambda;
+    a := symbol a;
+    m := symbol m;
+    t := symbol t;
     R:=QQ[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     series:=sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
