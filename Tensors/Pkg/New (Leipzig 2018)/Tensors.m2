@@ -301,6 +301,32 @@ Tensor - Tensor := (T,T') -> (
      return T + (-T')
      )
 
+
+--- Group actions 
+-- Fix: too much time
+
+glAction = method()
+glAction (List,Tensor) := (G,T) -> (
+    V = T#tensorSpace;
+    N = apply(V.dims,i->i-1);
+    d = #N;
+    return sum flatten for J in (d:0)..toSequence(N) list (
+	 for I in (d:0)..toSequence(N) list (
+	    V_J * T_I * product for k to d-1 list (
+		(G_k)_(J_k,I_k)
+		)
+	    )
+	)
+    )
+
+glAction (Matrix,Tensor) := (G,T) -> (
+    d := #(T#tensorSpace.dims);
+    GG := toList(d:G);
+    return glAction(GG,T)
+    )
+
+
+
 -- TESTS --------------------------------------------------------
 
 TEST ///
