@@ -261,6 +261,31 @@ momentIdealFromMGF (ZZ, ZZ, List, Ring) := Ideal => (mix, d, f, R) ->(
     sub(I, QQ[m_0..m_d])
 )
 
+--moment ideal of Laplace with parameters mu and b
+momentIdealLaplace = method()
+momentIdealLaplace (ZZ, ZZ) := Ideal => (mix,d)->(
+    mn := symbol mn;
+    b := symbol b;
+    m := symbol m;
+    t := symbol t;
+    a := symbol a;
+    if mix == 1 then(
+	R:=QQ[mn_1..mn_mix,b_1..b_mix,m_0..m_d][t]/t^(d+1);
+	use R;
+    	series:= exp(mn_1*t)*(1+sum for i from 1 to d list (b_1^2*t^2)^i);
+    	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
+    	return homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I),m_0);
+	)
+    else( 
+	R2:=QQ[mn_1..mn_mix,b_1..b_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
+	use R2;
+    	amix := 1 - sum for i from 1 to mix-1 list a_i;
+    	series2:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t)*(1+sum for j from 1 to d list (b_i^2*t^2)^j) + amix*exp(mn_mix*t)*(1+sum for j from 1 to d list (b_mix^2*t^2)^j);
+    	I2:=ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
+    	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I2),m_0)
+	)
+)
+
 --DOCUMENTATION--
 
 beginDocumentation()
