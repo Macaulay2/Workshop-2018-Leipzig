@@ -14,24 +14,19 @@ newPackage(
      )
 
 export { 
-     "AA",
-     "SR",
      "nefCone",
-     "nefCone2",
      "effCone",
      "isContainedCones",
-     "nefEqualsIntersection",
      "chowGroupBasis",
-     "Lcone",
-     "Lconeb",
-     "LconevsNef",
+     "chowGroup",
      "IntersectionRing",
-     "intersectionRing"
+     "intersectionRing",
+     "ToricCycle",
+     "toricCycle"
      }
 
-protect Mob
 protect ChowGroupBas 
-protect ChowRingIdeal
+protect AmbientRing
 
 ---------------------------------------------------------------------------
 -- CODE
@@ -208,59 +203,29 @@ chowGroup=(i,X) -> (
 -- );      
 
 
-
-
-
---Create SR ideal
-SR = method()
-SR(NormalToricVariety, Ring) := (X, S) -> (
-     if (not X.cache.?ChowRingIdeal) or (not coefficientRing(ring(X.cache.ChowRingIdeal)) === S) then (
-	  z:=symbol z;
-     	  R:=S[z_0..z_(#(rays X)-1)];
-       	  I:= ideal apply(max X, sigma->(
-	       	    mono:=1_R;
-	       	    for j from 0 to #(rays X)-1 do 
-		        if not(member(j,sigma)) then mono=mono*R_j;
-	       	    mono
-		    ));
-     	  squaresIdeal:=ideal apply(gens R, xx->xx^2);       
-     	  I=ideal flatten entries ((gens (squaresIdeal : I)) % squaresIdeal);
-     	  I=I+ ideal apply(transpose rays X, a->(
-	       genJ:=0_R;
-	       for j from 0 to #a-1 do (
-		    genJ=genJ+a#j*R_j;
-	       );
-	       genJ    
-     	  ));
-     X.cache.ChowRingIdeal=ideal mingens I;
-     );
-     X.cache.ChowRingIdeal
-);
-SR(NormalToricVariety) := X -> (SR(X,QQ));
-
-
 --Create SR ideal
 intersectionRing = method()
 intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
      if (not X.cache.?IntersectionRing) or (not coefficientRing(X.cache.IntersectionRing) === S) then (
-	  z:=symbol z;
-     	  R:=S[z_0..z_(#(rays X)-1)];
-       	  I:= ideal apply(max X, sigma->(
+ 	 z:=symbol z;
+     	 R:=S[z_0..z_(#(rays X)-1)];
+       	 I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
 	       	    for j from 0 to #(rays X)-1 do 
 		        if not(member(j,sigma)) then mono=mono*R_j;
 	       	    mono
 		    ));
-     	  squaresIdeal:=ideal apply(gens R, xx->xx^2);       
-     	  I=ideal flatten entries ((gens (squaresIdeal : I)) % squaresIdeal);
-     	  I=I+ ideal apply(transpose rays X, a->(
+     	 squaresIdeal:=ideal apply(gens R, xx->xx^2);       
+     	 I=ideal flatten entries ((gens (squaresIdeal : I)) % squaresIdeal);
+     	 I=I+ ideal apply(transpose rays X, a->(
 	       genJ:=0_R;
 	       for j from 0 to #a-1 do (
 		    genJ=genJ+a#j*R_j;
 	       );
 	       genJ    
-     	  ));
+     	 ));
      X.cache.IntersectionRing=R/(ideal mingens I);
+     X.cache.AmbientRing = R;
      );
      X.cache.IntersectionRing
 );
@@ -271,10 +236,9 @@ chowGroupBasis = method()
 chowGroupBasis(NormalToricVariety,ZZ) := (X,i) -> (
      if not X.cache.?ChowGroupBas then
      	  X.cache.ChowGroupBas = new MutableHashTable;
-     I:=SR(X);
-     R:=ring I;
+     R:=intersectionRing(X);
      if not X.cache.ChowGroupBas#?i then 	  
-          X.cache.ChowGroupBas#i=flatten entries lift(basis(dim X -i,R/I),R);
+          X.cache.ChowGroupBas#i=flatten entries lift(basis(dim X -i,R),X.cache.AmbientRing);
      return(X.cache.ChowGroupBas#i);
 );
 chowGroupBasis(NormalToricVariety) := X -> (for i from 0 to dim X list chowGroupBasis(X,i))
@@ -291,9 +255,9 @@ nefCone=(i,X)->(
      if not isSmooth(X) then error("Not implemented yet");
      n:=dim X;
      Conesi:=orbits(X,n-i);
-     --Get SR ring
-     I:=SR(X);
-     R:=ring I;
+     --Get intersection ring
+     I:=ideal(intersectionRing(X));
+     R:=X.cache.AmbientRing;
      --Now create the multiplication map
      --First get a basis for chowGroup_i
      chowBas:=chowGroupBasis(X,i);
@@ -316,302 +280,14 @@ nefCone=(i,X)->(
 );
 
 
---Code to compute the cone nef^k_i, which is the cone of all
--- codimension k-cycles that intersect every effective i-dimensional
--- cycle in effective cycles.
---Currently returns a rather arbitrary  basis for the codim-k Chow group 
--- and then a matrix whose columns represent generators for this 
---cone
-
-nefCone2=(k,i,X)->(
-     if k>i then error("i must be at least k");
-     if not isSmooth(X) then error("Not implemented yet");
-     n:=#((rays X)#0);
-     Conesk:=orbits(X,k);
-     --Get SR ring
-     I:=SR(X);
-     R:=ring I;
-     --Now create the multiplication map
-     --First get a basis for chowGroup_k
-     if not X.cache.?ChowGroupBas then
-     	  X.cache.ChowGroupBas = new MutableHashTable;
-     if not X.cache.ChowGroupBas#?(n-k) then 	  
-          X.cache.ChowGroupBas#(n-k)=flatten entries lift(basis(k,R/I),R);
-     --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
-     --???need to edit from here.	  
-     mono:=1_R;
-     for i in (max X)_0 do mono=mono*R_i;
-     topBas1:=mono % I;
-     Mat:=matrix unique apply(X.cache.ChowGroupBas#(n-k),m->(
-	       apply(Conesk,sigma->(
-			 mono:=1_R;
-			 for j in sigma do mono=mono*R_j;
-     	       	    	 --Assumes R has coefficients in QQ
-     	       	    	 lift(((m*mono) % I)/topBas1, QQ)
-     	       ))
-     ));
---Temporarily assuming that cone is full-dimensional - is it always???
-     matDual:=-1*(fourierMotzkin Mat)#0;
-     return(matDual);
-);
-
-
---Compute the Mob^k_i cone.  This is the cone
--- cap_{sigma in Sigma(n-i)} pos( V(tau) : tau in Sigma(k), tau cap sigma = emptyset)
--- k is the codimension
---Note:  In the ToricCycles.pdf notes it was suggested that this might equal 
---nef.  This seems not to be the case for ~20% of the smooth Fano 4-folds
-Mob=(k,i,X)->(
-     local Tauset; local Taulist;
-     local mono; local tauCone;
-     if k>i then error("i must be at least k");
-     if not isSmooth(X) then error("Not implemented yet");
-     n:=#((rays X)#0);
-     Conesk:=orbits(X,n-k);
-     Conesi:=orbits(X,i);
-     --Get SR ring
-     I:=SR(X);
-     R:=ring I;
-     K:=coefficientRing R;
-     coeffMap:=map(K, R, apply(numgens R,m->1_K));
-     --Now create the multiplication map
-     --First get a basis for chowGroup_k
-     chowBask:=chowGroupBasis(X,n-k);
-     --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
-     --???need to edit from here.	  
-     TotalFacets:=flatten apply(Conesi, sigma->(
-	       Tauset=select(Conesk,tau->(all(tau,i->(not(member(i,sigma))))));
---To be changed:  Here we're assuming that the basis for the Chow ring is the 
--- one given by the Grobner basis for SR(I). 
-	       Taulist=apply(Tauset,tau->(
-			 mono=1_R;
-		 	 for j in tau do mono=mono*R_j;
-			 mono%I
-	       ));
-     	       contracted:=contract(matrix {chowBask}, transpose matrix {Taulist});
- 	       tauCone = coeffMap transpose contracted;
-	       transpose entries(-1*(fourierMotzkin(tauCone))#0)
-     ));	       
-     MobCone:=-1*(fourierMotzkin transpose matrix TotalFacets)#0;
-     return(MobCone);
-);
-
-
---Compute the L^k_a cone.  
---This is the cone 
---cap_{|sigma| leq n-k} pos(V(tau) : tau in Sigma(k), 
---tau cap sigma = emptyset, tau cup sigma in Sigma) + 
---span( V(tau) : tau in Sigma(k), tau cap sigma = emptyset, 
---tau cup sigma in Sigma}
---k is the codimension
-
-Lcone=(k,i,X)->(
-     local Tauset; local Taulist;
-     local mono; local tauCone;
-     local tauCone2; local tausigmainSigma;
-     local tausigmaNot; local jFacets;
-     if k>i then error("i must be at least k");
-     if not isSmooth(X) then error("Not implemented yet");
-     n:=#((rays X)#0);
-     Conesk:=orbits(X,n-k);
-     --Get SR ring
-     I:=SR(X);
-     R:=ring I;
-     K:=coefficientRing R;
-     coeffMap:=map(K, R, apply(numgens R,m->1_K));
-     --Now create the multiplication map
-     --First get a basis for chowGroup_k
-     chowBask:=chowGroupBasis(X,n-k);
-     --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
-     --???need to edit from here.	  
-     TotalFacets:=flatten apply(n-i+1,j-> (
-    	       Conesj:=orbits(X,n-j);
-	       jFacets=flatten apply(Conesj, sigma->(
-	       		 Tauset=select(Conesk,tau->(all(tau,i->(not(member(i,sigma))))));
---To be changed:  Here we're assuming that the basis for the Chow ring is the 
--- one given by the Grobner basis for SR(I). 
-                         tausigmainSigma={};
-	       		 tausigmaNot={};
-     	       		 scan(Tauset,tau->(
- 			 	   mono=1_R;
-		 	 	   for j in tau do mono=mono*R_j;
-			 	   if member(sort(sigma |tau), orbits(X,n-k-j)) then
-			      	   tausigmainSigma=append(tausigmainSigma,mono%I)
-			 	   else tausigmaNot=append(tausigmaNot,mono%I);
-	       		 ));
-     	       		 contracted:=contract(matrix {chowBask}, transpose matrix {tausigmainSigma});
- 	       		 tauCone = coeffMap transpose contracted;
-               		 contracted2:=contract(matrix {chowBask}, transpose matrix {tausigmaNot});
- 	       		 tauCone2 = coeffMap transpose contracted2;
---<<tauCone<<endl<<tauCone2<<endl;			 
-	       		 transpose entries(-1*(fourierMotzkin(tauCone,tauCone2))#0)
-     	       ));
-     	       jFacets     	       	       
-     ));
-     MobCone:=-1*(fourierMotzkin transpose matrix TotalFacets)#0;
-     return(MobCone);
-);
-
-
-
-
---Compute the L^k_b cone.  
---This is the cone 
---cap_{|sigma| leq n-k} pos(V(tau) : tau in Sigma(k), V(tau).V(sigma) is effective) +
--- span( V(tau) : V(tau).V(sigma)=0 in Sigma(k))
---k is the codimension
-
-Lconeb=(k,i,X)->(
-     local Tauset; local Taulist;
-     local mono; local tauCone;
-     local tauCone2; local tausigmainSigma;
-     local tausigmaNot; local jFacets;
-     local effkjFacets; local mono2;
-     local remainderSigmaTau;
-     if k>i then error("i must be at least k");
-     if not isSmooth(X) then error("Not implemented yet");
-     n:=#((rays X)#0);
-     Conesk:=orbits(X,n-k);
-     --Get SR ring
-     I:=SR(X);
-     R:=ring I;
-     K:=coefficientRing R;
-     coeffMap:=map(K, R, apply(numgens R,m->1_K));
-     --Now create the multiplication map
-     --First get a basis for chowGroup_k
-     chowBask:=chowGroupBasis(X,n-k);
-     --We loop through j from 0 to i, and compute for each j 
-     --the facets of the cone pos(V(sigma) : V(sigma).V(tau) is effective for all
-     -- tau in Sigma(j)) + span(V(sigma) : V(sigma).V(tau) =0 for all tau 
-     -- in Sigma(j)
-     TotalFacets:=flatten apply(n-i+1,j-> (
---<<"j   "<<j<<endl;	       
-    	       Conesj:=orbits(X,n-j); 
-               chowBaskj:=chowGroupBasis(X,n-k-j);
-	       --facets of effCone(n-k-j) are the rows of effkjFacets
-	       effkjFacets=-1*(fourierMotzkin(effCone(n-k-j,X)))#0;
-	       effkjFacets=transpose effkjFacets;
-	       jFacets=flatten apply(Conesj, sigma->(
-                         tausigmainSigma={};
-	       		 tausigmaNot={};
---To be changed:  Here we're assuming that the basis for the Chow ring is the 
--- one given by the Grobner basis for SR(I). 
-                         mono=1_R;
-	       		 scan(sigma,j->(mono=mono*R_j));
-   	       		 scan(Conesk,tau->(
- 			 	   mono2=1_R;
-		 	 	   for jj in tau do mono2=mono2*R_(jj);
-				   remainderSigmaTau=((mono*mono2) % I);
-				   if remainderSigmaTau==0_R then tausigmaNot=append(tausigmaNot,mono2%I)
-				   else (
-				   	remainderVector:=transpose coeffMap contract(matrix {chowBaskj}, remainderSigmaTau);
-			 	   	if min(flatten entries(effkjFacets*remainderVector)) >=0 then 
-			      	   	    tausigmainSigma=append(tausigmainSigma,mono2%I);
-				   );	    
-	       		 ));
---<<tausigmainSigma<<endl;		     
-     	       		 contracted:=contract(matrix {chowBask}, transpose matrix {tausigmainSigma});
- 	       		 tauCone = coeffMap transpose contracted;
-               		 contracted2:=contract(matrix {chowBask}, transpose matrix {tausigmaNot});
- 	       		 tauCone2 = coeffMap transpose contracted2;
---<<tauCone<<endl<<tauCone2<<endl;			 
-	       		 transpose entries(-1*(fourierMotzkin(tauCone,tauCone2))#0)
-     	       ));
---<<endl<<jFacets<<endl;
-     	       jFacets     	       	       
-     ));
-     MobCone:=-1*(fourierMotzkin transpose matrix TotalFacets)#0;
-     return(MobCone);
-);
---???bug somewhere in what's above???
-
-
-
---Compute the L^k_b cone.  
---This is the cone 
---cap_{|sigma| leq n-k} pos(V(tau) : tau in Sigma(k), V(tau).V(sigma) is effective) +
--- span( V(tau) : V(tau).V(sigma)=0 in Sigma(k))
---k is the codimension
-
---This is only just started.
-LconevsNef=(k,X)->(
-     local Tauset; local Taulist;
-     local mono; local tauCone;
-     local tauCone2; local tausigmainSigma;
-     local tausigmaNot; local jFacets;
-     local effkjFacets; local mono2;
-     local remainderSigmaTau;
-     --I don't know what i was here - this is a cludge to make it run
---     if k>i then error("i must be at least k");
-i:=k;
-     if not isSmooth(X) then error("Not implemented yet");
-     n:=dim X;
-     Conesk:=orbits(X,n-k);
-     --Get SR ring
-     I:=SR(X);
-     R:=ring I;
-     K:=coefficientRing R;
-     coeffMap:=map(K, R, apply(numgens R,m->1_K));
-     --Now create the multiplication map
-     --First get a basis for chowGroup_k
-     chowBask:=chowGroupBasis(X,n-k);
-     --We loop through j from 0 to i, and compute for each j 
-     --the facets of the cone pos(V(sigma) : V(sigma).V(tau) is effective for all
-     -- tau in Sigma(j)) + span(V(sigma) : V(sigma).V(tau) =0 for all tau 
-     -- in Sigma(j)
-     TotalFacets:=flatten apply(n-i+1,j-> (
---<<"j   "<<j<<endl;	       
-    	       Conesj:=orbits(X,n-j); 
-               chowBaskj:=chowGroupBasis(X,n-k-j);
-	       --facets of effCone(n-k-j) are the rows of effkjFacets
-	       effkjFacets=-1*(fourierMotzkin(effCone(n-k-j,X)))#0;
-	       effkjFacets=transpose effkjFacets;
-	       jFacets=flatten apply(Conesj, sigma->(
-                         tausigmainSigma={};
-	       		 tausigmaNot={};
---To be changed:  Here we're assuming that the basis for the Chow ring is the 
--- one given by the Grobner basis for SR(I). 
-                         mono=1_R;
-	       		 scan(sigma,j->(mono=mono*R_j));
-   	       		 scan(Conesk,tau->(
- 			 	   mono2=1_R;
-		 	 	   for jj in tau do mono2=mono2*R_(jj);
-				   remainderSigmaTau=((mono*mono2) % I);
-				   if remainderSigmaTau==0_R then tausigmaNot=append(tausigmaNot,mono2%I)
-				   else (
-				   	remainderVector:=transpose coeffMap contract(matrix {chowBaskj}, remainderSigmaTau);
-			 	   	if min(flatten entries(effkjFacets*remainderVector)) >=0 then 
-			      	   	    tausigmainSigma=append(tausigmainSigma,mono2%I);
-				   );	    
-	       		 ));
---<<tausigmainSigma<<endl;		     
-     	       		 contracted:=contract(matrix {chowBask}, transpose matrix {tausigmainSigma});
- 	       		 tauCone = coeffMap transpose contracted;
-               		 contracted2:=contract(matrix {chowBask}, transpose matrix {tausigmaNot});
- 	       		 tauCone2 = coeffMap transpose contracted2;
---<<tauCone<<endl<<tauCone2<<endl;			 
-	       		 transpose entries(-1*(fourierMotzkin(tauCone,tauCone2))#0)
-     	       ));
---<<endl<<jFacets<<endl;
-     	       jFacets     	       	       
-     ));
-     nefC:=transpose nefCone(n-k,X);
-<<     nefC*(transpose matrix TotalFacets);
-  --   MobCone:=-1*(fourierMotzkin transpose matrix TotalFacets)#0;
-    -- return(MobCone);
-);
-
-
-
-
 --Compute the effective cone of i cycles in X
 -- i is the dimension?
 effCone=(i,X)->(
      if not isSmooth(X) then error("Not implemented yet");     
      n:=dim X;
-     --Get SR ring
-     I:=SR(X);
-     R:=ring I;
+     --Get intersection ring
+     I:=ideal(intersectionRing(X));
+     R:=X.cache.AmbientRing;
      if not X.cache.?ChowGroupBas then
      	  X.cache.ChowGroupBas = new MutableHashTable;
      if not X.cache.ChowGroupBas#?i then 	  
@@ -628,47 +304,79 @@ effCone=(i,X)->(
 );
 
 
+     
+ToricCycle = new Type of HashTable
+ToricCycle.synonym = "toric cycle"
+debug Core --- kludge to access "hasAttribute" and getAttribute
 
---Compute the intersection of all simplices in eff containing nef
---???temporary working code???
+expression ToricCycle := Expression => C -> (
+   X := variety C;
+    divisorSymbol := if hasAttribute(X,ReverseDictionary) then 
+    	expression toString getAttribute(X,ReverseDictionary) 
+	else expression "v";
+    -- S := apply(C, p -> first p);
+    S := support C;
+    if S === {} then return expression 0;
+    Sum apply(S, j -> (
+	    coeff := expression abs(C#j);
+	    if C#j === -1 then 
+	        Minus Subscript{divisorSymbol, j}
+	    else if C#j < 0 then 
+	        Minus {coeff * Subscript{divisorSymbol, j}}
+	    else if C#j === 1 then 
+	        Subscript{divisorSymbol, j}
+	    else coeff * Subscript{divisorSymbol, j} )));  
 
-nefEqualsIntersection=(i,X)->(
-     d:=rank(chowGroup(i,X));
-     nefc:=nefCone(i,X);
-     eff:=effCone(i,X);
-     n:=rank source eff;
-     Subs:=subsets(n,d);
-     ConestoCheck:={};
-     Indices:={};
-     scan(Subs,s->(
-	       As:=eff_s;
-	       if abs(det(As))>0 then (
-		      if isContainedCones(nefc,As) then (
-		           ConestoCheck=append(ConestoCheck,As);
-			   Indices=append(Indices,s);
-		      );
-     	       );
-     ));
-     A:=(fourierMotzkin(ConestoCheck#0))#0;
---<<A<<endl;     
-     scan(#ConestoCheck-1, i->(
-	       A = A | (fourierMotzkin(ConestoCheck#(i+1)))#0;
-     ));  
-     intersectAllCones:=(fourierMotzkin(A))#0;
---     <<nefc<<endl<<intersectAllCones<<endl;
-     if (isContainedCones(nefc,intersectAllCones) and isContainedCones(intersectAllCones,nefc))
-     	  then return(true) else return(false);
-);     
+net ToricCycle := C -> net expression C
+ToricCycle#{Standard,AfterPrint} = 
+ToricCycle#{Standard,AfterNoPrint} = C -> (
+    << endl;				  -- double space
+    << concatenate(interpreterDepth:"o") << lineNumber << " : ToricCycle on ";
+    << variety C << endl;);
+    
+variety ToricCycle := C -> C.variety
+
+support ToricCycle := C -> (
+    cones := flatten values orbits(variety C);
+    select(cones, c -> C#c =!= 0)
+)
   
-     
-     
-   
+toricCycle = method(TypicalValue => ToricCycle)
+toricCycle (List, NormalToricVariety) := (conesWithMultiplicities, X) -> (
+    toArrow := (i,j) -> (i => j);
+    cones := flatten values orbits X;
+    zerocones := select(cones, c -> not member(c,conesWithMultiplicities / first));
+    new ToricCycle from apply(conesWithMultiplicities, p -> toArrow(p)) | apply(zerocones, p->p=>0) | {
+        symbol variety => X
+    }
+)
+
+ToricDivisor * List := (D, C) -> (
+    -- D is a divisor on X
+    -- C is a cone in the fan of X
+    assert(isCartier(D));
+    X := variety D;
+    i := -1;
+    for k in keys(orbits X) do (
+        if member(C,orbits(X,k)) then i = k
+    );
+    dimiplus1cones := (orbits X)#(i-1);
+    V := for r from 0 to #rays(X)-1 list (
+        if member(sort(C|{r}),dimiplus1cones) then
+            (sort(C|{r}),D#r)
+        else
+            continue
+    );
+    toricCycle(V,X)
+)
 
 
 ---------------------------------------------------------------------------
 -- DOCUMENTATION
 ---------------------------------------------------------------------------
 beginDocumentation()
+
+undocumented {(net,ToricCycle),(expression,ToricCycle)}
 
 doc ///
     Key
@@ -723,6 +431,8 @@ doc ///
 doc ///
     Key
         chowGroupBasis
+        (chowGroupBasis,NormalToricVariety)
+        (chowGroupBasis,NormalToricVariety,ZZ)
     Headline
         the basis of the Chow group in dim i
     Usage
@@ -800,42 +510,88 @@ doc ///
        Example 
          X=hirzebruchSurface 1;
 	 nefCone(1,X)
-///     
+///        
 
--- document { 
---      Key => isCartier,
---      Headline => " if a Weil divisor is a Cartier divisor ",
---      Usage => "isCartier(D)",
---      Inputs => { "D" => List, " of length the number of rays of X,
--- representing a Weil divisor"},
---      Outputs => {Boolean},
---      "???"
--- }     
+doc ///
+    Key
+        ToricCycle
+    Headline
+        the class of a toric cycle on a NormalToricVariety
+    Description
+        Text
+            A toric cycle on X is a finite formal sum of closed torus orbits corresponding to cones in the fan of X.
+///
+
+doc ///
+    Key
+        toricCycle
+        (toricCycle,List,NormalToricVariety)
+    Headline
+        Creates a ToricCycle
+    Usage
+        toricCycle(L,X)
+    Inputs
+        L:List
+            a list of tuples (sigma,d) where d is the multiplicity of the cone sigma
+        X:NormalToricVariety
+            the variety the cycle lives on
+    Outputs
+        :ToricCycle
+///
+
+
+doc ///
+    Key
+        (support,ToricCycle)
+    Headline
+        Get the list of cones with non-zero coefficients in the cycle
+    Usage
+        support C
+    Inputs
+        C:ToricCycle
+    Outputs
+        :List
+            a list of integer vectors describing cones in the fan of variety(C)
+///
+
+doc ///
+    Key
+        (variety,ToricCycle)
+    Headline
+        Get the ambient variety of the cycle
+    Usage
+        variety C
+    Inputs
+        C:ToricCycle
+    Outputs
+        :NormalToricVariety
+///
      
-     
--- document {
---      Key => (intersect, List, ZZ, List, NormalToricVariety),
---      Headline => "intersect a Cartier divisor with a k-cycle",
---      Usage => "intersect(D, k, Z, X)",
---      Inputs => {"D" => List, " of length the number of rays of X,
--- being the Cartier divisor representation of a Weil divisor", k => ZZ,
--- "Z" => List, " the ray indices of a cone of codimension k in the fan of X"},
---      Outputs => {List, " of length the number of cones of codimension
--- (k-1) in the fan of X, representing the (k-1)-cycle D.V(tau)"},
---      "   "
--- }     
-     
+-- doc ///
+--     Key
+--     Headline
+--     Usage
+--     Inputs
+--     Outputs
+--     Description
+--         Text
+--         Example
+-- ///
      
      
 doc ///
      Key
-       SR
+       intersectionRing
+       (intersectionRing,NormalToricVariety)
+       (intersectionRing,NormalToricVariety,Ring)
      Headline
        compute the Chow ring of a smooth toric variety
      Usage
-       SR(X)
+       intersectionRing(X)
+       intersectionRing(X,S)
      Inputs 
        X:NormalToricVariety
+       S:Ring
      Outputs
        :Ideal
          which defines the relations on the Chow ring of X
@@ -848,18 +604,22 @@ doc ///
          implemented for simplicial toric varieties.
        Example
          X = projectiveSpace 2
-         I = SR X
-         R = ring I
-         for i from 0 to 2 do <<hilbertFunction(i,R/I)<<endl
+         R = intersectionRing X
+         for i from 0 to 2 do <<hilbertFunction(i,R)<<endl
        Text 
          Next we consider the blow-up of P^3 at 2 points.
        Example 
          X=normalToricVariety({{1,0,0},{0,1,0},{0,0,1},{-1,-1,-1},{1,1,1}, {-1,0,0}}, {{0,2,4},{0,1,4},{1,2,4},{1,2,5},{2,3,5},{1,3,5},{0,1,3},{0,2,3}})
-         I = SR X
-         R = ring I
-         hilbertFunction(1,R/I)
+	 R = intersectionRing X
+         hilbertFunction(1,R)
        Text 
-         Note that the degree-one part of the ring has dimension the Picard-rank, as expected. 
+         Note that the degree-one part of the ring has dimension the Picard-rank, as expected.
+       Text
+         Note that a coefficient ring can also be specified. By default, the coefficient ring is the rational numbers.
+       Example
+         X = projectiveSpace 2
+	 R = intersectionRing(X,ZZ)
+	 for i from 0 to 2 do <<hilbertFunction(i,R)<<endl 
 
 ///
 
@@ -891,6 +651,9 @@ TEST ///
 X=projectiveSpace 4
 assert(rank chowGroup(3,X) == rank chowGroup(1,X))
 assert(rank chowGroup(3,X) == rank picardGroup X)
+R = intersectionRing X
+S = ZZ[x]/ideal(x^5)
+phi = map(R,S,{z_0})
 /// 
 
 TEST ///
@@ -907,9 +670,9 @@ TEST ///
 rayList={{1,0},{0,1},{-1,-1},{0,-1}}
 coneList={{0,1},{1,2},{2,3},{3,0}}
 X = normalToricVariety(rayList,coneList)
-assert(rank AA(0,X) == 1)
-assert(rank AA(1,X) == 2)
-assert(rank AA(2,X) == 1)
+assert(rank chowGroup(0,X) == 1)
+assert(rank chowGroup(1,X) == 2)
+assert(rank chowGroup(2,X) == 1)
 ///
 
 
@@ -918,9 +681,14 @@ TEST ///
 rayList={{1,0},{0,1},{-1,0},{0,-1}}
 coneList={{0,1},{1,2},{2,3},{3,0}}
 X = normalToricVariety(rayList,coneList)
-assert(rank AA(1,X) == 2)
-assert(rank AA(2,X) == 1)
-assert(rank AA(0,X) == 1)
+assert(rank chowGroup(1,X) == 2)
+assert(rank chowGroup(2,X) == 1)
+assert(rank chowGroup(0,X) == 1)
+///
+
+--add tests for intersectionRing
+TEST ///
+
 ///
 
 
@@ -982,8 +750,8 @@ while not all(subsets(W,4), s -> gcd s === 1) do
       W=sort apply(5,i->random(7)+1);
 X=resolveSingularities weightedProjectiveSpace(W);
 summ=0;
-I=SR(X);
-R=ring I;
+R = intersectionRing(X);
+I = ideal(R);
 scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(chowGroup(i,X)))^2;));
 <<summ<<endl;
 
@@ -993,3 +761,27 @@ restart
 loadPackage "Chow"
 installPackage "Chow"
 check "Chow"
+
+rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+coneList={{0,1},{1,2},{2,3},{3,0}}
+X = normalToricVariety(rayList,coneList)
+D = X_0 + 2*X_1+3*X_2+4*X_3
+C = (orbits X)#1#0
+D*C
+
+-- X = projectiveSpace 4
+D = X_0 + 2*X_1 - 7*X_3
+assert(isCartier(D))
+orbits(X)
+n = 2
+i = 1
+C = (orbits X)#i#0
+raysC = C / (t -> (rays X)#t)
+dimiplus1cones = (orbits X)#(i-1)
+gammas = for sigma in dimiplus1cones list (
+    if isSubset(C,sigma) then sigma else continue
+)
+for g in gammas do (
+    Igamma = g - set(C);
+    print Igamma
+)        
