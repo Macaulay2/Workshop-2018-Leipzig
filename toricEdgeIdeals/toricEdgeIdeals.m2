@@ -37,3 +37,4 @@ toricEdgeIdeal = (GRAPH) -> (
 
 J=toricEdgeIdeal(G)
 
+--created function!
