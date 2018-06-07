@@ -1,13 +1,21 @@
+
+-- converts a list of the first 'd' cumulants to a list of the first 'd' moments
+--     'cumulants' - a list of values in the ring 'R'
+--     'R' - a ring
 cumulantsToMoments = (cumulants,R) -> (
     assert(cumulants#0 == 0);
     return powerSeriesTransform(cumulants, exp, R)
     )
 
+-- converts a list of the first 'd' moments to a list of the first 'd' cumulants
+--     'moments' - a list of values in the ring 'R'
+--     'R' - a ring
 momentsToCumulants = (moments,R) -> (
     assert(moments#0 == 1);
     return powerSeriesTransform(moments, x -> formalLog(x,#moments), R)
     )
 
+-- helper function to do a change of variables from moments to cumulants and vice versa
 powerSeriesTransform = (l, f, R) -> (
     S := R[t]/t^#l;
     use S;
@@ -15,23 +23,33 @@ powerSeriesTransform = (l, f, R) -> (
     return for i from 0 to #l-1 list i!*coefficient(t^i, p)
     )
 
+-- the first 'd' coefficients of the formal power series of the exponential function
 formalExp = (f, d) -> (
     sum for k from 0 to d list 1/(k!) * f^k
 )
 
+-- the first 'd' coefficients of the formal power series of the log function
 formalLog = (f, d) -> (
     sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
 )
 
-momentIdealToCumulants = (I,truncAbove) -> (
-    idealTransform(I, truncAbove, formalExp, 0)  
+-- converts the moment ideal 'I' to the corresponding cumulant ideal, where we only 
+-- consider the first 'd' cumulants.
+--     'I' - the moment ideal
+--     'd' - the number of cumulants to consider
+momentIdealToCumulants = (I,d) -> (
+    idealTransform(I, d, formalExp, 0)  
     )
 
-cumulantToMoments = (I, truncAbove) -> (
-    idealTransform(I, truncAbove, formalLog, 1)
+-- converts the cumulant ideal 'I' to the corresponding moment ideal, where we only 
+-- consider the first 'd' moments.
+--     'I' - the cumulant ideal
+--     'd' - the number of moments to consider
+cumulantToMoments = (I, d) -> (
+    idealTransform(I, d, formalLog, 1)
     )
 
--- Applies a change of variables to the ideal I
+-- helper function that applies a change of variables to the ideal I
 idealTransform = (I, truncAbove, f, substVal) -> (
     s := symbol s;
     t := symbol t;
@@ -57,17 +75,23 @@ raiseTo = (t, multiIndex) -> (
     fold(li, times)
 )
 
--- momentsTensorFormat should contain the indices that are _included_ (generalizes truncAbove) 
-momentIdealToCumulantsMultivariate = (I, momentsTensorFormat) -> (
-    idealTransformMultivariate(I, momentsTensorFormat, formalExp, 0)
+-- converts the multivariate moment ideal 'I' to the corresponding cumulant ideal, where we only 
+-- consider the cumulants described by 'cumulantsTensorFormat'. This function generalizes momentIdealToCumulants.
+--     'I' - the moment ideal
+--     'cumulantsTensorFormat' - a list describing how many cumulants to consider in each dimension
+momentIdealToCumulantsMultivariate = (I, cumulantsTensorFormat) -> (
+    idealTransformMultivariate(I, cumulantsTensorFormat, formalExp, 0)
 )
 
--- momentsTensorFormat should contain the indices that are _included_ (generalizes truncAbove) 
-cumulantIdealToMomentsMultivariate = (I, cumulantsTensorFormat) -> (
-    idealTransformMultivariate(I, cumulantsTensorFormat, formalLog, 1)
+-- converts the multivariate cumulant ideal 'I' to the corresponding moment ideal, where we only 
+-- consider the moments described by 'momentsTensorFormat'. This function generalizes cumulantIdealToMoments.
+--     'I' - the cumulant ideal
+--     'momentsTensorFormat' - a list describing how many moments to consider in each dimension
+cumulantIdealToMomentsMultivariate = (I, momentsTensorFormat) -> (
+    idealTransformMultivariate(I, momentsTensorFormat, formalLog, 1)
 )
 
--- Applies a change of variables to the ideal I
+-- helper function that applies a change of variables to the ideal I
 idealTransformMultivariate = (I, tensorFormat, f, substVal) -> (
     s := symbol s;
     t := symbol t;
