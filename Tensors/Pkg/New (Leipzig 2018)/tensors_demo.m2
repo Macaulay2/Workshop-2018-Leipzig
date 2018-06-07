@@ -15,6 +15,8 @@ T1 = makeTensor(27:1_QQ, V)
 peek T1
 
 T2 = 3*V_(0,0,0) + 2*V_(1,1,1) + 1/2*V_(1,2,1)
+T2_(0,0,0)
+T2_(2,2,2)
 
 -- We can make the usual operations between tensors
 3*T1 
@@ -56,6 +58,7 @@ T1 ^** 3
 -- We use the natural actions of:
 --    1. GL(3) x GL(3) x GL(3):     (g1,g2,g3).(v1*v2*v3) = g1.v1 * g2.v2 * g3.v3;
 --    2. GL(3):	       	       	    g.(v1*v2*v3) = (g,g,g).(v1*v2*v3)
+a = symbol a; b = symbol b; c = symbol c;
 ringT = QQ[a_0..a_8,b_0..b_8,c_0..c_8,Z_(0,0,0)..Z_(2,2,2)]
 G1 = sub(genericMatrix(QQ[a_0..a_8],3,3),ringT)
 G2 = sub(genericMatrix(QQ[b_0..b_8],3,3),ringT)
@@ -81,11 +84,33 @@ ring222 = QQ[Z_(0,0,0)..Z_(2,2,2)]
 -- Veronese
 Isym = ideal (generic222 - orbitTsym)#coeff
 sub(eliminate(Isym,toList(a_0..a_8)), ring222)
+netList first entries gens oo
 
 -- Segre
 I = ideal (generic222 - orbitT)#coeff
 sub(eliminate(I,toList(a_0..a_8 | b_0..b_8 | c_0..c_8)), ring222)
+netList first entries gens oo
+-------------------------------------------------------------------------------------------------
+-- EXERCISE 
+-- Consider the tensor space QQ[2x2x2x2]:
+-- 
+-------------------------------------------------------------------------------------------------
+a = symbol a;
+ringT = QQ[a_0..a_3,Z_(0,0,0,0)..Z_(1,1,1,1)]
+G = sub(genericMatrix(QQ[a_0..a_3],2,2),ringT)
 
+use ringT
+P1111 = tensorSpace(ringT, symbol X, {2,2,2,2}) 
+
+T = P1111_(0,0,0,0) + P1111_(1,1,1,1)
+generic1111 = makeTensor(Z_(0,0,0,0)..Z_(1,1,1,1), P1111)
+
+orbitTsym = glAction(G,T)
+I = ideal (generic1111 - orbitTsym)#coeff
+
+ring1111 = QQ[Z_(0,0,0,0)..Z_(1,1,1,1)]
+sub(eliminate(I,toList(a_0..a_3)), ring1111)
+netList first entries gens oo
 -------------------------------------------------------------------------------------------------
 -- EXERCISE 
 -- Assume two tensors T1 and T2 in the space QQ[5x5x5] and Bernd guarantees you that there 
