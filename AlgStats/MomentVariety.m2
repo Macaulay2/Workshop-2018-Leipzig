@@ -329,9 +329,11 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
 )
 
 --Mixtures of Multinomial Distributions
+
 -- param es a list with the varaibles k and n
 momentIdealMultiMixture = method(Options => {K => QQ, Mixture => 1})
 momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
+
     mix := o.Mixture;
     t := symbol t;
     S := o.K[t_1..t_r];
@@ -482,6 +484,34 @@ momentIdealLaplace (ZZ, ZZ) := Ideal => (mix,d)->(
 )
 
 
+--cumulant ideal of Laplace with parameters mu and b
+cumulantIdealLaplace = method()
+cumulantIdealLaplace (ZZ, ZZ) := Ideal => (mix,d)->(
+    mn := symbol mn;
+    b := symbol b;
+    k := symbol k;
+    t := symbol t;
+    a := symbol a;
+    R := symbol R;
+    I := symbol I;
+    if mix == 1 then(
+	R=QQ[mn_1..mn_mix,b_1..b_mix,k_0..k_d][t]/t^(d+1);
+	use R;
+    	series:= formalLog(exp(mn_1*t)*(1+sum for i from 1 to d list (b_1^2*t^2)^i),d);
+    	I=ideal for i from 1 to d list i!*coefficient(t^i,series)-k_i;
+    	return eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I);
+	)
+    else( 
+	R=QQ[mn_1..mn_mix,b_1..b_mix,a_1..a_(mix-1),k_0..k_d][t]/t^(d+1);
+	use R;
+    	amix := 1 - sum for i from 1 to mix-1 list a_i;
+    	series2:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t)*(1+sum for j from 1 to d list (b_i^2*t^2)^j) + amix*exp(mn_mix*t)*(1+sum for j from 1 to d list (b_mix^2*t^2)^j);
+    	I=ideal for i from 1 to d list i!*coefficient(t^i,series2)-k_i;
+    	eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I)
+	)
+)
+
+
 ---------------------- CONVERSIONS BETWEEN MOMENTS AND CUMULANTS ----------------------------------
 
 -- converts a list of the first 'd' cumulants to a list of the first 'd' moments
@@ -592,7 +622,6 @@ idealTransformMultivariate = (I, tensorFormat, f, substVal) -> (
     phi := map (R2, ring I, li);
     phi I
     )
-
 
 --DOCUMENTATION--
 
