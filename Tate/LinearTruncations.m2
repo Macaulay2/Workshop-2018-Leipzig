@@ -14,9 +14,9 @@ export {
     "linearTruncations",
     "multigradedPolynomialRing",
     "coarseMultigradedRegularity",
+    "isLinearComplex",
     -- Options
-    "CoefficientField",
-    "Simple"
+    "CoefficientField"
     }
 
 -- Code here
@@ -70,8 +70,8 @@ coarseMultigradedRegularity ChainComplex := F-> (
 	    ));
     apply(t, i-> max apply(lowerbounds, ell->ell_i))
     )
-
-isLinearComplex = F->(
+isLinearComplex = method()
+isLinearComplex ChainComplex := F->(
     if F == 0 then return true;
     t := degreeLength ring F;
     range := toList(min F..max F-1);
@@ -183,7 +183,7 @@ Outputs
     a List of multigraded degree
 Description
   Text
-    this function computes the minimal multigraded degree when we get linear resolution after truncating at that multigraded degree. 
+    this function computes the minimal multigraded degrees when we get linear resolution after truncating at that multigraded degree. 
   Example
     S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
     I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
@@ -192,7 +192,14 @@ Description
     linearTruncations(S^1/I)
     linearTruncations(S^1/I,L)	  
   Text
-    Note that linearTruncation does not give all the minimal pairs. In the example, linearTruncation give {2,3} but we see that if we trancate at {4,1} we also have linear resolution.
+    Note that linearTruncation does not give all the minimal pairs.
+  Example
+    S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}]
+    I = ideal(x_1*x_4*x_6, x_1*x_3^2, x_3^2*x_4*x_5, x_2^2*x_5^2, x_1*x_4^2*x_5, x_1*x_2^2*x_4)
+    betti res I
+    linearTruncations(S^1/I)
+  Text
+    In this example the total degree of the pairs are different
 Caveat
   ?????
 SeeAlso
@@ -229,11 +236,57 @@ Caveat
 SeeAlso
   regularity
 ///
+doc ///
+Key
+   isLinearComplex
+  (isLinearComplex, ChainComplex)
+Headline
+   isLinearComplex
+Usage
+  isLinearComplex (F)
+Inputs
+  F: ChainComplex
+    a ChainComplex
+Outputs
+  L: Boolean
+Description
+  Text
+    this function check whether the complex is linear or not.
+  Example
+    S=QQ[x_1..x_4]
+    I = ideal(x_1*x_2, x_1*x_3,x_1*x_4, x_2*x_3, x_3*x_4)
+    F = res (S^1/I)
+    betti F
+    isLinearComplex F
+    F' = res truncate(2,S^1/I)
+    betti F'
+    isLinearComplex F'
+  Text
+   in this example the ideal I has linear resolution but the minimal free resolution of S^1/I is not a linear complex
+  Example
+    S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
+    I = power(ideal(vars S),4)
+    F = res I
+    betti F
+    isLinearComplex F
+    t = degreeLength S
+    F' = res truncate({0,3},S^1/I)
+    betti F'
+    isLinearComplex F'    
+  Text
+    the function also works in the multigraded case
+Caveat
+  ???
+SeeAlso
+  betti
+///
 
 --------------------------------------------------------
 end--
 --------------------------------------------------------
+uninstallPackage "LinearTruncations"
 restart
+installPackage"LinearTruncation"
 needsPackage "LinearTruncations"
 needsPackage "RandomIdeals"
 
@@ -310,6 +363,14 @@ m = 2
 m = random(S^{3:{m,m}}, S^{{1,-1},{-1,1}});
 I = minors(2,m);
 M = S^1/I;
+betti res M
 coarseMultigradedRegularity M --{7,7}
 linearTruncations M
 
+----- An example where linearTruncation gives pairs with different total degree-----
+S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}]
+S'=QQ[gens S]
+I = ideal(x_1*x_4*x_6, x_1*x_3^2, x_3^2*x_4*x_5, x_2^2*x_5^2, x_1*x_4^2*x_5, x_1*x_2^2*x_4)
+betti res I
+linearTruncations(S^1/I)
+coarseMultigradedRegularity(S^1/I)
