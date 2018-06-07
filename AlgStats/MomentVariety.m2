@@ -171,6 +171,7 @@ momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
     sd := symbol sd;
     m :=  symbol m;
     t :=  symbol t;
+    a := symbol a;
     if mix == 1 then(
 	R:=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
 	use R;
