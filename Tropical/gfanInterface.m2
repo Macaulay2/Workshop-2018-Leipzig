@@ -1378,7 +1378,6 @@ gfanStableIntersection (Fan,List,Fan,List) := opts -> (F,m1,G,m2) -> (
      out := runGfanCommand("gfan _fancommonrefinement --stable", opts, "");
      if (#select("empty",out#0)==1) then return "error: this fan is empty";
      if (length(out#0)==0) then return "error: this fan is empty";
-<<out<<endl;     
      out = gfanParsePolyhedralFan out;
      if gfanKeepFiles then (
 	  F#"GfanFileName" = fileF;
@@ -2279,33 +2278,38 @@ gfanTropicalIntersection = method( Options => {
 	"symmetryExploit" => false,
 	"restrict" => false,
 	"stable" => false,
-	"Symmetry" => {}
 	}
 )
 
 gfanTropicalIntersection (List) := opts -> (L) -> (
-	local newOpts;
-	newOpts=new OptionTable from {	
-	"tropicalbasistest" => opts#"tropicalbasistest",
-	"tplane" => opts#"tplane",
-	"symmetryPrinting" => opts#"symmetryPrinting",
-	"symmetryExploit" => opts#"symmetryExploit",
-	"restrict" => opts#"restrict",
-	"stable" => opts#"stable"};
 
 	(ringMap, newL) := gfanConvertToNewRing(L);
 	L = newL;
 	input := gfanRingToString(ring first L) | gfanPolynomialListToString(L);
 	
-	local s;
+	s:=runGfanCommand("gfan _tropicalintersection", opts, input);
 
-	if opts#"Symmetry" == {} then
-		s=runGfanCommand("gfan _tropicalintersection", newOpts, input)
-	else (
-		stringSymmetry:=gfanVectorListToString(opts#"Symmetry");
-		newInput := input | stringSymmetry;
-		s=runGfanCommand("gfan _tropicalintersection", newOpts, newInput);
-	);
+	tropicalBasisOutput:=s_0;--this is 0 if not tropical basis and 1 otherwise.
+	if ((opts#"tropicalbasistest")==false) then (return gfanParsePolyhedralFan s)
+	else 
+	
+	 if ((tropicalBasisOutput_0)=="0") then false
+	    else (
+		if (tropicalBasisOutput_0=="1") then true
+--In case something has changed in 'gfan' or 'gfanInterface'
+	        else error "Algorithm fail"
+		)
+	    
+
+)
+
+gfanTropicalIntersection (List,List) := opts -> (L, symmetryList) -> (
+
+	(ringMap, newL) := gfanConvertToNewRing(L);
+	L = newL;
+	input := gfanRingToString(ring first L) | gfanPolynomialListToString(L) | gfanVectorListToString(symmetryList);
+	
+	s:=runGfanCommand("gfan _tropicalintersection", opts, input);
 
 	tropicalBasisOutput:=s_0;--this is 0 if not tropical basis and 1 otherwise.
 	if ((opts#"tropicalbasistest")==false) then (return gfanParsePolyhedralFan s)
@@ -2500,6 +2504,15 @@ gfanVersion  = () -> (
 
 -- documentation
 beginDocumentation()
+
+--Still to document:
+--gfanParsePolyhedralFan
+--gfanStableIntersection
+--gfanTropicalHyperSurfaceReconstruction 
+--gfanVersion
+--multiplicitiesReorder  (does this need to be exported?)
+--toPolymakeFormat  (does this need to be exported?)
+
 
 gfanFunctions = hashTable {
 	gfan => "gfan",
@@ -3656,7 +3669,7 @@ doc ///
 		(gfanRender, List)
 		(gfanRender, String, List)
 	Headline
-		render an image of a Grobener fan
+		render an image of a Groebner fan
 	Usage
 		gfanRender(L)
 	Inputs
@@ -4328,25 +4341,80 @@ doc ///
 doc ///
 	Key
                 gfanOverIntegers
+		(gfanOverIntegers,Ideal)
+		(gfanOverIntegers,Ideal,List)
 	Headline
-		all reduced Grobenr bases of a poynomial ideal with coefficients in ZZ
+		all reduced Groebner bases of a poynomial ideal with coefficients in ZZ
 	Usage
 		G = gfanOverIntegers(I)
 	Inputs
 		I:Ideal
-			contained in a polynomial ring with coefficients in ZZ
+			contained in a polynomial ring with coefficients in ZZ.  The optional second list 
+		   
 	Outputs
+	    	F:Fan 
 		G:List
 		        all @TO2 {"Marked Groebner Basis Example", "marked reduced Groebner bases"}@ of {\tt I}.
+		L:List
 	Description
 		Text
-		    	????some text will go here
+		   This method produces all reduced Groebner basis of
+		   a polynomial ideal with coefficients in ZZ.  The
+		   input is given as an {\tt Ideal}.  If just the
+		   ideal is given then the option "groebnerFan" =>
+		   true" should also be added.  For the second
+		   version, the list w is a weight vector for which
+		   the initial ideal or Groebner basis will be
+		   computed (depending on whether "initialIdeal=>true"
+		   or "groebnerBasis"=>true is set).  Only one of
+		   these two can be set.  Note that the Groebner fan
+		   over ZZ is more refined than the Groebner fan of
+		   the corresponding ideal with coefficients in QQ.
 		Example
-		    1+1
+    		    R=ZZ[x,y]
+    		    I=ideal(x^2-y^2,2*x)
+    		    F=gfanOverIntegers(I,"groebnerFan"=>true)
+		    rays F
+		    linealitySpace F
+		    maxCones F
+		    G=gfanOverIntegers(I,{1,0},"groebnerBasis"=>true)
+		    H=gfanOverIntegers(I,{1,0},"initialIdeal"=>true)
 		Text
 		    @STRONG "gfan Documentation"@
 		    @gfanHelp "gfan _overintegers"@
 ///
+
+
+doc///
+    Key
+	gfanStableIntersection
+    Headline
+	computes the stable intersection of two balanced fans
+    Usage
+    	gfanStableIntersection(Fan,List,Fan,List)
+    Inputs
+	F:Fan
+	m1:List
+	G:Fan
+	m2:List
+    Outputs
+	H:Fan
+    Description
+	Text
+	    This function computes the stable intersection of two
+	    balanced fans.  The input is two fans, and two lists of
+	    multiplicities that makes the fan balanced.  The function
+	    does not check whether this fan is in fact balanced.
+	Example
+    	    QQ[x,y,z,w]
+	    I = ideal(x+y+z+w);
+	    J = ideal(x-y);
+	    (F,m1)=gfanTropicalTraverse(gfanTropicalStartingCone(I))
+	    (G,m2)=gfanTropicalTraverse(gfanTropicalStartingCone(J))
+	    H = gfanStableIntersection(F,m1,G,m2)
+	    rays H
+	    maxCones H
+///	    
 
 
 

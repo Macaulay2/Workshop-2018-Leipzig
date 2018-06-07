@@ -142,21 +142,27 @@ isBalanced (TropicalCycle):= T->(
 tropicalPrevariety = method(TypicalValue => Fan,  Options => {
 --in the future, more strategies not dependent on "gfan" will be available
 	Strategy=> "gfan",
-	Symmetry=> {}
 	})
-
---- if symmetry is not null then call this with symmetry exploit = true and pass the symmetry at the end of the string  
+  
 tropicalPrevariety (List) := o -> L -> ( 
-	local gfanopt;
-	if o.Symmetry == {} then gfanopt=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
-	"symmetryExploit" => false,"restrict" => false,"stable" => false, "Symmetry"=>{}}
-	else 
-	gfanopt=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
-	"symmetryExploit" => true,"restrict" => false,"stable" => false, "Symmetry"=>o.Symmetry};
+	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => false,"restrict" => false,"stable" => false};
 	
 --using strategy gfan
     if (o.Strategy=="gfan") then (
     	F:= gfanTropicalIntersection(L, gfanopt); 
+--gives only the fan and not the fan plus multiplicities which are wrongly computed in gfan
+	if (Tropical#Options#Configuration#"tropicalMax" == true) then return F_0 else return minmaxSwitch (F_0))
+    else error "options not valid"
+)
+
+tropicalPrevariety (List, List) := o -> (L, symmetryList) -> ( 
+	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => true,"restrict" => false,"stable" => false};
+	
+--using strategy gfan
+    if (o.Strategy=="gfan") then (
+    	F:= gfanTropicalIntersection(L, symmetryList, gfanopt); 
 --gives only the fan and not the fan plus multiplicities which are wrongly computed in gfan
 	if (Tropical#Options#Configuration#"tropicalMax" == true) then return F_0 else return minmaxSwitch (F_0))
     else error "options not valid"
@@ -254,13 +260,12 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 tropicalVariety (Ideal) := o -> (I) ->(
     local F;
     local T;
-    	
-    newSym:= o.Symmetry;
-    
-    --If Symmetry present, check user has input permutations with the right length. If newSym is {}, any always returns false.
+    newSymmetry:= o.Symmetry; --In case of homogenization we adjust the user given symmetries, recorded in the var newSymmetry.
+     
+    --If Symmetry present, check user has input permutations with the right length. If newSymmetry is {}, any always returns false.
     M := #(gens ring I);
-    if any(newSym, i ->  #i != M) then
-	return concatenate("Length of list of permutations should be ", toString M);
+    if any(newSymmetry, listPermutation ->  #listPermutation != M) then
+	error ("Length of permutations should be " | M);
 	
     if o.IsHomogeneous==false then 
     (	 
@@ -279,20 +284,21 @@ tropicalVariety (Ideal) := o -> (I) ->(
 	I=J;
 	
 	--If Symmetry present, adjust the symmetry vectors to the right length and shift the values up by one. If not present, this operates on an empty list.
-	newSym= (i->prepend(0,i)) \
-	            (i -> (j -> j + 1) \ i) \ 
-		        newSym;	
+    	--Increase the values of these lists by 1.
+	newSymmetry = for listPermutation in newSymmetry list --make a list with the following values 
+	             apply(listPermutation, j -> j + 1);
+        --Prepend a 0.
+        newSymmetry = apply(newSymmetry, listPermutation -> prepend(0, listPermutation));
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
 	    --check if resulting fan would be empty
 	    if instance(cone, String) then return cone;
-		if(newSym == {}) then
+		if(newSymmetry == {}) then
 			F= gfanTropicalTraverse cone
-		else	(
-			--print class o.Symmetry;
-			F= gfanTropicalTraverse (cone, "symmetry" => newSym);	
-				);			
+		else		   	
+			F= gfanTropicalTraverse (cone, "symmetry" => newSymmetry);	
+
 	    --check if resulting fan would be empty
 	    if (instance(F,String)) then return F; 
 	    T=tropicalCycle(F_0,F_1))
@@ -720,15 +726,20 @@ doc///
 	Key
 		tropicalPrevariety
 		(tropicalPrevariety, List)
+		(tropicalPrevariety, List, List)
 		[tropicalPrevariety, Strategy]
 	Headline
 		the intersection of the tropical hypersurfaces
 	Usage
 		tropicalPrevariety(L)
+		tropicalPrevariaty(L,LS)
 		tropicalPrevariety(L,Strategy=>S)
+		tropicalPrevariety(L,LS,Strategy=>S)
 	Inputs
 		L:List
-		  of polynomials        
+		  of polynomials       
+		LS: List
+		  of Symmetries (optional) 
 		Strategy=>String
 		  Strategy (currently only "gfan")
 	Outputs
@@ -738,10 +749,15 @@ doc///
 		Text
 			This method intersects the tropical hypersurfaces
 			coming from the tropicalizations of the polynomials in the list L.
+			If there are symmetries that leave the specified polynomials fixed, 
+			they can  be specified by passing a list with the symmetries 
+			as second argument, with the same format as the option  @TO Symmetry@.
 		Example
 			QQ[x_1,x_2,x_3,x_4]
 			L={x_1+x_2+x_3+x_4,x_1*x_2+x_2*x_3+x_3*x_4+x_4*x_1,x_1*x_2*x_3+x_2*x_3*x_4+x_3*x_4*x_1+x_4*x_1*x_2,x_1*x_2*x_3*x_4-1}
 			tropicalPrevariety L
+			QQ[x_0,x_1]
+			tropicalPrevariety({x_0+x_1+1}, {{1,0}})
 			QQ[x,y]
 			tropicalPrevariety({x+y+1,x+y},Strategy => "gfan")
 ///
@@ -755,6 +771,7 @@ doc///
       [tropicalVariety, ComputeMultiplicities]
       [tropicalVariety, Prime]
       [tropicalVariety, IsHomogeneous]
+      [tropicalVariety, Symmetry]
 
     Headline
       the tropical variety associated to an ideal
@@ -763,15 +780,18 @@ doc///
       tropicalVariety(I,ComputeMultiplicities=>true)
       tropicalVariety(I,Prime=>true)
       tropicalVariety(I,IsHomogeneous=>false)
+      tropicalVariety(I,Symmetry=>{{...},{...}})
     Inputs
       I:Ideal
         of polynomials
       IsHomogeneous=>Boolean
         that ensures whether the ideal is already homogeneous   
-      ComputeMultiplicities =>Boolean
+      ComputeMultiplicities=>Boolean
         that confirms whether the multiplicities will be computed
       Prime=>Boolean
         that ensures whether the ideal is already prime
+      Symmetry=>List
+        that records the symmetries of the ideal 
     Outputs
         F:TropicalCycle
     Description 
@@ -785,7 +805,9 @@ doc///
          computeMultiplicities=>false turns this off.  This only saves
          time if Prime is set to false.  The ideal I is not assumed to
          be homogeneous.  The optional argument IsHomogeneous=>true
-         allows the user to assert that the ideal is homogeneous.
+         allows the user to assert that the ideal is homogeneous. If there
+	 are symmetries of the ring corresponding to I that leave I fixed, 
+	 they can be specified with the option @TO Symmetry@. 
       Example
        QQ[x,y];
        I=ideal(x+y+1);
@@ -796,6 +818,10 @@ doc///
        fVector fan T
        multiplicities(T)
        QQ[x,y,z,w];
+       I = ideal(w+x+y+z)
+       T = tropicalVariety(I, IsHomogeneous=>true, Symmetry=>{{1,0,2,3},{2,1,0,3},{3,1,2,0}})
+       rays(T)
+       maxCones(T)
        I=intersect(ideal(x+y+z+w),ideal(x-y,y-z));
        T= tropicalVariety(I,Prime=>false);
        rays(T)
@@ -932,7 +958,7 @@ doc///
     Key
 	Prime
     Headline
-		option to declare if the input   ideal is prime
+		option to declare if the input ideal is prime
     Usage
     	tropicalVariety(I,Prime=>false)
     
@@ -952,7 +978,7 @@ doc///
     Key
 	IsHomogeneous
     Headline
-		option to declare if the input  ideal is homogeneous
+		option to declare if the input ideal is homogeneous
     Usage
     	tropicalVariety(I,IsHomogeneous=>true)
     
@@ -968,6 +994,26 @@ doc///
 				    
 ///
 
+
+doc///
+    Key
+	Symmetry
+    Headline
+		option to declare if the input ideal has symmetries
+    Usage
+    	tropicalVariety(I,Symmetry=>{{..},{..}})
+    
+    Description
+		Text
+			If the option is used, the specified symmetries are used in the calculation of the tropical variety. For an ideal I of a polynomial ring R = KK[x_0 .. x_N], each symmetry is a permutation encoded in a list \{s_0, s_1, ..., s_N\} of numbers from 0 to N which records that swapping the variable x_j with the variable x_{s_j} in R leaves the ideal I fixed. Exploiting symmetries reduces the number of computations needed. The length of each symmetry equals the number of generators of R, otherwise an error is raised.
+		Example
+		          QQ[x_0,x_1,x_2];
+			  I=ideal(x_0+x_1+x_2+1);
+			  T=tropicalVariety (I,Symmetry=>{
+				                          {1,0,2}, --Swapping x_0 with x_1 leaves I fixed
+							  {2,1,0} --Swapping x_0 with x_2 leaves I fixed
+							  })
+///
 
 
 doc///
@@ -1216,6 +1262,8 @@ doc///
 			    
 ///	    
 
+
+
     	
 ----- TESTS -----
 
@@ -1408,20 +1456,20 @@ assert(isBalanced G == false)
 
 TEST///
 QQ[x,y,z,w]
-F:=tropicalPrevariety({x+y+z+w,x^2+y*z})
+F=tropicalPrevariety({x+y+z+w,x^2+y*z})
 assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
 ///
 
 TEST///
 QQ[x,y,z,w]
-F:=tropicalPrevariety({x+y+z+w,x^2+y*z}, Symmetry=>{{0,2,1,3}})
+F=tropicalPrevariety({x+y+z+w,x^2+y*z}, {{0,2,1,3}})
 assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
 ///
 
 
 TEST///
 QQ[x,y]
-F:=tropicalPrevariety({x+y+1}, Symmetry=>{{0,1}})
+F=tropicalPrevariety({x+y+1}, {{1,0}})
 assert((rays F) == matrix {{1,-1,0},{0,-1,1}})
 ///
 
@@ -1515,14 +1563,14 @@ assert ((rays T)== (matrix {{-1, 0, 3}, {1, -3, 0}, {0, -1, 1}}))
 assert((linealitySpace T)==( matrix {{0}, {0}, {1}} ))
 assert((maxCones T)==( {{1}, {0}, {2}}))
 assert((multiplicities T)==( {1, 1, 1}))
---symmetry and homogenious 
+--symmetry and homogeneous 
 QQ[x,y, z]
 I=ideal(x^2+y^2+z^2)
 G=tropicalVariety(I, Symmetry=>{{1, 0, 2}, {1, 2, 0}, {2, 0, 1}})
 assert ((rays G)==(matrix {{2, -1, -1},{-1, 2, -1}, {-1, -1, 2}}))
---symmetry and non-homogenious 
+--symmetry and non-homogeneous 
 QQ[x,y]
-G=tropicalVariety(ideal(x+y+1), Symmetry=>{{0,1}})
+G=tropicalVariety(ideal(x+y+1), Symmetry=>{{1,0}})
 assert((rays G) == matrix {{1,-1,0},{0,-1,1}})
 
 ///

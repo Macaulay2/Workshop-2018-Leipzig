@@ -44,3 +44,7 @@ for j from 0 to 9 do (
 ```
 
 The loop above "restart" executes successfully on my machine, while the code below hangs (consistent with the warning given in the documentation for openInOut.) Is there a better general way communicate then reading immediately after writing?
+
+- How does M2 relate to other computer algebra systems? The closest competitor seems to be singular? When should I choose one over the other? How do they differ in design philosophy?
+
+- I have a method that multiplies a ToricDivisor and a cone, with method signature ```ToricDivisor * List := (D, C) ->```. I have written documentation for this method. Typing ```help (symbol *, ToricDivisor, List)``` into the shell shows the correct documentation for this method. However, on the documentation page ```viewHelp "Chow" ```, this particular method is not on the documentation page. Why does this happen?
