@@ -152,6 +152,114 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
 )
 
 -------------------------------------------------------------------------------------
+--------------------------------------------------------------
+-- This tries to compute mixtures of multivariate Gaussians
+
+momentMapGaussiansMixtures = (n,d,k,KK) -> (
+ 
+  x := symbol x;
+  parx := {};
+  parxtemp :={};
+ 
+  s := symbol s;
+  pars := {};
+  parstemp := {};
+ 
+  a := symbol a;
+  para := {};
+ 
+  -- This creates the variables for the moments.
+  for i from 1 to k do (
+      for j from 1 to n do (parxtemp = append(parxtemp,x_(i,j)););
+      parx = append(parx,parxtemp);
+      parxtemp = {};
+      );
+ 
+  -- This creates the variables for the covariances.
+  for i from 1 to k do (
+      for j from 1 to n do (
+	  for h from j to n do (
+	      parstemp = append(parstemp,s_(i,(j,h)));
+	      );
+	  );
+      pars = append(pars,parstemp);
+      parstemp = {};
+      );
+ 
+  -- This creates the variables for the mixture parameters.
+  para = toList(a_1..a_k);
+ 
+  -- This makes the ring with all the parameters.
+  par = join(flatten(parx),flatten(pars),flatten(para));
+  R := KK[par];
+ 
+  -- This makes the generating function
+  t := symbol t;
+  auxvars = toList(t_1..t_n);
+  auxring := R[auxvars];
+  auxideal := ideal(vars(auxring));
+  S = auxring/(auxideal^(d+1));
+  use S;
+ 
+  mu := 0;
+  Sigma:= 0;
+  MGF := 0;
+  CGF := 0;
+ 
+ 
+  for i from 1 to k do (
+    mu = genericMatrix(R,x_(i,1),n,1);
+    mu = promote(mu,S);
+    Sigma= genericSymmetricMatrix(R,s_(i,(1,1)),n);
+    Sigma = promote(Sigma,S);
+    logarithm =  vars(S)*mu + (1/2) * vars(S)*Sigma*transpose(vars(S));
+    MGF = MGF + (a_i)*exp(logarithm_(0,0));
+    );
+ 
+ 
+  (M,C):=coefficients(MGF);
+  use R;
+  C = mutableMatrix(C);
+  lM :=  flatten (entries M);
+  lexpM := flatten (apply(lM,mon->exponents(mon)));
+  c := 1;
+  for i from 0 to numColumns(M)-1 do (
+      (for e in lexpM_i do c = c*(e!));
+      -- (for m in ( (entries vars S)_0 ) do c = c*((degree(m,M_(0,i)))!));
+      C_(i,0) = c*C_(i,0);
+      c=1;
+      );
+  C = matrix(C);
+  C=lift(C,R);
+ 
+  momvars := toSequence reverse (apply(lexpM,e->m_e));
+ 
+  return (matrix({(reverse((entries(transpose(C)))_0))}),momvars);
+ 
+)
+
+
+----------------------------------------------------------------
+-- This computes the homogeneous ideal of the moment variety of multidimensional Gaussian mixtures
+
+momentVarietyGaussiansMixtures = (n,d,k,KK) -> (
+ 
+  (C,momvars) := momentMapGaussiansMixtures(n,d,k,KK);
+  R := ring(C);
+  k := coefficientRing(R);
+ 
+  PPM := KK[momvars];
+  varmoms := gens PPM;
+  f := map(R,PPM,C);
+  I := kernel f;
+  I = homogenize(I,varmoms_0);
+ 
+  return I;
+ 
+)
+
+
+-------------------------------------------------------------------------------------
 
 --Poisson Mixtures
 --takes as input the number of mixtures and the highest degree of moments appearing
