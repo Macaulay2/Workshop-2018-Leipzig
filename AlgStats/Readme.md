@@ -28,4 +28,4 @@ Potential Projects
 Implement the conditional independences from the paper Algebraic Representations of Gaussian
 Markov Combinations.
 
-Implement the moment ideals and from the paper on moment varieties for other kinds of distributions.
+Implement the moment ideals from the paper on moment varieties for other kinds of distributions.
