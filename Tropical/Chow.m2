@@ -319,6 +319,24 @@ toricCycle (List, NormalToricVariety) := (conesWithMultiplicities, X) -> (
     }
 )
 
+
+ZZ * ToricCycle := ToricCycle => (k,C) -> (
+    V := for orbit in flatten values orbits variety C list (orbit,k*(C#orbit));
+    toricCycle(V,variety C)
+);
+
+ToricCycle + ToricCycle := ToricCycle => (C,D) -> (
+    assert(variety C === variety D);
+    V := for orbit in flatten values orbits variety C list (orbit, (C#orbit)+(D#orbit));
+    toricCycle(V, variety C)
+);
+
+ToricCycle - ToricCycle := ToricCycle => (C,D) -> (
+    C + (-1)*D
+);
+
+- ToricCycle := ToricCycle => (C) -> (-1)*C
+
 -- IMHO this should be called toricDivisor
 tDivisor = method()
 tDivisor(Vector,NormalToricVariety) := (u,X) -> (
@@ -753,6 +771,41 @@ doc ///
       (symbol *, ToricDivisor, List)
 ///
 
+doc ///
+    Key
+      (symbol +, ToricCycle, ToricCycle)
+      (symbol -, ToricCycle, ToricCycle)
+      (symbol -, ToricCycle)
+      (symbol *, ZZ, ToricCycle)
+    Headline
+      perform arithmetic on toric cycles
+    Usage
+      C1 + C2
+      C1 - C2
+      5*C1
+      -C1
+    Inputs
+      C1:ToricCycle
+      C2:ToricCycle
+    Description
+      Text
+        The set of torus-invariant Weil divisors forms an abelian group
+	under addition.  The basic operations arising from this structure,
+	including addition, substraction, negation, and scalar
+	multplication by integers, are available.
+      Text
+	We illustrate a few of the possibilities on one variety.
+      Example
+        rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+        coneList={{0,1},{1,2},{2,3},{3,0}}
+        X = normalToricVariety(rayList,coneList)
+	cyc = toricCycle({({2,3},1),({3,0}, 4)},X)
+	altcyc = (-2)*cyc
+	cyc + altcyc
+	cyc - altcyc
+	-cyc
+///
+
 
 ---------------------------------------------------------------------------
 -- TEST
@@ -827,6 +880,19 @@ psi = map(R,S,{R_0,R_1})
 assert(matrix inverse psi == matrix phi)
 ///
 
+--test ToricCycle addition, subtraction, multiplication, etc
+TEST ///
+rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+coneList={{0,1},{1,2},{2,3},{3,0}}
+X = normalToricVariety(rayList,coneList)
+
+cyc = toricCycle({({2,3},1),({3,0}, 4)},X)
+altcyc = (-2)*cyc
+assert(altcyc == toricCycle({({2,3},-2),({3,0}, -8)},X))
+assert(cyc + altcyc == ((-1)*cyc))
+assert(cyc - altcyc == 3*cyc)
+assert(-cyc == (-1)*cyc)
+///
 
 end
 
