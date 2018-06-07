@@ -26,7 +26,9 @@ export {
      "Lconeb",
      "LconevsNef",
      "IntersectionRing",
-     "intersectionRing"
+     "intersectionRing",
+     "ToricCycle",
+     "toricCycle"
      }
 
 protect ChowGroupBas 
@@ -348,6 +350,73 @@ effCone=(i,X)->(
 );
 
 
+     
+ToricCycle = new Type of HashTable
+ToricCycle.synonym = "toric cycle"
+debug Core --- kludge to access "hasAttribute" and getAttribute
+
+expression ToricCycle := Expression => C -> (
+   X := variety C;
+    divisorSymbol := if hasAttribute(X,ReverseDictionary) then 
+    	expression toString getAttribute(X,ReverseDictionary) 
+	else expression "v";
+    -- S := apply(C, p -> first p);
+    S := support C;
+    if S === {} then return expression 0;
+    Sum apply(S, j -> (
+	    coeff := expression abs(C#j);
+	    if C#j === -1 then 
+	        Minus Subscript{divisorSymbol, j}
+	    else if C#j < 0 then 
+	        Minus {coeff * Subscript{divisorSymbol, j}}
+	    else if C#j === 1 then 
+	        Subscript{divisorSymbol, j}
+	    else coeff * Subscript{divisorSymbol, j} )));  
+
+net ToricCycle := C -> net expression C
+ToricCycle#{Standard,AfterPrint} = 
+ToricCycle#{Standard,AfterNoPrint} = C -> (
+    << endl;				  -- double space
+    << concatenate(interpreterDepth:"o") << lineNumber << " : ToricCycle on ";
+    << variety C << endl;);
+    
+variety ToricCycle := C -> C.variety
+
+support ToricCycle := C -> (
+    cones := flatten values orbits(variety C);
+    select(cones, c -> C#c =!= 0)
+)
+  
+toricCycle = method(TypicalValue => ToricCycle)
+toricCycle (List, NormalToricVariety) := (conesWithMultiplicities, X) -> (
+    toArrow := (i,j) -> (i => j);
+    cones := flatten values orbits X;
+    zerocones := select(cones, c -> not member(c,conesWithMultiplicities / first));
+    new ToricCycle from apply(conesWithMultiplicities, p -> toArrow(p)) | apply(zerocones, p->p=>0) | {
+        symbol variety => X
+    }
+)
+
+ToricDivisor * List := (D, C) -> (
+    -- D is a divisor on X
+    -- C is a cone in the fan of X
+    assert(isCartier(D));
+    X := variety D;
+    i := -1;
+    for k in keys(orbits X) do (
+        if member(C,orbits(X,k)) then i = k
+    );
+    dimiplus1cones := (orbits X)#(i-1);
+    V := for r from 0 to #rays(X)-1 list (
+        if member(sort(C|{r}),dimiplus1cones) then
+            (sort(C|{r}),D#r)
+        else
+            continue
+    );
+    toricCycle(V,X)
+)
+
+
 ---------------------------------------------------------------------------
 -- DOCUMENTATION
 ---------------------------------------------------------------------------
@@ -661,3 +730,27 @@ restart
 loadPackage "Chow"
 installPackage "Chow"
 check "Chow"
+
+rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+coneList={{0,1},{1,2},{2,3},{3,0}}
+X = normalToricVariety(rayList,coneList)
+D = X_0 + 2*X_1+3*X_2+4*X_3
+C = (orbits X)#1#0
+D*C
+
+-- X = projectiveSpace 4
+D = X_0 + 2*X_1 - 7*X_3
+assert(isCartier(D))
+orbits(X)
+n = 2
+i = 1
+C = (orbits X)#i#0
+raysC = C / (t -> (rays X)#t)
+dimiplus1cones = (orbits X)#(i-1)
+gammas = for sigma in dimiplus1cones list (
+    if isSubset(C,sigma) then sigma else continue
+)
+for g in gammas do (
+    Igamma = g - set(C);
+    print Igamma
+)        
