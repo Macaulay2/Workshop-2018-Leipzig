@@ -142,7 +142,10 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
   I := kernel f;
   I = homogenize(I,varmoms_0);
   
-  return I;  
+  zeroes = for i from 0 to n - 1 list 0;
+  full = for i from 0 to n - 1 list d;
+  return sub(I,QQ[m_zeroes..m_full]);  
+--  return I
    
 )
 

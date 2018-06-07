@@ -39,7 +39,7 @@ idealTransform = (I, truncAbove, f, substVal) -> (
     R2' := R2[t]/t^(truncAbove+1);
     use R2';
     p := sum for i from 0 to truncAbove list 1/i! * s_i * t^i;
-    q := f(p,truncAbove+1);
+    q := f(p,truncAbove);
     -- NOTE: here, we dehomogenize. May think about giving homog/nonhomog as an option.
     li := for i from 0 to truncAbove list i! * coefficient(t^i, q);
     li = for i from 0 to truncAbove list sub(li_i, s_0 => substVal);
@@ -57,33 +57,24 @@ raiseTo = (t, multiIndex) -> (
 )
 
 -- momentsTensorFormat should contain the indices that are _included_ (generalizes truncAbove) 
-momentIdealToCumulantsMultivariate = (I, truncAbove, momentsTensorFormat) -> (
-    return 0
+momentIdealToCumulantsMultivariate = (I, momentsTensorFormat) -> (
+    t := symbol t;
+    zeroes := for i from 0 to #momentsTensorFormat - 1 list 0;
+    R2 := QQ[k_zeroes..k_momentsTensorFormat];
+    R2' := R2[t_1..t_#momentsTensorFormat,MonomialOrder => Lex]/
+           (for i from 1 to #momentsTensorFormat list t_i^(momentsTensorFormat_(i - 1)+1));
+    use R2';
+    p := sum for I in zeroes..momentsTensorFormat list 1/factorial(I) * k_I * raiseTo(t,I);
+    q := formalExp(p,max(momentsTensorFormat));
+    li := for I in zeroes..momentsTensorFormat list factorial(I) * coefficient(raiseTo(t,I), q);
+    li = for x in li list sub(x, k_zeroes => 0);
+    phi := map (R2, ring I, li);
+    phi I
 )
 
 end
 
-
 -- TEST --
 
-truncAbove = 4
-
-I = momentIdealGaussian(1,truncAbove)
-transpose gens gb I
-C = momentIdealToCumulants(I,truncAbove)
-M = cumulantIdealToMoments(C, truncAbove)
-transpose gens gb M
-transpose gens gb sub(I, {first gens ring I => 1})
-
-momentsTensorFormat = {3,3,3}
-apply(momentsTensorFormat, x -> x - 1)
-t = symbol t
-zeroes = for i from 0 to #momentsTensorFormat - 1 list 0
-R2 = QQ[k_zeroes..k_momentsTensorFormat]
-R2' = R2[t_1..t_#momentsTensorFormat,MonomialOrder => Lex]/
-           (for i from 1 to #momentsTensorFormat list t_i^(momentsTensorFormat_(i - 1)+1))
-peek R2'
-use R2'
-p = sum for I in zeroes..momentsTensorFormat list 1/factorial(I) * k_I * raiseTo(t,I)
-q = formalExp(p,max(momentsTensorFormat))
-coefficients q
+transpose gens gb momentIdealToCumulantsMultivariate(momentIdealGaussian(1,4),{4})
+transpose gens gb momentIdealToCumulantsMultivariate(momentVarietyGaussians(2,3),{3,3})
