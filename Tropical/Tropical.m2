@@ -260,11 +260,11 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 tropicalVariety (Ideal) := o -> (I) ->(
     local F;
     local T;
-    newSym:= o.Symmetry; --In case of homogenization we adjust the user given symmetries, recorded in the var newSym.
+    newSymmetry:= o.Symmetry; --In case of homogenization we adjust the user given symmetries, recorded in the var newSymmetry.
      
-    --If Symmetry present, check user has input permutations with the right length. If newSym is {}, any always returns false.
+    --If Symmetry present, check user has input permutations with the right length. If newSymmetry is {}, any always returns false.
     M := #(gens ring I);
-    if any(newSym, listPermutation ->  #listPermutation != M) then
+    if any(newSymmetry, listPermutation ->  #listPermutation != M) then
 	error ("Length of permutations should be " | M);
 	
     if o.IsHomogeneous==false then 
@@ -284,20 +284,20 @@ tropicalVariety (Ideal) := o -> (I) ->(
 	I=J;
 	
 	--If Symmetry present, adjust the symmetry vectors to the right length and shift the values up by one. If not present, this operates on an empty list.
-    	  --newSym is a list of lists. Iterate over each element. Each element is a list. Increase the values of these lists by 1.
-	newSym = for permutations to (#newSym - 1) list --make a list with the following values 
-	             apply(newSym#permutations, j -> j + 1);
-          --Prepend a 0.
-        newSym = apply(newSym, listPermutation -> prepend(0, listPermutation));
+    	--Increase the values of these lists by 1.
+	newSymmetry = for listPermutation in newSymmetry list --make a list with the following values 
+	             apply(listPermutation, j -> j + 1);
+        --Prepend a 0.
+        newSymmetry = apply(newSymmetry, listPermutation -> prepend(0, listPermutation));
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
 	    --check if resulting fan would be empty
 	    if instance(cone, String) then return cone;
-		if(newSym == {}) then
+		if(newSymmetry == {}) then
 			F= gfanTropicalTraverse cone
 		else		   	
-			F= gfanTropicalTraverse (cone, "symmetry" => newSym);	
+			F= gfanTropicalTraverse (cone, "symmetry" => newSymmetry);	
 
 	    --check if resulting fan would be empty
 	    if (instance(F,String)) then return F; 
@@ -1005,11 +1005,14 @@ doc///
     
     Description
 		Text
-			If the option is used, the specified symmetries are used in the calculation of the variety. For an ideal I of a polynomial ring R = KK[x_0 .. x_N], each symmetry is a list {i_0, i_1, ..., i_N} that records that swapping the variable x_j with the variable x_{i_j} in R leaves the ideal I fixed. Exploiting symmetries reduces the number of computations needed. Note that the length of each symmetry equals the number of generators of R.
+			If the option is used, the specified symmetries are used in the calculation of the tropical variety. For an ideal I of a polynomial ring R = KK[x_0 .. x_N], each symmetry is a permutation encoded in a list \{s_0, s_1, ..., s_N\} of numbers from 0 to N which records that swapping the variable x_j with the variable x_{s_j} in R leaves the ideal I fixed. Exploiting symmetries reduces the number of computations needed. The length of each symmetry equals the number of generators of R, otherwise an error is raised.
 		Example
 		          QQ[x_0,x_1,x_2];
 			  I=ideal(x_0+x_1+x_2+1);
-			  T=tropicalVariety (I,Symmetry=>{{1,0,2},{2,1,0}})
+			  T=tropicalVariety (I,Symmetry=>{
+				                          {1,0,2}, --Swapping x_0 with x_1 leaves I fixed
+							  {2,1,0} --Swapping x_0 with x_2 leaves I fixed
+							  })
 ///
 
 
