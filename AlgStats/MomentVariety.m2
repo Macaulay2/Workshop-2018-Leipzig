@@ -23,7 +23,6 @@ export {
     "momentMapGaussians",
     "momentVarietyGaussians",
     "momentIdealPoisson",
-    "momentIdealGaussianTest",
     "momentIdealMultinomial",
     "momentIdealMultinomialMixture",
     "formalLog",
@@ -63,24 +62,6 @@ momentIdealExponential (ZZ, ZZ) := o -> (mix, d)->(
     R := o.K[l_1..l_mix,a_1..a_mix,m_0..m_d];
     I := ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list a_j*l_j^i*i!) + ideal(-1+sum for i from 1 to mix list a_i);
     I = homogenize(eliminate (toList(a_1..a_mix)|toList(l_1..l_mix) ,I),m_0);
-    sub(I, o.K[m_0..m_d])
-)
-
---Gaussian Mixtures
---takes as input the number of mixtures and the highest degree of moments appearing
---computes the homogeneous moment ideal by eliminating the means and standard deviations
-momentIdealGaussian = method(Options => {K => QQ})
-momentIdealGaussian (ZZ, ZZ) := o -> (mix, d)->(
-    mn := symbol mn;
-    sd := symbol sd;
-    a := symbol a;
-    m := symbol m;
-    t := symbol t;
-    R := o.K[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
-    use R;
-    series := sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2);
-    I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
-    I = homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);
     sub(I, o.K[m_0..m_d])
 )
 
@@ -260,10 +241,10 @@ momentVarietyGaussiansMixtures = (n,d,k,KK) -> (
 
 momentIdealPoisson = method(Options => {K => QQ})
 momentIdealPoisson (ZZ, ZZ) := o -> (mix, d)-> (
-    lambda := local lambda;
-    a := local a;
-    m := local m;
-    t := local t;
+    lambda := symbol lambda;
+    a := symbol a;
+    m := symbol m;
+    t := symbol t;
     R := o.K[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     use R;
     series := sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
@@ -274,8 +255,8 @@ momentIdealPoisson (ZZ, ZZ) := o -> (mix, d)-> (
 
 --Gaussian Mixtures Test
 --written to eliminate a_mix
-momentIdealGaussianTest = method(Options => {K => QQ})
-momentIdealGaussianTest (ZZ, ZZ) := o -> (mix, d)->(
+momentIdealGaussian = method(Options => {K => QQ})
+momentIdealGaussian (ZZ, ZZ) := o -> (mix, d)->(
     mn := symbol  mn;
     sd := symbol sd;
     m :=  symbol m;
