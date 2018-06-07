@@ -14,17 +14,12 @@ newPackage(
      )
 
 export { 
-     "AA",
      "nefCone",
      "nefCone2",
      "effCone",
      "isContainedCones",
-     "nefEqualsIntersection",
      "chowGroupBasis",
      "chowGroup",
-     "Lcone",
-     "Lconeb",
-     "LconevsNef",
      "IntersectionRing",
      "intersectionRing",
      "ToricCycle",
@@ -382,6 +377,8 @@ ToricDivisor * List := (D, C) -> (
 ---------------------------------------------------------------------------
 beginDocumentation()
 
+undocumented {(net,ToricCycle),(expression,ToricCycle)}
+
 doc ///
     Key
         Chow
@@ -435,6 +432,8 @@ doc ///
 doc ///
     Key
         chowGroupBasis
+        (chowGroupBasis,NormalToricVariety)
+        (chowGroupBasis,NormalToricVariety,ZZ)
     Headline
         the basis of the Chow group in dim i
     Usage
@@ -513,7 +512,72 @@ doc ///
          X=hirzebruchSurface 1;
 	 nefCone(1,X)
 ///        
+
+doc ///
+    Key
+        ToricCycle
+    Headline
+        the class of a toric cycle on a NormalToricVariety
+    Description
+        Text
+            A toric cycle on X is a finite formal sum of closed torus orbits corresponding to cones in the fan of X.
+///
+
+doc ///
+    Key
+        toricCycle
+        (toricCycle,List,NormalToricVariety)
+    Headline
+        Creates a ToricCycle
+    Usage
+        toricCycle(L,X)
+    Inputs
+        L:List
+            a list of tuples (sigma,d) where d is the multiplicity of the cone sigma
+        X:NormalToricVariety
+            the variety the cycle lives on
+    Outputs
+        :ToricCycle
+///
+
+
+doc ///
+    Key
+        (support,ToricCycle)
+    Headline
+        Get the list of cones with non-zero coefficients in the cycle
+    Usage
+        support C
+    Inputs
+        C:ToricCycle
+    Outputs
+        :List
+            a list of integer vectors describing cones in the fan of variety(C)
+///
+
+doc ///
+    Key
+        (variety,ToricCycle)
+    Headline
+        Get the ambient variety of the cycle
+    Usage
+        variety C
+    Inputs
+        C:ToricCycle
+    Outputs
+        :NormalToricVariety
+///
      
+-- doc ///
+--     Key
+--     Headline
+--     Usage
+--     Inputs
+--     Outputs
+--     Description
+--         Text
+--         Example
+-- ///
      
      
 doc ///
