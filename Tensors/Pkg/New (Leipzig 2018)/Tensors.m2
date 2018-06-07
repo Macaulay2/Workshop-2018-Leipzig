@@ -190,7 +190,6 @@ Tensor _ ZZ := (T,z) -> (
     )
 
 -- tensor product
-
 TensorSpace ** TensorSpace := (V,W) -> (
     if V#baseRing =!= W#baseRing then (
 	return "error: base rings are different"
@@ -388,7 +387,6 @@ IsSymmetric (Tensor) := (T) -> (
     if symmetrize(T) == T then true else false
     )
 
-
 ---- Slices and contractions 
 
 
@@ -474,21 +472,4 @@ restart
 installPackage "Tensors"
 check "Tensors"
 viewHelp "Tensors"
-
-
--- equations of rank 1 (symmetric) tensor P2xP2xP2
-ringT = QQ[a_0..a_8,b_0..b_8,c_0..c_8,Z_(0,0,0)..Z_(2,2,2)]
-G1 = sub(genericMatrix(QQ[a_0..a_8],3,3),ringT)
-G2 = sub(genericMatrix(QQ[b_0..b_8],3,3),ringT)
-G3 = sub(genericMatrix(QQ[c_0..c_8],3,3),ringT)
-use ringT
-P222 = tensorSpace(ringT,symbol X,{3,3,3})
-T = P222_(0,0,0)
-generic222 = makeTensor(Z_(0,0,0)..Z_(2,2,2), P222)
-orbitT = glAction({G1,G2,G3},T)	    	    -- about 80 secs :(
-orbitTsym = glAction(G1,T)	      	      	    -- about 80 secs :(
-Isym = ideal (generic222 - orbitTsym)#coeff
-I = ideal (generic222 - orbitT)#coeff
-eliminate(Isym,toList(a_0..a_8))
-eliminate(I,toList(a_0..a_8 | b_0..b_8 | c_0..c_8))
 
