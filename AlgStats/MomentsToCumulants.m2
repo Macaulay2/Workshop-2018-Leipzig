@@ -31,6 +31,7 @@ cumulantToMoments = (I, truncAbove) -> (
     idealTransform(I, truncAbove, formalLog, 1)
     )
 
+-- Applies a change of variables to the ideal I
 idealTransform = (I, truncAbove, f, substVal) -> (
     s := symbol s;
     t := symbol t;
