@@ -132,8 +132,8 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
 -- d: order of the moments
 -- k: number of mixtures
 momentMapGaussiansMixtures = method()
-momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,k,d,KK) -> (
- 
+momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,mix,d,KK) -> (
+  k := mix;
   x := symbol x;
   parx := {};
   parxtemp :={};
@@ -220,8 +220,8 @@ momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,k,d,KK) -> (
 -- This computes the homogeneous ideal of the moment variety of multidimensional Gaussian mixtures
 
 momentVarietyGaussiansMixtures = method()
-momentVarietyGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Ideal => (n,d,k,KK) -> (
- 
+momentVarietyGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Ideal => (n,mix,d,KK) -> (
+  k := mix;
   (C,momvars) := momentMapGaussiansMixtures(n,d,k,KK);
   R := ring(C);
   varsR := vars R;
@@ -752,10 +752,10 @@ doc ///
    Headline
      computes the moments of multidimensional Gaussian mixtures
    Usage
-     momentMapGaussiansMixtures (n,k,d,KK)
+     momentMapGaussiansMixtures (n,mix,d,KK)
    Inputs
      n : ZZ
-     k : ZZ
+     mix : ZZ
      d : ZZ
      KK : Ring
    Outputs
@@ -765,13 +765,13 @@ doc ///
        computes the moments of multidimensional Gaussian mixtures given
        n: dimension pf the Gaussian
        d: order of the moments
-       k: number of mixtures
+       mix: number of mixtures
      Text
        Here we show an example
      Example
        n = 2
        d = 3
-       k = 2
+       mix = 2
        KK = QQ
        momentMapGaussiansMixtures (n,k,d,KK) 
  
@@ -784,11 +784,11 @@ doc ///
    Headline
      computes the ideal of the moment variety for multidimensional Gaussian mixtures
    Usage
-     momentVarietyGaussiansMixtures (n,d,k,KK)
+     momentVarietyGaussiansMixtures (n,mix,d,KK)
    Inputs
      n : ZZ
      d : ZZ
-     k : ZZ
+     mix : ZZ
      KK : Ring
    Outputs
      : Ideal
@@ -800,9 +800,9 @@ doc ///
      Example
        n = 1
        d = 3
-       k = 2
+       mix = 2
        KK = QQ
-       momentVarietyGaussiansMixtures (n,k,d,KK) 
+       momentVarietyGaussiansMixtures (n,mix,d,KK) 
  
  ///
  
