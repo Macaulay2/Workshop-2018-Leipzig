@@ -357,7 +357,6 @@ momentIdealBinomial = (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
 
 momentIdealFromMGF = method(Options => {K => QQ})
 momentIdealFromMGF (ZZ, ZZ, Thing, List) := o -> (mix, d, f, param) -> (
-    param := symbol param;
     n := #param - 1;
     m := symbol m;
     a := symbol a;
@@ -371,7 +370,7 @@ momentIdealFromMGF (ZZ, ZZ, Thing, List) := o -> (mix, d, f, param) -> (
     series := sum for i from 1 to mix list a_i*sub(f,paramSubs_(i-1));
     I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
     I = homogenize(eliminate((gens R)_{0..(#(gens R)-d-2)},I),m_0);
-    sub(I, K[m_0..m_d])
+    sub(I, o.K[m_0..m_d])
 )
 
 
