@@ -1,6 +1,6 @@
 -- -*- coding: utf-8 -*-
 ------------------------------------------------------------------------------
--- Copyright 2009, 2010, 2011, 2012, 2013, 2014, 2017  Gregory G. Smith
+-- Copyright 2009--2018 Gregory G. Smith
 --
 -- This program is free software: you can redistribute it and/or modify it
 -- under the terms of the GNU General Public License as published by the Free
@@ -18,8 +18,8 @@
 newPackage(
   "NormalToricVarieties",
   AuxiliaryFiles => true,
-  Version => "1.5",
-  Date => "31 May 2017",
+  Version => "1.6",
+  Date => "7 June 2018",
   Authors => {{
       Name => "Gregory G. Smith", 
       Email => "ggsmith@mast.queensu.ca", 
@@ -506,7 +506,7 @@ orbits NormalToricVariety := HashTable => (cacheValue symbol orbits)(X -> (
 	    hTable = merge(hTable, facesOfCone(raysMatrix_s,s), (p,q) -> p));
     	O := new MutableHashTable from apply(d, i -> {i,{}});
     	for k in keys hTable do O#(hTable#k) = O#(hTable#k) | {k};
-    	new HashTable from apply(keys O, k -> {k, sort O#k}) | {{d,{}}} ));
+    	new HashTable from apply(keys O, k -> {k, sort O#k}) | {{d,{{}}}} ));
 orbits (NormalToricVariety, ZZ) := List => (X,i) -> (
     if i < 0 or i > dim X then (
     	error "-- expected a nonnegative integer that is at most the dimension");
@@ -688,6 +688,19 @@ vector ToricDivisor := Vector => D -> vector entries D
 support ToricDivisor := List => D -> (
     n := # rays variety D;
     select(toList(0..n-1), i -> D#i =!= 0));
+degree ToricDivisor := D -> entries( (fromWDivToCl variety D) * (vector D));
+
+monomials ToricDivisor := List => opts -> D -> (
+    X := variety D;    
+    if not isProjective X then error "--expected the underlying toric variety to be projective";
+    P := polytope D;
+    S := ring X;
+    degs := matrix rays X;
+    coeff := matrix vector D;
+    points := if isEmpty P then {} else latticePoints P;
+    sort for v in points list (
+	e := flatten entries (degs * v + coeff);
+	S_e))
 
 toricDivisor = method(TypicalValue => ToricDivisor,
     Options => {
@@ -888,7 +901,7 @@ latticePoints ToricDivisor := Matrix => D -> (
     c_(sortColumns c) );
 
 polytope ToricDivisor := Polyhedron => (cacheValue symbol polytope)(
-    D -> intersection(-matrix rays variety D, matrix vector D))
+    D -> polyhedronFromHData(-matrix rays variety D, matrix vector D))
 
 ------------------------------------------------------------------------------
 -- Total coordinate rings
@@ -1106,8 +1119,8 @@ euler CoherentSheaf := F -> (
 -- last coordinate) form a polyhedral complex and the regular subdivision is
 -- the image of this complex.  For a generic weight vector, this subdivision
 -- will be a triangulation.
-regularSubdivision = method(TypicalValue => NormalToricVariety)
-regularSubdivision (NormalToricVariety, List, List) := (X,s,w) -> (
+regularSubdivisionLocal = method(TypicalValue => NormalToricVariety)
+regularSubdivisionLocal (NormalToricVariety, List, List) := (X,s,w) -> (
     coneList := max X;
     rayList := rays X;
     rayMatrix := transpose matrix rayList;
@@ -1157,7 +1170,7 @@ makeSimplicial NormalToricVariety := opts -> X -> (
       	    	n := #s;
       	    	m := (n // 10) + 1;
       	    	w := apply(n, i -> random(2,100*m));
-      	    	Y = regularSubdivision(Y,s,w) )));
+      	    	Y = regularSubdivisionLocal(Y,s,w) )));
     Y );
 
 -- THIS METHOD IS NOT EXPORTED.  Given a list 'w' of integers, this method
@@ -2476,7 +2489,7 @@ doc ///
         orbits
         (orbits, NormalToricVariety)
     Headline 
-        make a hashtable indexing the torus orbits
+        make a hashtable indexing the torus orbits (a.k.a. cones in the fan)
     Usage 
         orbits X
     Inputs 
@@ -2504,24 +2517,25 @@ doc ///
             by the $n$-th row of Pascal's triangle.
 	Example
     	    O2 = orbits projectiveSpace 2
-            (#O2#0, #O2#1)
+            (#O2#0, #O2#1, #O2#2)
     	    O3 = orbits projectiveSpace 3     
-            apply(3, k -> #O3#k)
-            apply(4, k -> #(orbits projectiveSpace 4)#k)
-            apply(5, k -> #(orbits projectiveSpace 5)#k)    
+            apply(4, k -> #O3#k)
+            apply(5, k -> #(orbits projectiveSpace 4)#k)
+            apply(6, k -> #(orbits projectiveSpace 5)#k)    
     	Text
   	    Here is a non-simplicial example.
     	Example
       	    X = normalToricVariety(id_(ZZ^3) | -id_(ZZ^3));
     	    assert not isSimplicial X
     	    OX = orbits X
-	    apply(dim X, k -> #OX#k)
+	    apply(1+dim X, k -> #OX#k)
     	Text
   	    The following degenerate example has no fixed points.
     	Example
     	    U = normalToricVariety({{4,-1,0},{0,1,0}},{{0,1}});
     	    assert isDegenerate U
     	    OU = orbits U
+	    apply(4, k -> #OU#k)
 	    assert(#OU#0 == 0)
     SeeAlso
         "Basic invariants and properties of normal toric varieties"
@@ -2533,7 +2547,7 @@ doc ///
     Key 
         (orbits, NormalToricVariety, ZZ)
     Headline 
-        get a list of the torus orbits of a given dimension
+        get a list of the torus orbits (a.k.a. cones in the fan) of a given dimension
     Usage 
         orbits(X, i)
     Inputs
@@ -2561,10 +2575,12 @@ doc ///
     	    PP2 = projectiveSpace 2;
     	    orbits(PP2,0)
     	    orbits(PP2,1)
+	    orbits(PP2,2)
     	    PP3 = projectiveSpace 3;
     	    orbits(PP3,0)
     	    orbits(PP3,1)
     	    orbits(PP3,2)
+    	    orbits(PP3,3)	    
     	Text
 	    Here is a non-simplicial example.  Since it is nondegenerate, the
             fixed points correspond to the maximal cones in the fan.  The rays
@@ -2576,6 +2592,8 @@ doc ///
     	    orbits(X,1)
 	    orbits(X,2)
     	    assert(orbits(X,2) === apply(#rays X, i -> {i}))
+	    orbits(X,3)
+	    assert(orbits(X,3) === {{}})
     	Text
   	    The following degenerate example has no fixed points.
     	Example
@@ -2584,6 +2602,7 @@ doc ///
     	    orbits(U,0)
     	    orbits(U,1)
     	    orbits(U,2)
+	    orbits(U,3)
     	    dim U
     SeeAlso
         "Basic invariants and properties of normal toric varieties"
@@ -3782,6 +3801,45 @@ doc ///
 	(toricDivisor, Polyhedron)
 ///
 
+doc ///
+    Key
+        (degree, ToricDivisor)
+    Headline
+        make the degree of the associated rank-one reflexive sheaf
+    Usage
+        degree D
+    Inputs
+        D:ToricDivisor
+    Outputs
+        :List	
+	    of @TO2 (ZZ, "integers")@ corresponding to the degree of the
+	    rank-one reflexive sheaf
+    Description
+        Text	   
+            This function returns the @TO List@ representing an element of the
+	    Picard group corresponding to the associated rank-one reflexive
+	    sheaf.
+	Text
+	    Here are two simple examples.
+	Example
+	    PP2 = projectiveSpace 2;
+	    D1 = PP2_0
+	    degree D1
+	    OO D1
+	    D2 = 3*PP2_1
+	    degree D2
+	    OO D2
+	Example
+	    FF2 = hirzebruchSurface 2;
+	    D3 = -1*FF2_2 + 3*FF2_3
+	    degree D3
+    	    OO D3	    
+    SeeAlso
+        "Working with divisors and their associated groups"
+	(symbol SPACE, OO, ToricDivisor)
+	(picardGroup, NormalToricVariety)
+///
+
 doc ///     	    
     Key 
         (support, ToricDivisor)
@@ -3988,7 +4046,7 @@ doc ///
 	    D4 = toricDivisor(P4, CoefficientRing => ZZ/2)
 	    ring variety D4
 	Text
-	    This function creates both the toric divisor and the
+	    This method function creates both the toric divisor and the
 	    underlying normal toric variety.
     SeeAlso
         "Working with divisors and their associated groups"
@@ -4075,7 +4133,7 @@ doc ///
            toric variety into a low-dimensional projective space
     Description
         Text
-            This function accesses a database of equivalence classes of very
+            This method function accesses a database of equivalence classes of very
             ample divisors that embed their underlying smooth toric varieties
             into low-dimensional projective spaces.  
 	Text
@@ -4242,6 +4300,57 @@ doc ///
         "Working with divisors and their associated groups"
 	(symbol +, ToricDivisor, ToricDivisor)    
 ///
+	
+doc ///
+    Key
+        (monomials, ToricDivisor)
+    Headline
+       list the monomials that span the linear series
+    Usage
+        monomials D
+    Inputs
+        D : ToricDivisor
+    Outputs
+        : List
+	    of torus-invariant @TO2 (RingElement, "RingElements")@ that appear
+	    in the completely linear system of the given divisor
+    Description
+        Text
+	    By identifying the coefficients of an effective irreducible
+	    torus-invariant divisors with exponents of the generators of the
+	    @TO2( (ring, NormalToricVariety), "total coordinate ring")@, each
+	    toric divisor on a @TO NormalToricVariety@ corresponds to a
+	    monomial.  This method function returns all of the monomials
+	    corresponding to linear equivalent toric divisors.
+	Text
+	    This method function assumes that the underlying toric variety is
+	    projective.	    
+	Text
+	    Projective space is especially simple.
+	Example
+	    PP2 = projectiveSpace 2;
+	    D1 = 5*PP2_0
+	    time monomials D1
+	    time first entries basis(degree D1, ring variety D1)
+	Text
+	    Toric varieties of Picard-rank 2 are slightly more interesting.
+	Example
+	    FF2 = hirzebruchSurface 2;
+	    D2 = 2*FF2_0 + 3 * FF2_1
+	    time monomials D2
+	    time first entries basis(degree D2, ring variety D2)	
+	    X = kleinschmidt(5,{1,2,3});     
+	    D3 = 3*X_0 + 5*X_1
+	    time #monomials D3
+	    time #first entries basis(degree D3, ring variety D3)
+	Text
+	    By exploiting @TO "Polyhedra::latticePoints"@, this method function
+	    avoids using the @TO2( (basis,List, Ring), "basis")@ function.	    
+    SeeAlso
+        "Working with divisors and their associated groups"
+	(ring, NormalToricVariety)    
+	(vector, ToricDivisor)
+///	
 	
 document {
   Key => {(symbol SPACE, OO,ToricDivisor)},
@@ -4667,7 +4776,7 @@ document {
     (vertices,ToricDivisor)}} 
 
 document {
-  Key => {(polytope,ToricDivisor)},
+  Key => {(polytope, ToricDivisor)},
   Headline => "makes the associated 'Polyhedra' polyhedron",
   Usage => "polytope D",
   Inputs => {"D" => ToricDivisor},
@@ -5325,7 +5434,8 @@ assert isWellDefined X
 assert(rays X == {{1}})
 assert(max X == {{0}})
 assert(dim X == 1)
-assert(orbits(X,0) == max X)
+assert(orbits(X,0) === max X)
+assert(orbits(X,1) === {{}})
 assert not isDegenerate X
 assert isSmooth X
 assert not isComplete X
@@ -5340,6 +5450,7 @@ assert(picardGroup X == ZZ^0)
 assert(fromPicToCl X == 0)
 assert(nefGenerators X == 0)
 assert isEffective X_0
+assert try(monomials X_0; false) else true
 assert not isEffective(-X_0) 
 assert isCartier X_0
 assert not isNef X_0
@@ -5349,7 +5460,7 @@ assert(ideal X == 1)
 assert(cotangentSheaf X === OO_X^1)
 assert(makeSimplicial X === X)
 assert(makeSmooth X === X)
-assert(null == try affineSpace 0)
+assert try(affineSpace 0; false) else true
 ///
 
 -- test 1
@@ -5359,7 +5470,8 @@ assert isWellDefined X
 assert(set rays X === set({-1},{1}))
 assert(max X == sort subsets(2,1))
 assert(dim X === 1)
-assert(orbits(X,0) == max X)
+assert(orbits(X,0) === max X)
+assert(orbits(X,1) === {{}})
 assert not isDegenerate X
 assert isSmooth X
 assert isProjective X
@@ -5375,6 +5487,7 @@ assert(fromPicToCl X == id_(ZZ^1))
 assert(nefGenerators X == 1)
 assert(isNef toricDivisor(flatten entries ( (fromCDivToWDiv X) * (nefGenerators X // fromCDivToPic X)), X))
 assert isEffective X_0
+assert(monomials (4*X_0)  == sort first entries basis(degree (4*X_0), ring variety X_0))
 assert(X_0 + X_1 === toricDivisor({1,1},X))
 assert(2*X_0 === X_0 + X_0)
 assert isVeryAmple X_0
@@ -5399,6 +5512,7 @@ assert(max X === subsets(n+1,n))
 assert(dim X === n)
 assert(orbits(X,1) === sort subsets(n+1,n-1))
 assert(orbits(X,2) === sort subsets(n+1,n-2))
+assert(orbits(X,4) === {{}})
 assert not isDegenerate X
 assert isSmooth X
 assert isProjective X
@@ -5414,14 +5528,18 @@ assert(fromPicToCl X == id_(ZZ^1))
 assert(nefGenerators X == 1)
 assert(isNef toricDivisor(flatten entries ( (fromCDivToWDiv X) * (nefGenerators X // fromCDivToPic X)), X))
 assert(isEffective X_0 === true)
+assert(monomials (2*X_0)  == sort first entries basis(degree (2*X_0), ring variety X_0))
 assert(X_0 + X_1 === toricDivisor({1,1} | toList(n-1:0),X))
 assert(2*X_0 === X_0 + X_0)
 assert isVeryAmple X_0
+assert(degree X_0 === {sum entries X_0})
+assert(degree (2*X_0+X_3) === {sum entries (2*X_0+X_3)})
 assert(vertices (2*X_0) == map(ZZ^n,ZZ^1,i -> 0) | 2*id_(ZZ^n))
 assert(degrees ring X === toList(n+1 : {1}))
 assert(ideal X == ideal gens ring X)
 assert(cotangentSheaf(X, Minimize => true) === prune sheaf(X, 
 	homology(vars ring X,jacobian ring X)))
+assert({degree (-X_0+3*X_2)} === - degrees OO (-X_0+3*X_2))
 assert(all(5, i -> rank HH^0(X,OO_X(i)) == binomial(n+i,i)))
 assert(all(5, i -> HH^1(X,OO_X(i)) == 0))
 assert(all(5, i -> rank HH^n(X,OO_X(-i-n-1)) == binomial(n+i,i)))
@@ -5438,6 +5556,7 @@ assert(max X == {{0,1},{0,3},{1,2},{2,3}})
 assert(dim X == 2)	  
 assert(orbits(X,0) === max X)
 assert(orbits(X,1) === apply(4, i -> {i}))
+assert(orbits(X,2) === {{}})
 assert not isDegenerate X
 assert isSmooth X
 assert isProjective X
@@ -5454,9 +5573,11 @@ assert(nefGenerators X == 1)
 assert all(entries transpose ( (fromCDivToWDiv X) * (nefGenerators X // fromCDivToPic X)),
     coeffs -> isNef toricDivisor(coeffs, X))
 assert isEffective X_0
+assert(monomials (2*X_0 + X_1) == sort first entries basis(degree (2*X_0 + X_1), ring variety X_0))
 assert isWellDefined X_0
 assert(X_0 + X_1 === toricDivisor({1,1,0,0},X))
 assert(2*X_0 === X_0 + X_0)
+assert(degree (-3*X_0 + 7*X_1) === - first degrees OO(-3*X_0 + 7*X_1))
 assert isNef X_0
 assert not isNef X_1
 assert isVeryAmple (X_2+X_3)
@@ -5478,6 +5599,7 @@ assert(max X == {{0,1},{0,2},{1,2}})
 assert(dim X == 2)	  
 assert(orbits(X,0) === max X)
 assert(orbits(X,1) === apply(3, i -> {i}))
+assert(orbits(X,2) === {{}})
 assert not isDegenerate X
 assert isSimplicial X
 assert not isSmooth X
@@ -5516,6 +5638,7 @@ assert(sort max Y === sort {{0,5},{0,4},{1,2},{1,3},{2,4},{3,5}})
 -- test 5
 TEST ///
 X = kleinschmidt(9,{1,2,3});
+assert(orbits(X, dim X) === {{}})
 assert isWellDefined X
 assert isFano X
 assert isSmooth X
