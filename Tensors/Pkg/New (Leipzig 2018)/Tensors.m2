@@ -27,6 +27,7 @@ export {
     "factorsTensor",
     "mergeTensor",
     "glAction",
+    "flattening",
     -- symbols
     "dims", "coeff", "baseRing", "tensorBasis", "tensorSpaceDim", "tensorSpaceOrder", "tensorOrder"
     }
@@ -155,13 +156,15 @@ Tensor#{Standard,AfterPrint} = T -> (
 
 -- access to tensor basis
 TensorSpace _ Sequence := (V,s) -> (
+    N := V#dims;
     if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > ((V#dims)_i)-1 or s_i < 0) then (
 	return "error: the sequence does not match the format"
 	);
-    N := V#dims;
-    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list N_h);
-    i = i + last(s);
-    I := apply(toList(0..(product N - 1)), j -> if j == i then 1 else 0);    
+    d := #s;
+    ind := s#0;
+    for i in 1..<#s do ind = ind*(N#i) + s#i;
+    ind = ind + 1;
+    I := ((ind-1):0) | (1:1) | ((product(N)-ind):0);
     return makeTensor(I,V)
     )
 TensorSpace _ ZZ := (V,z) -> (
@@ -172,13 +175,13 @@ TensorSpace _ ZZ := (V,z) -> (
 -- indexed tensor
 Tensor _ Sequence := (T,s) -> (
     V := T#tensorSpace;
+    N := V#dims;
     if #s != #(V#dims) or  any(toList(0..#s-1), i -> s_i > (V#dims)_i-1 or s_i < 0) then (
 	return "error: the sequence does not match the format"
 	);
-    N := V#dims;
-    i := sum for j to #s-2 list s_j * product (for h from j+1 to #s-1 list N_h);
-    i = i + last(s);
-    return (T#coeff)_i
+    ind := s#0;
+    for i in 1..<#s do ind = ind*(N#i) + s#i;
+    return (T#coeff)_ind
     )
 Tensor _ ZZ := (T,z) -> (
     s := append((),z);
@@ -237,7 +240,7 @@ factorsTensor(TensorSpace) := V -> (
 
 mergeTensor = method()
 mergeTensor(TensorSpace) := V -> (
-   return tensorSpace(V#baseRing,"x",{product for i in V#dims list i})
+   return tensorSpace(V#baseRing,first pickSymbol V,{product for i in V#dims list i})
    )
 
 kronecker = method()
@@ -254,6 +257,29 @@ kronecker(TensorSpace,TensorSpace) := (V,W) -> (
    for i in 1..#L-1 do Z=Z**mergeTensor((L#i)**(M#i));
    return Z
    )
+
+-- flattening = method()
+-- flattening (TensorSpace,List) := (V,L) -> (
+--     F := factorsTensor(V);
+--     L1 := {};
+--     L2 := {};
+--     for i in 0..<#F do (
+-- 	if member(i,L) then (
+-- 	    L1 = append(L1,F#i)
+-- 	 ) else (
+-- 	    L2 = append(L2,F#i)
+-- 	    )
+-- 	);
+--     A := L1#0;
+--     for j from 1 to #L1-1 do A = A**(L1#j);
+--     B := L2#0;
+--     for j from 1 to #L2-1 do B = B**(L2#j);
+--     return mergeTensor(A) ** mergeTensor(B)
+--     )
+
+-- flattening (Tensor,List) := (T,L) -> (
+--     compL := for i in 1..#(T#tensorSpace.dims) list (if not member(i,L) then i)
+--     )
 
 --kronecker = method()
 --kronecker(TensorSpace,TensorSpace) := (V,W) -> (
@@ -326,15 +352,15 @@ glAction (List,Tensor) := (G,T) -> (
     V := T#tensorSpace;
     N := apply(V.dims,i->i-1);
     d := #N;
-    return sum flatten for J in (d:0)..toSequence(N) list (
-	 for I in (d:0)..toSequence(N) list (
-	    V_J * T_I * product for k to d-1 list (
+    coeffT := for J in (d:0)..toSequence(N) list (
+	 sum for I in (d:0)..toSequence(N) list (
+	     T_I * product for k to d-1 list (
 		(G_k)_(J_k,I_k)
 		)
 	    )
-	)
+	);
+    return makeTensor(coeffT,V)
     )
-
 glAction (Matrix,Tensor) := (G,T) -> (
     d := #(T#tensorSpace.dims);
     GG := toList(d:G);
@@ -364,3 +390,27 @@ restart
 installPackage "Tensors"
 check "Tensors"
 viewHelp "Tensors"
+
+
+-- equations of rank 1 (symmetric) tensor P2xP2xP2
+ringT = QQ[a_0..a_8,b_0..b_8,c_0..c_8,Z_(0,0,0)..Z_(2,2,2)]
+G1 = sub(genericMatrix(QQ[a_0..a_8],3,3),ringT)
+G2 = sub(genericMatrix(QQ[b_0..b_8],3,3),ringT)
+G3 = sub(genericMatrix(QQ[c_0..c_8],3,3),ringT)
+use ringT
+P222 = tensorSpace(ringT,symbol X,{3,3,3})
+T = P222_(0,0,0)
+generic222 = makeTensor(Z_(0,0,0)..Z_(2,2,2), P222)
+orbitT = glAction({G1,G2,G3},T)	    	    -- about 80 secs :(
+orbitTsym = glAction(G1,T)	      	      	    -- about 80 secs :(
+Isym = ideal (generic222 - orbitTsym)#coeff
+I = ideal (generic222 - orbitT)#coeff
+eliminate(Isym,toList(a_0..a_8))
+eliminate(I,toList(a_0..a_8 | b_0..b_8 | c_0..c_8))
+
+
+
+
+T1 = P222_(1,1,1)
+I = ideal (T1-orbitT)#coeff
+radical I
