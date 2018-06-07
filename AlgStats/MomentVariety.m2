@@ -31,7 +31,7 @@ export {
 -- Lists all moments of the univariate Gaussian
 listOfMoments = method()
 listOfMoments (ZZ,Ring) := List => (d,R) -> (
-  t := local t;
+  t := symbol t;
   S := R[t]/t^(d+1);
   use S;
   g := gens R;
