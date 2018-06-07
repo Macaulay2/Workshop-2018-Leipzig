@@ -204,6 +204,25 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := Ideal => (k,n,d) -> (
     homogenize(sub((eliminate(toList(p_1..p_k),I),T)),m_(exps#0))
 )
 
+--Mixtures of Multinomial Distributions
+momentIdealMultiMixture = (k,n,d,mix) -> (
+    S := QQ[t_1..t_k];
+    exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
+    quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
+    Mons := ideal(apply(quotientExps, e->S_e));
+    --need different parameters p-1...p_k for each distribution in the mixture
+    R := QQ[p_(1,1)..p_(mix,k),a_1..a_mix,apply(exps,i->m_i)][t_1..t_k];
+    Mons = sub(Mons,R);
+    R = R / Mons;
+    use R;
+    series := sum apply(toList(1..mix),i->a_i*(sum apply(toList(1..k), j-> p_(i,j)*exp(t_j)))^n); --moment gen fxn of the multinomial distribution
+    I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + 
+    	ideal( apply(toList(1..mix),i-> 1 - sum apply(toList(1..k), j -> p_(i,j)))) + 
+	ideal(1 - sum apply(toList(1..mix),i -> a_i));
+    T := QQ[apply(exps,i->m_i)];
+    homogenize(sub((eliminate(toList(p_(1,1)..p_(mix,k))|toList(a_1..a_mix),I),T)),m_(exps#0))
+)
+
 
 --DOCUMENTATION--
 
