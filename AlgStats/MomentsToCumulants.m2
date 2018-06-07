@@ -33,13 +33,22 @@ momentIdealToCumulants = (I,truncAbove) -> (
     p := sum for i from 0 to truncAbove list 1/i! * k_i * t^i;
     q := formalExp(p,truncAbove+1);
     -- NOTE: here, we dehomogenize. May think about giving homog/nonhomog as an option.
-    li := for i from 0 to truncAbove list i! * coefficient(t^i, q),{k_0 => 0};
+    li := for i from 0 to truncAbove list i! * coefficient(t^i, q);
     li = for i from 0 to truncAbove list sub(li_i, k_0 => 0);
     phi := map(R2, ring I,li);
     phi I   
 )
 
--- momentsTensorFormat is a tensor (M_I)_I where M_I = m_I, I 
+-- helper fct to take the factorial of a multiindex
+factorial = multiIndex -> fold(apply(multiIndex,k->k!),times)
+
+-- helper fct to raise an indexed variable to a multiindex
+raiseTo = (t, multiIndex) -> (
+    li := for i from 1 to #multiIndex list t_i^(multiIndex_(i-1));
+    fold(li, times)
+)
+
+-- momentsTensorFormat should contain the indices that are _included_ (generalizes truncAbove) 
 momentIdealToCumulantsMultivariate = (I, truncAbove, momentsTensorFormat) -> (
     return 0
 )
@@ -49,20 +58,18 @@ end
 
 -- TEST --
 
-R = QQ[x,y] 
-
-cumulants = {0,1,1}
-cumulantsToMoments(cumulants,R)
-
-moments = {1,1,2}
-momentsToCumulants(moments, R)
-
-cumulants = {0,x,y^2,0,0,0,0,0,0}
-li = cumulantsToMoments(cumulants,R)
-momentsToCumulants(li,R)
-
 truncAbove = 4
-transpose gens gb momentIdealToCumulants(momentIdealGaussian(1,truncAbove),truncAbove)
+momentsTensorFormat = {truncAbove, truncAbove, truncAbove}
 
-truncAbove = 4
-momentsTensorFormat = {truncAbove, truncAbove}
+momentsTensorFormat = {3,3,3}
+apply(momentsTensorFormat, x -> x - 1)
+t = symbol t
+zeroes = for i from 0 to #momentsTensorFormat - 1 list 0
+R2 = QQ[k_zeroes..k_momentsTensorFormat]
+R2' = R2[t_1..t_#momentsTensorFormat,MonomialOrder => Lex]/
+           (for i from 1 to #momentsTensorFormat list t_i^(momentsTensorFormat_(i - 1)+1))
+peek R2'
+use R2'
+p = sum for I in zeroes..momentsTensorFormat list 1/factorial(I) * k_I * raiseTo(t,I)
+q = formalExp(p,max(momentsTensorFormat))
+coefficients q
