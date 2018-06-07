@@ -35,9 +35,8 @@ momentIdealToCumulants = (I,truncAbove) -> (
     -- NOTE: here, we dehomogenize. May think about giving homog/nonhomog as an option.
     li := for i from 0 to truncAbove list i! * coefficient(t^i, q),{k_0 => 0};
     li = for i from 0 to truncAbove list sub(li_i, k_0 => 0);
-    phi := map(R2, QQ[m_0..m_truncAbove],li);
-    I = sub(I, source phi);
-    phi I
+    phi := map(R2, ring I,li);
+    phi I   
 )
 
 -- momentsTensorFormat is a tensor (M_I)_I where M_I = m_I, I 
@@ -46,7 +45,6 @@ momentIdealToCumulantsMultivariate = (I, truncAbove, momentsTensorFormat) -> (
 )
 
 end
-
 
 
 -- TEST --
