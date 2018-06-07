@@ -22,7 +22,8 @@ export {
      "IntersectionRing",
      "intersectionRing",
      "ToricCycle",
-     "toricCycle"
+     "toricCycle",
+     "isTransverse"
      }
 
 protect ChowGroupBas 
@@ -345,6 +346,7 @@ toricCycle = method(TypicalValue => ToricCycle)
 toricCycle (List, NormalToricVariety) := (conesWithMultiplicities, X) -> (
     toArrow := (i,j) -> (i => j);
     cones := flatten values orbits X;
+    conesWithMultiplicities = for tuple in conesWithMultiplicities list (sort(tuple#0),tuple#1);
     zerocones := select(cones, c -> not member(c,conesWithMultiplicities / first));
     new ToricCycle from apply(conesWithMultiplicities, p -> toArrow(p)) | apply(zerocones, p->p=>0) | {
         symbol variety => X
@@ -369,6 +371,23 @@ ToricDivisor * List := (D, C) -> (
     );
     toricCycle(V,X)
 )
+
+
+ToricCycle == ToricCycle := Boolean => (D,E) -> (
+    return variety D === variety E and (for orbit in flatten values orbits variety D list D#orbit)==(for orbit in flatten values orbits variety E list E#orbit); 
+);
+
+
+isTransverse = method()
+
+isTransverse(ToricDivisor, List) := (D,E) -> (
+    nonzeroRaysofD := for i from 0 to (#(rays variety D) - 1) list (if D#i == 0 then continue; i);
+    #(set(nonzeroRaysofD)*set(E)) == 0
+);
+
+isTransverse(List,List) := (D,E) -> (
+    not isSubset(D,E) and not isSubset(E,D)
+);
 
 
 ---------------------------------------------------------------------------
@@ -481,7 +500,45 @@ doc ///
        Example 
          X = hirzebruchSurface 1;
          effCone(1,X)
-///   
+/// 
+
+
+doc ///
+     Key
+       isTransverse
+       (isTransverse, ToricDivisor, List)
+       (isTransverse, List, List)
+     Headline
+       checks transversality of toric divisors and cones
+     Usage
+       isTransverse(D,E)
+       isTransverse(E,F)
+     Inputs
+       D:ToricDivisor
+       E:List
+       F:List
+     Outputs
+       :Boolean
+     Description
+       Text
+         This function tests transversality of toric divisors and cones. Toric
+	 divisors are represented using the ToricDivisor class and cones are represented
+	 using lists.
+       Example
+         rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	 coneList={{0,1},{1,2},{2,3},{3,0}}
+	 X = normalToricVariety(rayList,coneList)
+	 D = X_3
+	 E = {0,3}
+	 F = {1,2}
+	 isTransverse(D,E)
+	 isTransverse(D,F)
+       Text
+         We can also check whether the two cones are transverse.
+       Example
+         isTransverse(F,F)
+         isTransverse(E,F)     
+///  
 
 
 doc ///
@@ -652,8 +709,10 @@ X=projectiveSpace 4
 assert(rank chowGroup(3,X) == rank chowGroup(1,X))
 assert(rank chowGroup(3,X) == rank picardGroup X)
 R = intersectionRing X
-S = ZZ[x]/ideal(x^5)
-phi = map(R,S,{z_0})
+S = QQ[x]/ideal(x^5)
+phi = map(S,R,{x,x,x,x,x})
+psi = map(R,S,{R_0})
+assert(matrix inverse psi == matrix phi)
 /// 
 
 TEST ///
@@ -665,7 +724,7 @@ for i from 0 to 6 do
      assert(rank chowGroup(i,X) == hilbertFunction(i,R/I))
 ///
 
---do P2 blown up at a point Z[H,E]/(H^3, E^2 + H^2, E^3)
+--do P2 blown up at a point QQ[H,E]/(H^3, E^2 + H^2, E^3)
 TEST ///
 rayList={{1,0},{0,1},{-1,-1},{0,-1}}
 coneList={{0,1},{1,2},{2,3},{3,0}}
@@ -673,10 +732,32 @@ X = normalToricVariety(rayList,coneList)
 assert(rank chowGroup(0,X) == 1)
 assert(rank chowGroup(1,X) == 2)
 assert(rank chowGroup(2,X) == 1)
+R = intersectionRing X
+S = QQ[E,H]/(H^3,E^2+H^2,E^3)
+phi = map(S,R,{H-E,H,H-E,E})
+psi = map(R,S,{R_3,R_1})
+assert(matrix inverse psi == matrix phi)
+
+D = X_3
+--assert(D*{3} == -1)
+assert(D*{2} == toricCycle({({2,3},1)},X))
+assert(D*{1} == toricCycle({},X))
+-- test reverse order
+assert(D*{0} == toricCycle({({3,0},1)},X))
+
+
+--check isTransverse
+E = {0,3}
+F = {1,2}
+assert(not isTransverse(F,F))
+assert(isTransverse(E,F))
+assert(not isTransverse(D,E))
+assert(isTransverse(D,F))
+
 ///
 
 
---do P1xP1 -> P3 Z[H,K]/(H^2, K^2)
+--do P1xP1 -> P3 QQ[H,K]/(H^2, K^2)
 TEST ///
 rayList={{1,0},{0,1},{-1,0},{0,-1}}
 coneList={{0,1},{1,2},{2,3},{3,0}}
@@ -684,11 +765,11 @@ X = normalToricVariety(rayList,coneList)
 assert(rank chowGroup(1,X) == 2)
 assert(rank chowGroup(2,X) == 1)
 assert(rank chowGroup(0,X) == 1)
-///
-
---add tests for intersectionRing
-TEST ///
-
+R = intersectionRing X
+S = QQ[H,K]/(H^2,K^2)
+phi = map(S,R,{H,K,H,K})
+psi = map(R,S,{R_0,R_1})
+assert(matrix inverse psi == matrix phi)
 ///
 
 
@@ -756,11 +837,7 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(chowGroup(i,X)))^2;));
 <<summ<<endl;
 
 
-uninstallPackage "Chow"
-restart
-loadPackage "Chow"
-installPackage "Chow"
-check "Chow"
+
 
 rayList={{1,0},{0,1},{-1,-1},{0,-1}}
 coneList={{0,1},{1,2},{2,3},{3,0}}
@@ -768,6 +845,8 @@ X = normalToricVariety(rayList,coneList)
 D = X_0 + 2*X_1+3*X_2+4*X_3
 C = (orbits X)#1#0
 D*C
+
+
 
 -- X = projectiveSpace 4
 D = X_0 + 2*X_1 - 7*X_3
@@ -785,3 +864,9 @@ for g in gammas do (
     Igamma = g - set(C);
     print Igamma
 )        
+
+uninstallPackage "Chow"
+restart
+loadPackage "Chow"
+installPackage "Chow"
+check "Chow"
