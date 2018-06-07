@@ -21,16 +21,19 @@ needsPackage "NumericalAlgebraicGeometry"
 ---UNEXPORTED-
 --------------
 
---write exported wrapper for first two
-writeSys = method(Options=>{IncludeTemplate=>false})
+parsePolynomial = p -> replace("p[0-9]+","0",toExternalString p)--replace("p[0-9]+(\\*|\\}|,)","*",replace("p[0-9]+e","e",toExternalString p))
+
+--todo: write exported wrapper for first two signatures
+writeSys = method(Options=>{IncludeTemplate=>false,WithImports=>false,ImportList=>{"using HomotopyContinuation","import DynamicPolynomials: PolyVar"}})
 writeSys (PolySystem, File) := o -> (P,f) -> (
     R:=ring P;
     varString:=apply(gens R,g->(toString g));
     varCommas:=(P.NumberOfVariables-1):", ";
-    eqnCommas:=(P.NumberOfPolys-1):", ";    
+    eqnCommas:=(P.NumberOfPolys-1):", ";
+    if o.WithImports then importJulia(o.ImportList,f);
     f << concatenate(mingle(varString,varCommas))| " = " | "[PolyVar{true}(i) for i in [" | concatenate mingle(apply(varString,g-> "\"" | g | "\""),varCommas)|"]];\n";
     f <<"f = [" | concatenate mingle(
-	apply(equations P,e->replace("p[0-9]*e","e",toExternalString e)),eqnCommas)| "];\n";
+	apply(equations P,e->parsePolynomial e),eqnCommas)| "];\n";
     )
 writeSys (PolySystem, String) :=o -> (P,filename) -> (
     f := openOut filename;
@@ -60,9 +63,16 @@ restartJulia()
 isOpen JuliaProcess
 ///
 
-importJulia = importList -> JuliaProcess<<concatenate apply(importList,pkg->pkg | "\n")
+importJulia = (importList,f) -> f<<concatenate apply(importList,pkg->pkg | "\n")
+
+
+parseSolutions = out -> (
+    L=select("\\[([0-9]|| |-|\\.|e|i|m|\\+|,)*\\]",out);
+    sols=apply(L,s->point{apply(separate(",",replace("\\[|\\]","",replace("im","*ii",s))),x->value x)})
+    )
 
 -- todo: replace arbitrary variable name "f" for julia system
+-- todo: remove bottom two lines from print
 solveJulia = method(Options=>{})
 solveJulia PolySystem := o -> P -> (
     if not isOpen JuliaProcess then error(noProcessError);
@@ -70,16 +80,8 @@ solveJulia PolySystem := o -> P -> (
     writeSys P;
     JuliaProcess<<flush;
     x:=read JuliaProcess;
-    R:=ring P;
-    varString:=apply(gens R,g->toExternalString g);
-    varCommas=toList((P.NumberOfVariables-1):", ");
-    polyCommas=toList((P.NumberOfPolys-1):", ");
-    JuliaProcess<<concatenate(mingle(varString,varCommas))| " = " | "[PolyVar{true}(i) for i in [" | concatenate(mingle(apply(varString,g-> "\"" | g | "\""),varCommas)) |"]];\n";
-    JuliaProcess<<"f=[" | concatenate mingle(
-	apply(equations P,e->replace("p[0-9]+e","e",toExternalString e)),
-        polyCommas) | "];\n";
-    JuliaProcess<<"sols=solve(f)\n";
-    JuliaProcess<<"x=[s.solution for s in sols];\n";
+    JuliaProcess<<"sols=solve(f);\n";
+--    JuliaProcess<<"x=[s.solution for s in sols];\n";
     JuliaProcess<<"show(IOContext(STDOUT, :compact=>false),[s.solution for s in sols])\n";
     finished = "done!!!x";
     JuliaProcess<<"print(\"" | finished |"\")\n";
@@ -88,9 +90,15 @@ solveJulia PolySystem := o -> P -> (
 	JuliaProcess<<flush;
     	out = out | read JuliaProcess;	
 	);
-    L=select("\\[([0-9]|| |-|\\.|e|i|m|\\+|,)*\\]",out);
-    sols=apply(L,s->point{apply(separate(",",replace("\\[|\\]","",replace("im","*ii",s))),x->value x)})
-    )    
+    m:=regex("Paths tracked(.|\n)*x",out);
+    n:=substring(first m, out);
+    solutionString:=replace(finished, "",substring(last regex("Array.*",n),n));
+    outputString:=replace("Array","",substring(first regex("Paths tracked:(.|\n)*Array",n),n));
+    print outputString;
+    parseSolutions solutionString
+    )
+
+
     
 
 -*
@@ -99,17 +107,35 @@ solutions(sols)
 results(sols)
 *-
 
-
-
 end
 
+close JuliaProcess
 restart
 needs "julia.m2"
-importJulia {"using HomotopyContinuation","import DynamicPolynomials: PolyVar"}
+needs "./ExampleSystems/jointsR6.m2"
+importJulia({"using HomotopyContinuation","import DynamicPolynomials: PolyVar"},JuliaProcess)
 
 R=CC[x,y]
 f= x^2+y
 g=y^2-pi
 P=polySystem {f,g}
-solveJulia P
+out=solveJulia P;
 
+#oo
+
+out=replace("-","",replace("\n","xxx",solveJulia P));
+match("Paths tracked.*Array",out)
+substring(first lastMatch,out)
+
+parseSolutions out
+
+writeSys(P,"test.jl",WithImports=>true)
+
+#sols
+
+Q=polySystem jointsR6(CC_53)
+sols=solveJulia Q;
+
+#sols--too many?
+
+writeSys(Q,"joints.jl",WithImports=>true)
