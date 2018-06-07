@@ -48,7 +48,8 @@ export {
   "multiplicities",
   "IsHomogeneous",
   "Symmetry",
-  "visualizeHypersurface"
+  "visualizeHypersurface",
+  "Valuation"
   }
 
 
@@ -59,18 +60,84 @@ if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not pr
 -- CODE
 ------------------------------------------------------------------------------
 
---Polymake visualization for tropical hypersurfaces
-visualizeHypersurface = method()
 
-visualizeHypersurface (String) := (S)->(
-	filename := temporaryFileName();
-	filename << "use application 'tropical';" << endl << concatenate("visualize_in_surface(new Hypersurface<Min>(POLYNOMIAL=>toTropicalPolynomial(\"",S,"\")));") << close;
-	runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
-	run runstring;
-	removeFile (filename|".err");
-	removeFile (filename|".out");
-	removeFile (filename);
+--Polymake visualization for tropical hypersurfaces
+
+--inputs: p prime, x rational number
+--outputs: p-adic valuation of x
+pAdicVal = (p,x) -> (
+    num := numerator(x);
+    denom := denominator(x);
+    temp := p;
+    if num%p===0 then (while (num%temp===0) do (temp=temp*p); return round(log(p,temp)-1));
+    if denom%p===0 then (while (denom%temp===0) do (temp=temp*p); return -round(log(p,temp)-1));
+    return 0;
 )
+
+--inputs: p prime, polyn polynomial with p-adic coefficients
+--outputs: polynomial whose coefficients are valuations of coefficients of polyn
+pAdicCoeffs := (p,polyn) -> (
+    (M,C):=coefficients polyn;
+    valuations := transpose matrix{apply(flatten entries C,i->pAdicVal(p,sub(i,QQ)))};
+    return (M,valuations);
+)
+
+--inputs: parameter specifies the coefficient ring for polyn, polyn polynomial over coefficient ring
+--outputss: polynomial whose coefficients are valuations of coefficients of polyn
+
+polynomialCoeffs := (parameter,polyn) -> (
+    (M,C):=coefficients(Variables=>delete(parameter,gens class polyn),polyn);
+    return (M,transpose matrix{apply(flatten entries C, i->min apply(exponents(polyn),sum))});
+)
+
+--inputs: var power of a monomial
+--outputs: term with power as coefficient
+expToCoeff = (var) -> (
+    temp := separate("^",toString(var));
+    if (length temp === 1) then return var else return concatenate(temp_1,temp_0);
+)
+
+--inputs: polyn macaulay 2 polynomial
+--outputs: min of linear polynomials for polymake
+toTropPoly = method(TypicalValue=>String)
+
+toTropPoly (RingElement) := (polyn) ->(
+    termList := apply(apply(terms polyn,toString),term->separate("*",term));
+    tropTerms := apply(apply(apply(termList, term->apply(term,expToCoeff)),term->between("+",term)),concatenate);
+    return "min("|concatenate(between(",",tropTerms))|")";
+)
+
+--inputs: (termList,coeffs)=coefficients polynomial
+--outputs: min of linear polynomials for polymake
+toTropPoly (Matrix,Matrix) := (termList,coeffs) ->(
+    noCoeffs := sum flatten entries termList;
+    termString := apply(apply(terms noCoeffs,toString),term->separate("*",term));
+    tropTerms := apply(apply(apply(termString, term->apply(term,expToCoeff)),term->between("+",term)),concatenate);
+    withCoeffs := for i when i<numColumns termList list toString((flatten entries coeffs)_i)|"+"|tropTerms_i;
+    return "min("|concatenate(between(",",withCoeffs))|")"; 
+)
+
+--outputs: return Min or Max depending on the state of tropcailMax
+minmax = () -> (if (Tropical#Options#Configuration#"tropicalMax") then return "Max" else return "Min";)
+
+visualizeHypersurface = method(Options=>{
+	Valuation=>null,
+	})
+
+visualizeHypersurface (RingElement) := o-> (polyn)->(
+    polynomial := toTropPoly(polyn);
+    if (instance(o.Valuation,Number)) then polynomial = toTropPoly(pAdicCoeffs(o.Valuation,polyn));
+    if (instance(o.Valuation,RingElement)) then polynomial = toTropPoly(polynomialCoeffs(o.Valuation,polyn));   
+    print polynomial;
+    filename := temporaryFileName();
+    filename << "use application 'tropical';" << endl << "visualize_in_surface(new Hypersurface<"|minmax()|">(POLYNOMIAL=>toTropicalPolynomial(\""|polynomial|"\")));" << close;
+    runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
+    run runstring;
+    removeFile (filename|".err");
+    removeFile (filename|".out");
+    removeFile (filename);
+)    
+       
 
 --Example hypersurface
 --visualizeHypersurface("min(12+3*x0,-131+2*x0+x1,-67+2*x0+x2,-9+2*x0+x3,-131+x0+2*x1,-129+x0+x1+x2,-131+x0+x1+x3,-116+x0+2*x2,-76+x0+x2+x3,-24+x0+2*x3,-95+3*x1,-108+2*x1+x2,-92+2*x1+x3,-115+x1+2*x2,-117+x1+x2+x3,-83+x1+2*x3,-119+3*x2,-119+2*x2+x3,-82+x2+2*x3,-36+3*x3)")
@@ -633,22 +700,31 @@ doc ///
 doc ///
 	Key	
 		visualizeHypersurface
-		(visualizeHypersurface,String)
+		(visualizeHypersurface,RingElement)
 	Headline
 		visualize the tropical hypersurface of the given polynomial
 	Usage
 		visualizeHypersurface(S)
 	Inputs
-		S:String
+		polyn: RingElement
 	Description
-		Text
-			This function wraps the Polymake visualization for a 
-			tropical hypersurface given an input polynomial. The 
-			input should be in the format "min(f_1,f_2,...,f_n)"
-			where each f_i is a linear polynomial. Image appears
-			in browser.
-		Example
-			visualizeHypersurface("min(12+3*x0,-131+2*x0+x1,-67+2*x0+x2,-9+2*x0+x3,-131+x0+2*x1,-129+x0+x1+x2,-131+x0+x1+x3,-116+x0+2*x2,-76+x0+x2+x3,-24+x0+2*x3,-95+3*x1,-108+2*x1+x2,-92+2*x1+x3,-115+x1+2*x2,-117+x1+x2+x3,-83+x1+2*x3,-119+3*x2,-119+2*x2+x3,-82+x2+2*x3,-36+3*x3)")
+	    Text
+	        This function wraps the Polymake visualization for a 
+	        tropical hypersurface given an input polynomial. The 
+	        input should be entered as a homogeneous polynomial. 
+	        The output is an image opening in a browser window.
+	    Example
+	    	--Examples are commented because they open in browser. Uncomment to run.
+    	        R=ZZ[x,y,z]
+		f=2*x*y+x*z+y*z+z^2
+		--visualizeHypersurface(Valuation=>2,f)
+		
+		f=2*x^2+x*y+2*y^2+x*z+y*z+2*z^2
+		--visualizeHypersurface(f)
+		
+		R=ZZ[w,x,y,z]
+		f=8*x^2+8*y^2+8*z^2+8*w^2+2*x*y+2*x*z+2*y*z+2*x*w+2*y*w+2*z*w
+		--visualizeHypersurface(f)
 ///
 			
 

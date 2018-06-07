@@ -19,11 +19,11 @@ export {
      "isContainedCones",
      "chowGroupBasis",
      "chowGroup",
-     "IntersectionRing",
      "intersectionRing",
      "ToricCycle",
      "toricCycle",
-     "isTransverse"
+     "isTransverse",
+     "tDivisor"
      }
 
 protect ChowGroupBas 
@@ -56,35 +56,6 @@ latticeIndex = (tau, X) ->(
       return(lift(b/a,ZZ));
 )     
      
-     
---Greg says this has been superseded - see orbits
---cones (ZZ, NormalToricVariety) :=  List => (i,X) ->(
--- cones (ZZ, NormalToricVariety) :=  (i,X) ->(
---      if not X.cache.?cones then X.cache.cones = new MutableHashTable;
---      if not X.cache.cones#?i then (
--- 	  if isSimplicial(X) then (
--- 	      X.cache.cones#i = unique flatten for sigma in max X  list subsets(sigma,i);
--- 	  )
---      	  else (     
--- 	       F:=fan X;
--- 	       Conesi:=cones(i,F);
--- 	       X.cache.cones#i=apply(Conesi,C->(
--- 		    RaysC := entries transpose rays C;
--- --This next bit to be changed when Rene fixes Polyhedra
--- RaysC2:=apply(RaysC,i->(apply(i,j->(lift(j,ZZ)))));
--- RaysC=RaysC2;		    
---      	       	    P:=positions(rays X, i->member(i,RaysC));
--- 		    P
--- 	       ));
---      	  );
---      );
---      X.cache.cones#i=sort X.cache.cones#i;
---      return X.cache.cones#i;
--- ) 
-
-
-
-
 --Is cone with generators given by columns of M contained in cone generated
 --by columns of N?
 --Temporarily assuming full dimensional
@@ -157,11 +128,6 @@ chowGroup=(i,X) -> (
 );	 
 	 
 
---isCartier = D -> (
-     
---)     
-
-
 -- intersect (List, ZZ, List, NormalToricVariety) := List => (D, k, tau, X)  -> (
 --      if isCartier(D) then (
 --      n:=dim X;
@@ -207,7 +173,7 @@ chowGroup=(i,X) -> (
 --Create SR ideal
 intersectionRing = method()
 intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
-     if (not X.cache.?IntersectionRing) or (not coefficientRing(X.cache.IntersectionRing) === S) then (
+     if (not X.cache.?intersectionRing) or (not coefficientRing(X.cache.intersectionRing) === S) then (
  	 z:=symbol z;
      	 R:=S[z_0..z_(#(rays X)-1)];
        	 I:= ideal apply(max X, sigma->(
@@ -225,10 +191,10 @@ intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
 	       );
 	       genJ    
      	 ));
-     X.cache.IntersectionRing=R/(ideal mingens I);
+     X.cache.intersectionRing=R/(ideal mingens I);
      X.cache.AmbientRing = R;
      );
-     X.cache.IntersectionRing
+     X.cache.intersectionRing
 );
 intersectionRing(NormalToricVariety) := X -> (intersectionRing(X,QQ));
 
@@ -353,12 +319,52 @@ toricCycle (List, NormalToricVariety) := (conesWithMultiplicities, X) -> (
     }
 )
 
+
+ZZ * ToricCycle := ToricCycle => (k,C) -> (
+    V := for orbit in flatten values orbits variety C list (orbit,k*(C#orbit));
+    toricCycle(V,variety C)
+);
+
+ToricCycle + ToricCycle := ToricCycle => (C,D) -> (
+    assert(variety C === variety D);
+    V := for orbit in flatten values orbits variety C list (orbit, (C#orbit)+(D#orbit));
+    toricCycle(V, variety C)
+);
+
+ToricCycle - ToricCycle := ToricCycle => (C,D) -> (
+    C + (-1)*D
+);
+
+- ToricCycle := ToricCycle => (C) -> (-1)*C
+
+-- IMHO this should be called toricDivisor
+tDivisor = method()
+tDivisor(Vector,NormalToricVariety) := (u,X) -> (
+    -- u is a vector in M
+    -- returns the divisor of zeros and poles of chi^u
+    -- u = flatten entries u;
+    -- u := vector({-3,2});
+    cs := for r in rays X list (
+        u * vector(r)    
+    );
+    sum apply(cs,0..(#(rays X) - 1), (c,i) -> c*X_i)
+)
+
+Vector * Vector := (a,b) -> (
+    first entries ((matrix {entries a}) * b )
+)
+
+
 ToricDivisor * List := (D, C) -> (
     -- D is a divisor on X
     -- C is a cone in the fan of X
+    if not isTransverse(D,C) then (
+        u := vector(random(ZZ^(#(first rays variety D)),ZZ^1));
+        D = D + tDivisor(u,variety D);
+    );
     assert(isCartier(D));
     X := variety D;
-    i := -1;
+    local i;
     for k in keys(orbits X) do (
         if member(C,orbits(X,k)) then i = k
     );
@@ -699,6 +705,108 @@ doc ///
           This currently assumes that both cones are full-dimensional, and is implemented in 
           a somewhat hackish manner.
 ///
+
+doc ///
+    Key
+      (symbol *, ToricDivisor, List)
+    Headline
+      restriction of a Cartier toric divisor to the orbit closure of a cone
+    Usage
+      D*C
+    Inputs
+      D:ToricDivisor
+      C:List
+    Outputs
+      :ToricCycle
+         Returns the toric cycle given by restricting a Cartier toric divisor to the
+	 orbit closure of the given cone
+    Description
+      Example
+        rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	coneList={{0,1},{1,2},{2,3},{3,0}}
+	X = normalToricVariety(rayList,coneList)
+	D = X_3
+      Text
+        The only cone containing rays 2 and 3 is the cone {2,3}. There is no cone
+	containing rows 1 and 3.
+      Example
+        D*{2}
+        D*{1}
+      Text
+        This can also compute more complicated sums.
+      Example
+        D = X_0 + 2*X_1+3*X_2+4*X_3
+	C = (orbits X)#1#0
+	D*C
+///
+
+doc ///
+    Key
+      (symbol == , ToricCycle, ToricCycle)
+    Headline
+      equality of toric cycles
+    Usage
+      C == D
+    Inputs
+      C:ToricCycle
+      D:ToricCycle
+    Description
+      Text
+        In order for this method to work, the varieties C and D are on must be the same object. Given this, 
+	this function checks that the coefficient of each orbit of the toric varieties in both toric cycles
+	are the same.
+      Example
+        rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	coneList={{0,1},{1,2},{2,3},{3,0}}
+	X = normalToricVariety(rayList,coneList)
+	D = X_3
+	D*{2} == toricCycle({({2,3},1)},X)
+	D*{1} == toricCycle({},X)
+      Text
+        The elements of the list in the constructor of toric cycle may be in any order. For example,
+	the following example has {3,0} instead of {0,3}.
+      Example
+	D*{0} == toricCycle({({3,0},1)},X)
+    SeeAlso
+      (symbol *, ToricDivisor, List)
+///
+
+doc ///
+    Key
+      (symbol +, ToricCycle, ToricCycle)
+      (symbol -, ToricCycle, ToricCycle)
+      (symbol -, ToricCycle)
+      (symbol *, ZZ, ToricCycle)
+    Headline
+      perform arithmetic on toric cycles
+    Usage
+      C1 + C2
+      C1 - C2
+      5*C1
+      -C1
+    Inputs
+      C1:ToricCycle
+      C2:ToricCycle
+    Description
+      Text
+        The set of torus-invariant Weil divisors forms an abelian group
+	under addition.  The basic operations arising from this structure,
+	including addition, substraction, negation, and scalar
+	multplication by integers, are available.
+      Text
+	We illustrate a few of the possibilities on one variety.
+      Example
+        rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+        coneList={{0,1},{1,2},{2,3},{3,0}}
+        X = normalToricVariety(rayList,coneList)
+	cyc = toricCycle({({2,3},1),({3,0}, 4)},X)
+	altcyc = (-2)*cyc
+	cyc + altcyc
+	cyc - altcyc
+	-cyc
+///
+
+
 ---------------------------------------------------------------------------
 -- TEST
 ---------------------------------------------------------------------------
@@ -772,6 +880,19 @@ psi = map(R,S,{R_0,R_1})
 assert(matrix inverse psi == matrix phi)
 ///
 
+--test ToricCycle addition, subtraction, multiplication, etc
+TEST ///
+rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+coneList={{0,1},{1,2},{2,3},{3,0}}
+X = normalToricVariety(rayList,coneList)
+
+cyc = toricCycle({({2,3},1),({3,0}, 4)},X)
+altcyc = (-2)*cyc
+assert(altcyc == toricCycle({({2,3},-2),({3,0}, -8)},X))
+assert(cyc + altcyc == ((-1)*cyc))
+assert(cyc - altcyc == 3*cyc)
+assert(-cyc == (-1)*cyc)
+///
 
 end
 
@@ -837,7 +958,19 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(chowGroup(i,X)))^2;));
 <<summ<<endl;
 
 
+uninstallPackage "Chow"
+uninstallPackage "NormalToricVarieties"
+restart
+loadPackage "Chow"
+installPackage "NormalToricVarieties"
+installPackage "Chow"
+check "Chow"
 
+X = projectiveSpace 4
+D = X_1
+u = vector({1,2,3,4})
+Z = tDivisor(u,X)
+D' = D + Z
 
 rayList={{1,0},{0,1},{-1,-1},{0,-1}}
 coneList={{0,1},{1,2},{2,3},{3,0}}
@@ -846,7 +979,11 @@ D = X_0 + 2*X_1+3*X_2+4*X_3
 C = (orbits X)#1#0
 D*C
 
-
+u = vector({-3,2})
+cs = for r in rays X list (
+    u * vector(r)    
+)
+sum apply(cs,0..(#(rays X) - 1), (c,i) -> c*X_i)
 
 -- X = projectiveSpace 4
 D = X_0 + 2*X_1 - 7*X_3
@@ -870,3 +1007,5 @@ restart
 loadPackage "Chow"
 installPackage "Chow"
 check "Chow"
+
+
