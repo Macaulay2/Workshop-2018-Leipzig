@@ -6,7 +6,7 @@ newPackage(
 	{ Name => "", Email => "", HomePage => "" }
 	},
     Headline => "A new package",
-    DebuggingMode => false
+    DebuggingMode => true
     )
 
 export {
@@ -14,6 +14,7 @@ export {
     "linearTruncations",
     "multigradedPolynomialRing",
     "coarseMultigradedRegularity",
+    "findOtherLinearTruncations",
     -- Options
     "CoefficientField",
     "Simple"
@@ -49,6 +50,7 @@ LL (ZZ,List) := (d,n) -> (
     )
 
 findMins = L->(
+    if L == {} then return {};
     t := #(L_0);
     P := ZZ/101[vars(0..t-1)];
     I := ideal apply(L, ell-> product(t, j-> P_j^(ell_j)));
@@ -80,8 +82,8 @@ isLinearComplex = F->(
     all(range, i->max(dF_i) === mindF+i-min F)
     )
 
-linearTruncations = method()
-linearTruncations Module := M-> (
+linearTruncations = method(Options =>{Verbose =>false})
+linearTruncations(Module):= o->M-> (
     t := degreeLength M;
     F := res prune M;
     r := coarseMultigradedRegularity F;
@@ -90,13 +92,13 @@ linearTruncations Module := M-> (
     candidates := set {};
     scan(L0, ell ->candidates =  candidates+set toList(ell..r));
     candidates = toList candidates;
-    print candidates;
+    if o.Verbose == true then <<"candidates are"<< candidates<<endl;
     L := select(candidates, ell -> 
 	isLinearComplex res truncate(ell,M));
-    print L;
+    if o.Verbose == true then << "the candidates with linear truncations are" << L<<endl;
     findMins L
     )
-linearTruncations(Module,List) := (M, candidates) ->(
+linearTruncations(Module,List) := o-> (M, candidates) ->(
     L := select(candidates, c->(
         isLinearComplex res prune truncate(c, M)));
     findMins L)
@@ -113,6 +115,16 @@ isInterval = L-> (
     all(#L, i -> first L_i == i+a)
     )
     
+findOtherLinearTruncations = M->(
+    --assume M is is gen in non-neg multi-degrees; and t = 2
+    r := sum coarseMultigradedRegularity M;
+    known := linearTruncations M;
+    minfirst := min(known/first);
+    minlast := min(known/last);
+    candidates1 := apply(minfirst, i-> {i,r-i});
+    candidates2 := apply(minlast, i-> {r-i,i});  
+    linearTruncations(M,candidates1|candidates2)
+    )
 
 
 -------------------------
@@ -234,15 +246,18 @@ SeeAlso
 end--
 --------------------------------------------------------
 restart
+needsPackage "TateOnProducts"
 needsPackage "LinearTruncations"
 needsPackage "RandomIdeals"
 
-S = multigradedPolynomialRing{1,1}	
+(S,E) = productOfProjectiveSpaces{2,2}
 S' = coefficientRing S[gens S]
 ran = L -> substitute(randomMonomialIdeal(L,S'), S)
 I = ran{3,4,5,5,5,6};
 M = S^1/I
 linearTruncations M
+low = -{3,3}
+cohomologyMatrix(M,low, -2*low)
 regularity M
 coarseMultigradedRegularity M
 
@@ -250,7 +265,7 @@ coarseMultigradedRegularity M
 netList apply(10, i->(
 I = ran{3,3,7,9};
 M = S^1/I;
-{rseMultigradedRegularity M, linearTruncations M}
+{coarseMultigradedRegularity M, linearTruncations M}
 ))
 
 tally apply(10, i->(
@@ -270,6 +285,7 @@ use S
 M1 = cokernel matrix {{x_(1,0)^2*x_(1,1), x_(0,0)*x_(0,1)^3, x_(0,0)^2*x_(0,1)*x_(1,1)^2, x_(0,0)*x_(0,1)^2*x_(1,1)^2, x_(0,1)^3*x_(1,0)^2, x_(0,0)^3*x_(1,0)^3}}
 M2 = cokernel matrix {{x_(0,0)^2*x_(1,1), x_(0,0)^2*x_(0,1)^2, x_(0,0)^2*x_(1,0)^3, x_(0,0)^3*x_(1,0)^2, x_(0,1)^3*x_(1,0)^2, x_(0,1)^2*x_(1,0)*x_(1,1)^3}}
 linearTruncations M1
+cohomologyMatrix(M1,{-3,-3},2*{3,3})
 linearTruncations M2
 
 
@@ -313,3 +329,26 @@ M = S^1/I;
 coarseMultigradedRegularity M --{7,7}
 linearTruncations M
 
+viewHelp linearTruncations
+
+///
+restart
+uninstallPackage"LinearTruncations"
+restart
+installPackage"LinearTruncations"
+needsPackage "TateOnProducts"
+needsPackage "RandomIdeals"
+(S,E) = productOfProjectiveSpaces{2,2}
+S' = coefficientRing S[gens S]
+ran = L -> substitute(randomMonomialIdeal(L,S'), S)
+I = ran{3,4,5,5,5,6};
+M = S^1/I
+linearTruncations M
+findOtherLinearTruncations M
+known = linearTruncations (M, Verbose => true)
+minfirst = min(known/first)
+minlast = min(known/last)
+linearTruncations
+code (linearTruncations,Module,List)
+candidates1|candidates2
+///
