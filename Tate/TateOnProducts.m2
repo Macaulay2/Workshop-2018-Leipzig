@@ -3732,6 +3732,9 @@ assert isIsomorphic(M',M)
 cohomologyMatrix(M', -high, high)
 beilinsonWindow cornerComplex(M',-high,high)
 assert(beilinsonWindow cornerComplex(M',-high,high) == BW)
+BW' = beilinsonWindow cornerComplex(M',-high,high)
+assert( all(2, i->BW_i == BW'_i))
+assert(isIsomorphic(coker BW.dd_1, coker BW'.dd_1))
 ///
 
 TEST ///
@@ -3740,17 +3743,18 @@ M = coker random(S^2, S^{2:{-1,-1}})
 high = {3,3}
 C = cornerComplex(M,-high,high);
 B = beilinson C
+M' = HH_0 B
 assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
 ///
 
 TEST ///
-(S,E) = productOfProjectiveSpaces{1,2}
-M = coker random(S^2, S^{2:{-1,-1}})
-high = {3,3}
-C = cornerComplex(M,-high,high);
-B = beilinson C
-assert isIsomorphic(M',M)
+  (S,E) = productOfProjectiveSpaces{1,2}
+  M = coker random(S^2, S^{2:{-1,-1}})
+  high = {3,3}
+  C = cornerComplex(M,-high,high);
+  B = beilinson C
+  assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
 ///
 
@@ -3793,8 +3797,7 @@ TEST ///
 /// 
 
 TEST ///
-  -- XXX Mike working on this test
-  -- of beilinson functor
+  -- test of beilinson
 -*
   restart
   needsPackage "TateOnProducts"
@@ -3804,10 +3807,10 @@ TEST ///
   U1 = beilinson(E^{{-1,0}})
   V1 = beilinson(E^{{0,-1}})
   V2 = beilinson(E^{{0,-2}})
-  assert(V2 == S^{{0,-1}})
+  assert(  V2 == beilinsonBundle({0,2},S))
   assert(beilinson(E^{{-1,-1}}) == U1 ** V1)
   assert(beilinson(E^{{-1,-2}}) == U1 ** V2)
-  assert(beilinson(E^{{-2,0}}) == 0)
+  assert(beilinson(E^{{-2,1}}) == 0)
   
   debug TateOnProducts -- for inBeilinsonWindow
   degs = flatten for a from -3 to 3 list for b from -3 to 3 list {a,b}
@@ -3817,157 +3820,163 @@ TEST ///
 /// 
 
 TEST ///
-  -- XXX Mike working on this test
-  -- of beilinson functoriality
+
+  -- tests of beilinson functoriality
+  --the commented tests worked but were slow (>.5sec) on June 7, 2018 in Leipzig.
 -*
   restart
 *-
   debug needsPackage "TateOnProducts"
-  testBeilinson({1,2}, BundleType=>PrunedQuotient)
-  testBeilinson({1}, BundleType=>PrunedQuotient)
-  testBeilinson({4}, BundleType=>PrunedQuotient)
-  testBeilinson({1,1,1,1}, BundleType=>PrunedQuotient)
-  testBeilinson({1,1,2,1}, BundleType=>PrunedQuotient)
-  testBeilinson({2,2}, BundleType=>PrunedQuotient)
-  testBeilinson({1,2,3}, BundleType=>PrunedQuotient)
-  testBeilinson({2,2,2}, BundleType=>PrunedQuotient)
-  testBeilinson({3,3}, BundleType=>PrunedQuotient)
-  testBeilinson({3,4}, BundleType=>PrunedQuotient)
+elapsedTime  testBeilinson({1,2}, BundleType=>PrunedQuotient)
+elapsedTime   testBeilinson({1}, BundleType=>PrunedQuotient)
+elapsedTime   testBeilinson({4}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson({1,1,1,1}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson({1,1,2,1}, BundleType=>PrunedQuotient)
+elapsedTime   testBeilinson({2,2}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson({1,2,3}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson({2,2,2}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson({3,3}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson({3,4}, BundleType=>PrunedQuotient)
 
-  testBeilinson({1,2}, BundleType=>QuotientBundle)
-  testBeilinson({1}, BundleType=>QuotientBundle)
-  testBeilinson({4}, BundleType=>QuotientBundle)
-  testBeilinson({1,1,1,1}, BundleType=>QuotientBundle)
-  testBeilinson({1,1,2,1}, BundleType=>QuotientBundle)
-  testBeilinson({2,2}, BundleType=>QuotientBundle)
-  testBeilinson({1,2,3}, BundleType=>QuotientBundle)
-  testBeilinson({2,2,2}, BundleType=>QuotientBundle)
-  testBeilinson({3,3}, BundleType=>QuotientBundle)
-  testBeilinson({3,4}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson({1,2}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson({1}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson({4}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson({1,1,1,1}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson({1,1,2,1}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson({2,2}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson({1,2,3}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson({2,2,2}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson({3,3}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson({3,4}, BundleType=>QuotientBundle)
 
-  testBeilinson1({1,2}, BundleType=>PrunedQuotient)
-  testBeilinson1({1}, BundleType=>PrunedQuotient)
-  testBeilinson1({4}, BundleType=>PrunedQuotient)
-  testBeilinson1({1,1,1,1}, BundleType=>PrunedQuotient)
-  testBeilinson1({1,1,2,1}, BundleType=>PrunedQuotient)
-  testBeilinson1({2,2}, BundleType=>PrunedQuotient)
-  testBeilinson1({1,2,3}, BundleType=>PrunedQuotient)
-  testBeilinson1({2,2,2}, BundleType=>PrunedQuotient)
-  testBeilinson1({3,3}, BundleType=>PrunedQuotient)
-  testBeilinson1({3,4}, BundleType=>PrunedQuotient)
+elapsedTime   testBeilinson1({1,2}, BundleType=>PrunedQuotient)
+elapsedTime   testBeilinson1({1}, BundleType=>PrunedQuotient)
+elapsedTime   testBeilinson1({4}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson1({1,1,1,1}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson1({1,1,2,1}, BundleType=>PrunedQuotient)
+elapsedTime   testBeilinson1({2,2}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson1({1,2,3}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson1({2,2,2}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson1({3,3}, BundleType=>PrunedQuotient)
+--elapsedTime   testBeilinson1({3,4}, BundleType=>PrunedQuotient)
 
-  testBeilinson1({1,2}, BundleType=>QuotientBundle)
-  testBeilinson1({1}, BundleType=>QuotientBundle)
-  testBeilinson1({4}, BundleType=>QuotientBundle)
-  testBeilinson1({1,1,1,1}, BundleType=>QuotientBundle)
-  testBeilinson1({1,1,2,1}, BundleType=>QuotientBundle)
-  testBeilinson1({2,2}, BundleType=>QuotientBundle)
-  testBeilinson1({1,2,3}, BundleType=>QuotientBundle)
-  testBeilinson1({2,2,2}, BundleType=>QuotientBundle)
-  testBeilinson1({3,3}, BundleType=>QuotientBundle)
-  testBeilinson1({3,4}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson1({1,2}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson1({1}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson1({4}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson1({1,1,1,1}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson1({1,1,2,1}, BundleType=>QuotientBundle)
+elapsedTime   testBeilinson1({2,2}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson1({1,2,3}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson1({2,2,2}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson1({3,3}, BundleType=>QuotientBundle)
+--elapsedTime   testBeilinson1({3,4}, BundleType=>QuotientBundle)
 
-  testBeilinson {1,1}
-  testBeilinson {1,2}
-  testBeilinson {2,1}
-  testBeilinson {3,1}
-  testBeilinson {2,2}
-  testBeilinson {1,3}
-  testBeilinson {4,1}
-  testBeilinson {3,2}
-  testBeilinson {2,3}
-  testBeilinson {1,4}
-  testBeilinson {1}
-  testBeilinson {2}
-  testBeilinson {3}
-  testBeilinson {4}
-  testBeilinson {5}
-  testBeilinson {6}
-  testBeilinson {5,3}
-  testBeilinson {1,3,1,1}
-  testBeilinson {1,3,1,2}
+elapsedTime   testBeilinson {1,1}
+elapsedTime   testBeilinson {1,2}
+elapsedTime   testBeilinson {2,1}
+elapsedTime   testBeilinson {3,1}
+elapsedTime   testBeilinson {2,2}
+elapsedTime   testBeilinson {1,3}
+elapsedTime   testBeilinson {4,1}
+elapsedTime   testBeilinson {3,2}
+elapsedTime   testBeilinson {2,3}
+elapsedTime   testBeilinson {1,4}
+elapsedTime   testBeilinson {1}
+elapsedTime   testBeilinson {2}
+elapsedTime   testBeilinson {3}
+elapsedTime   testBeilinson {4}
+elapsedTime   testBeilinson {5}
+elapsedTime   testBeilinson {6}
+--elapsedTime   testBeilinson {5,3}
+--elapsedTime   testBeilinson {1,3,1,1}
+--elapsedTime   testBeilinson {1,3,1,2}
 
-  testBeilinson1 {1,1}
-  testBeilinson1 {1,2}
-  testBeilinson1 {2,1}
-  testBeilinson1 {3,1}
-  testBeilinson1 {2,2}
-  testBeilinson1 {1,3}
-  testBeilinson1 {4,1}
-  testBeilinson1 {3,2}
-  testBeilinson1 {2,3}
-  testBeilinson1 {1,4}
-  testBeilinson1 {1}
-  testBeilinson1 {2}
-  testBeilinson1 {3}
-  testBeilinson1 {4}
-  testBeilinson1 {5}
-  testBeilinson1 {6}
+elapsedTime   testBeilinson1 {1,1}
+elapsedTime   testBeilinson1 {1,2}
+elapsedTime   testBeilinson1 {2,1}
+elapsedTime   testBeilinson1 {3,1}
+--elapsedTime   testBeilinson1 {2,2}
+--elapsedTime   testBeilinson1 {1,3}
+--elapsedTime   testBeilinson1 {4,1}
+--elapsedTime   testBeilinson1 {3,2}
+--elapsedTime   testBeilinson1 {2,3}
+--elapsedTime   testBeilinson1 {1,4}
+elapsedTime   testBeilinson1 {1}
+elapsedTime   testBeilinson1 {2}
+elapsedTime   testBeilinson1 {3}
+elapsedTime   testBeilinson1 {4}
+--elapsedTime   testBeilinson1 {5}
+--elapsedTime   testBeilinson1 {6}
 
-  testBeilinson1 {1,1,1}
-  testBeilinson1 {1,1,2}
-  testBeilinson1 {1,2,1}
-  testBeilinson1 {2,1,1}
-  testBeilinson1 {3,1,1}
+elapsedTime   testBeilinson1 {1,1,1}
+--elapsedTime   testBeilinson1 {1,1,2}
+--elapsedTime   testBeilinson1 {1,2,1}
+--elapsedTime   testBeilinson1 {2,1,1}
+--elapsedTime   testBeilinson1 {3,1,1}
 
-  testBeilinson1 {1,2,2}
-  testBeilinson1 {2,1,2}
-  testBeilinson1 {2,2,1}
-  
-  testBeilinson1 {1,1,1,1}
+--elapsedTime   testBeilinson1 {1,2,2}
+--elapsedTime   testBeilinson1 {2,1,2}
+--elapsedTime   testBeilinson1 {2,2,1}
+
+--elapsedTime   testBeilinson1 {1,1,1,1}
 ///
 
-------------Tests that aren't necessarily tests yet:
+
+ ------------Tests that aren't necessarily tests yet:
+
+
 TEST ///
-n={1,2}
-(S,E) = productOfProjectiveSpaces n
-peek tateData S
-ringData S
-ringData E
--- What are these next two lines doing?
-scan(#n,i->scan(n_i+1,j->x_(i,j)=S_(sum(i,k->n_k+1)+j)))
-scan(#n,i->scan(n_i+1,j->e_(i,j)=E_(sum(i,k->n_k+1)+j)))
-
-m=matrix{{x_(0,0),x_(1,0)},
-       {x_(0,1),0},
-       {0,x_(1,1)},
-       {0,x_(1,2)}}
-betti m
-mE=symExt(m,E)
-betti (T= res coker mE)
-tallyDegrees T
-cohomologyMatrix( T, -{2,2},{6,6})
+-*
+restart
+needsPackage "TateOnProducts"
+*-
+error"the test below works, but we don't understand the
+correspondence of positions in the cohomology Matrix and the tally"
+  n={1,2}
+  (S,E) = productOfProjectiveSpaces n
+  m = matrix{{x_(0,0),x_(1,0)},
+         {x_(0,1),0},
+         {0,x_(1,1)},
+         {0,x_(1,2)}}
+  mE = symExt(m,E)
+  betti(T = res coker mE)
+  TD = tallyDegrees T
+  CD = cohomologyMatrix(T, -{2,2},{1,1})
+  CD = cohomologyHashTable(T, -{2,2},{1,1})  
+  assert((TD_0)#{-1,0} == CD#{{1,0},-1})
 ///
-
-TEST ///       
-n={1,2}
-(S,E) = productOfProjectiveSpaces n
-use S
-vars S
-m=map(S^4,S^{{ -1,0},{0,-1}}, transpose matrix{{S_0,S_1,0,0},{S_2,0,S_3,S_4}})
-mE=symExt(m,E)
-
-///
-
-
+  
 ----The next two tests were commented out, along with the "corner" 
 --scripts
+-*
+restart
+
+*-
 TEST ///
+error"we don't know what this should be testing. Note that 'corner' 
+no longer exists"
+
+debug needsPackage "TateOnProducts"
 n={1,2}
 (S,E) = productOfProjectiveSpaces n
 F=dual (res((ker transpose vars E)**E^{{ 2,3}},LengthLimit=>10))
 cohomologyMatrix(F,-2*n,2*n)
 tallyDegrees F
 
-deg={2,1} 
-m=corner(F,deg);
+deg = {2,1} 
+m = corner(F,deg)
 tally degrees source m, tally degrees target m
 Fm=(res(coker m,LengthLimit=>10))[sum deg]
 betti Fm
 betti F
 cohomologyMatrix(Fm,deg-{5,5},deg+{1,1})
 ///
+
 TEST///
+error"we don't know what this should be testing. Note that 'corner' 
+no longer exists"
+
+debug needsPackage "TateOnProducts"
 n={1,1}
 (S,E) = productOfProjectiveSpaces n
 
@@ -3983,8 +3992,21 @@ betti m1, tally degrees target m1, tally degrees source m1
 ///
 
 ///
+restart
 loadPackage ("TateOnProducts", Reload =>true)
 ///
+TEST ///
+n={1,2}; (S,E) = productOfProjectiveSpaces n;
+M = S^1;
+low = {-3,-3};high = {3,3};
+H = cohomologyHashTable(M, low,high);
+pH = pairs eulerPolynomialTable (M, low, high);
+pH' = pairs eulerPolynomialTable H;
+CR = ring pH_0_1;
+assert(pH == apply(pH', p -> (p_0,sub(p_1,CR))))
+///
+
+
 TEST ///
 n={1,2}; (S,E) = productOfProjectiveSpaces n;
 	a={1,1}; U=E^{ -a};
@@ -3996,17 +4018,6 @@ n={1,2}; (S,E) = productOfProjectiveSpaces n;
 	cohomologyMatrix(T,-{2,3},{3,3})	
 low = {-3,-3};high = {3,3}
 F = T
-
-M = S^1
-low = {-3,-3};high = {3,3}
-F = cornerComplex(M,low,high)
-betti F
-tallyDegrees F
-cohomologyMatrix(M, low,high)
-H = cohomologyHashTable(M, low,high)
-eulerPolynomialTable H
-
-
 ///
 
 TEST///
