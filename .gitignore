@@ -19,3 +19,7 @@
 # Mac OS X directory files
 Icon
 .DS_Store
+
+# emacs backup files
+.\#*
+\#*\#
