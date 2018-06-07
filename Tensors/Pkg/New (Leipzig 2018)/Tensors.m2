@@ -351,7 +351,6 @@ Tensor - Tensor := (T,T') -> (
 
 
 --- Group actions 
--- Fix: too much time
 
 glAction = method()
 glAction (List,Tensor) := (G,T) -> (
@@ -372,6 +371,32 @@ glAction (Matrix,Tensor) := (G,T) -> (
     GG := toList(d:G);
     return glAction(GG,T)
     )
+
+
+--- Symmetrize 
+
+symmetrize = method()
+symmetrize (Tensor) := (T) -> (
+    V := T#tensorSpace;
+    N := apply(V#dims,i->i-1);
+    d :=  #N; 
+    L := for J in (d:0)..toSequence(N) list (
+      if toList(J) == sort(toList(J)) then J else continue);
+    P := for J in L list permutations(toList(J));
+    S := for J in P list set J;
+    return sum flatten for O in P list (
+	repr = O_0;
+	(1/(d!))*(sum for I in O list T_(toSequence I))*(sum for I in toList(set O) list V_(toSequence I))
+		    )
+		)
+	    
+IsSymmetric = method()
+IsSymmetric (Tensor) := (T) -> (
+    if symmetrize(T) == T then true else false
+    )
+
+
+---- Slices and contractions 
 
 
 slice = method();
