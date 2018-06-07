@@ -224,11 +224,14 @@ momentVarietyGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Ideal => (n,d,k,KK) -> (
  
   (C,momvars) := momentMapGaussiansMixtures(n,d,k,KK);
   R := ring(C);
-  k := coefficientRing(R);
+  varsR := vars R;
+  l := numColumns(varsR);
+  avars := flatten entries submatrix(varsR,((l-1-k)..(l-1)));
+  sumtoone := ideal(sum(avars)-1);
  
   PPM := KK[momvars];
   varmoms := gens PPM;
-  f := map(R,PPM,C);
+  f := map(R/sumtoone,PPM,C);
   I := kernel f;
   I = homogenize(I,varmoms_0);
  
