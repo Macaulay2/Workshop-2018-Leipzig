@@ -27,7 +27,8 @@ export {
     }
 
 -- Lists all moments of the univariate Gaussian
-listOfMoments = (d,R) -> (
+listOfMoments = method()
+listOfMoments (ZZ,Ring) := List => (d,R) -> (
   t := local t;
   S := R[t]/t^(d+1);
   use S;
@@ -40,8 +41,8 @@ listOfMoments = (d,R) -> (
 )
 
 --Gaussian
-
-momentIdeal = (d, R)->(
+momentIdeal = method()
+momentIdeal (ZZ, Ring) := Ideal => (d, R)->(
     -- Append auxilliary vars to construct power series
     mn := local mn;
     sd := local sd;
@@ -73,7 +74,8 @@ momentIdealExponential = (mix,d) ->(
 --Gaussian Mixtures
 --takes as input the number of mixtures and the highest degree of moments appearing
 --computes the homogeneous moment ideal by eliminating the means and standard deviations
-momentIdealGaussian = (mix,d)->(
+momentIdealGaussian = method()
+momentIdealGaussian (ZZ, ZZ) := Ideal => (mix,d)->(
     mn := local mn;
     sd := local sd;
     a := local a;
@@ -88,7 +90,7 @@ momentIdealGaussian = (mix,d)->(
 --------------------------------------------------------------------------------------
 
 momentMapGaussians =  (n,d) -> (
-  x := x;    
+  x := local x;    
   par:=toList(x_1..x_n);
   for i from 1 to n do (for j from i to n do (par=append(par,s_(i,j))) );
   par=toSequence(par);
@@ -124,8 +126,8 @@ momentMapGaussians =  (n,d) -> (
 )   	    	    	
 
 -- This computes the homogeneous ideal of the moment variety.
-
-momentVarietyGaussians = (n,d) -> (
+momentVarietyGaussians = method()
+momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
     
   (C,momvars) := momentMapGaussians(n,d);   
   R := ring(C);
@@ -146,7 +148,8 @@ momentVarietyGaussians = (n,d) -> (
 --Poisson Mixtures
 --takes as input the number of mixtures and the highest degree of moments appearing
 --computes the homogeneous moment ideal 
-momentIdealPoisson = (mix,d)->(
+momentIdealPoisson = method()
+momentIdealPoisson (ZZ, ZZ) := Ideal => (mix,d)->(
     lambda := local lambda;
     a := local a;
     m := local m;
@@ -159,11 +162,12 @@ momentIdealPoisson = (mix,d)->(
 
 --Gaussian Mixtures Test
 --written to eliminate a_mix
-momentIdealGaussianTest = (mix,d)->(
+momentIdealGaussianTest = method()
+momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
     mn := local mn;
     sd := local sd;
     m := local m;
-    t := local tq
+    t := local t;
     if mix == 1 then(
 	R:=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
     	series:= exp(mn_1*t+(1/2)*sd_1^2*t^2);
@@ -184,7 +188,8 @@ momentIdealGaussianTest = (mix,d)->(
 --p_1,..,p_k are the probabilities of each outcome so that their sum is 1
 --t_1..t_k are the variables of the moment generating function
 --d is the truncation order
-momentIdealMultinomial = (k,n,d) -> (
+momentIdealMultinomial = method()
+momentIdealMultinomial (ZZ, ZZ, ZZ) := Ideal => (k,n,d) -> (
     S := QQ[t_1..t_k];
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
@@ -242,13 +247,14 @@ doc ///
 doc ///
   Key 
     momentIdeal
-    (momentIdeal, ZZ)
+    (momentIdeal, ZZ, Ring)
   Headline
     compute the ideal corresponding to the Gaussian
   Usage
-    momentIdeal n
+    momentIdeal (d,R)
   Inputs
-    n : ZZ
+    d : ZZ
+    R : Ring
   Outputs
     : Ideal
   Description
@@ -257,8 +263,9 @@ doc ///
     Text
       Here we show an example.
     Example
-      n = 4
-      momentIdeal n
+      R = QQ[x_0..x_4]
+      d = 3
+      momentIdeal (d,R)
   
 ///
 
@@ -301,9 +308,122 @@ doc ///
   Description
     Text
       given the number of mixtures and the highest degree of moments, compute the corresponding homogeneous ideal
+    Text
+      Here we show an example
+    Example
+      mix = 2
+      d = 1
+      momentIdealGaussian (mix,d)
+      
+///
+
+///
+  Key
+    momentMapGaussians
+    (momentMapGaussians, ZZ, ZZ)
 
 ///
 
+doc ///
+  Key
+    momentIdealPoisson 
+    (momenItdealPoisson, ZZ, ZZ)
+  Headline
+    compute the homogeneous moment ideal
+  Usage
+    I = momentIdealPoisson(mix,d)
+  Inputs
+    mix : ZZ
+    d : ZZ
+  Outputs
+    I : Ideal
+  Description
+    Text
+      given the number of mixtures and the hightest degree of moments, compute the corresponding homogeneous moment ideal
+    Text
+      Here we show an example
+    Example
+      MISSING
+      
+ ///
+ 
+ doc ///
+   Key
+     momentIdealGaussianTest
+     (momentIdealGaussianTest, ZZ, ZZ)
+   Headline
+     TO BE GIVEN
+   Usage
+     I = momentIdealGaussianTest(mix,d)
+   Inputs
+     mix : ZZ
+     d : ZZ
+   Outputs
+     I : Ideal
+   Description
+     Text
+       TO BE GIVEN
+     Text
+       Here we show an example
+     Example
+       TO BE GIVEN
+       
+ ///
+ 
+ doc ///
+   Key
+     momentVarietyGaussians
+     (momentVarietyGaussians, ZZ, ZZ)
+   Headline
+     compute the homogeneous ideal of the moment variety
+   Usage
+     momentVarietyGaussians (n,d)
+   Inputs
+     n : ZZ
+     d : ZZ
+   Outputs
+     : Ideal
+   Description
+     Text
+       compute the homogeneous ideal of the moment variety
+     Text
+       Here we show an example
+     Example
+       n = 1
+       d = 4
+       momentVarietyGaussians (n,d)
+ 
+ ///
+ 
+
+ doc ///
+   Key
+     momentIdealMultinomial
+     (momentIdealMultinomial, ZZ, ZZ, ZZ)
+   Headline
+     multinomial distribution
+   Usage
+     I = momentIdealMultinomial (k,n,d)
+   Inputs
+     k : ZZ
+     n : ZZ
+     d : ZZ
+   Outputs 
+     I : Ideal
+   Description
+     Text
+       Given the number of possible outcomes, the number of trials in a statistical experiment as well as the truncation order, compute the moment ideal for the multinomial distribution      
+     Text
+       Here we show an example
+     Example
+       k = 2
+       n = 3
+       d = 2
+       momentIdealMultinomial (k,n,d) 
+ 
+ ///
+ 
 end--
+uninstallPackage "MomentVariety"
 restart
 installPackage "MomentVariety"
