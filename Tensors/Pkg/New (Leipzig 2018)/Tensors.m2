@@ -202,10 +202,22 @@ TensorSpace ** TensorSpace := (V,W) -> (
 	}
     )
 
+pickSymbol = method();
+pickSymbol (TensorSpace) := V -> (
+    d := V#tensorSpaceOrder;
+    M := decompose ideal first V#tensorBasis;
+    return for i to d-1 list (
+	(baseName((M#(d-1-i))_0))#0
+	)
+    )
+
 factorsTensor = method()
 factorsTensor(TensorSpace) := V -> (
-	return for i in 0..#(V#dims)-1 list (tensorSpace(V#baseRing,first(V#tensorBasis),{(V#dims)#i}))
+    L := pickSymbol V;
+    return for i in 0..#(V#dims)-1 list (
+	tensorSpace(V#baseRing,L_i,{(V#dims)#i})
 	)
+    )
 
 --factorsTensor = method()
 --factorsTensor(TensorSpace) := V -> (
