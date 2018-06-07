@@ -286,46 +286,6 @@ nefCone=(i,X)->(
 );
 
 
---Code to compute the cone nef^k_i, which is the cone of all
--- codimension k-cycles that intersect every effective i-dimensional
--- cycle in effective cycles.
---Currently returns a rather arbitrary  basis for the codim-k Chow group 
--- and then a matrix whose columns represent generators for this 
---cone
-
-nefCone2=(k,i,X)->(
-     if k>i then error("i must be at least k");
-     if not isSmooth(X) then error("Not implemented yet");
-     n:=#((rays X)#0);
-     Conesk:=orbits(X,k);
-     --Get intersection ring
-     I:=ideal(intersectionRing(X));
-     R:= X.cache.AmbientRing;
-     --Now create the multiplication map
-     --First get a basis for chowGroup_k
-     if not X.cache.?ChowGroupBas then
-     	  X.cache.ChowGroupBas = new MutableHashTable;
-     if not X.cache.ChowGroupBas#?(n-k) then 	  
-          X.cache.ChowGroupBas#(n-k)=flatten entries lift(basis(k,R/I),R);
-     --We'll create a bas times Conesi matrix with (j,k) entry bas#j * Conesi #k
-     --???need to edit from here.	  
-     mono:=1_R;
-     for i in (max X)_0 do mono=mono*R_i;
-     topBas1:=mono % I;
-     Mat:=matrix unique apply(X.cache.ChowGroupBas#(n-k),m->(
-	       apply(Conesk,sigma->(
-			 mono:=1_R;
-			 for j in sigma do mono=mono*R_j;
-     	       	    	 --Assumes R has coefficients in QQ
-     	       	    	 lift(((m*mono) % I)/topBas1, QQ)
-     	       ))
-     ));
---Temporarily assuming that cone is full-dimensional - is it always???
-     matDual:=-1*(fourierMotzkin Mat)#0;
-     return(matDual);
-);
-
-
 --Compute the effective cone of i cycles in X
 -- i is the dimension?
 effCone=(i,X)->(
@@ -628,6 +588,9 @@ TEST ///
 X=projectiveSpace 4
 assert(rank chowGroup(3,X) == rank chowGroup(1,X))
 assert(rank chowGroup(3,X) == rank picardGroup X)
+R = intersectionRing X
+S = ZZ[x]/ideal(x^5)
+phi = map(R,S,{z_0})
 /// 
 
 TEST ///
@@ -658,6 +621,11 @@ X = normalToricVariety(rayList,coneList)
 assert(rank chowGroup(1,X) == 2)
 assert(rank chowGroup(2,X) == 1)
 assert(rank chowGroup(0,X) == 1)
+///
+
+--add tests for intersectionRing
+TEST ///
+
 ///
 
 
