@@ -86,7 +86,8 @@ momentIdealGaussian (ZZ, ZZ) := Ideal => (mix,d)->(
     use R;
     series:=sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2);
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
-    homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0)
+    I = homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);
+    sub(I, QQ[m_0..m_d])
 )
 
 --------------------------------------------------------------------------------------
