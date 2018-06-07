@@ -29,16 +29,13 @@ export {
     "glAction",
     "flattening",
     -- symbols
-    "dims", "coeff", "baseRing", "tensorBasis", "tensorSpaceDim", "tensorSpaceOrder", "tensorOrder"
+    "dims", "coeff", "baseRing", "tensorBasis"
     }
 
 protect dims
 protect coeff
 protect baseRing
 protect tensorBasis
-protect tensorSpaceDim
-protect tensorSpaceOrder
-protect tensorOrder
 
 -- DOCUMENTATION ------------------------------------------------
 beginDocumentation()
@@ -86,8 +83,6 @@ tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> (
     new TensorSpace from hashTable{
 	baseRing => R,
 	dims => N,
-	tensorSpaceOrder => #N,
-	tensorSpaceDim => product N,
 	tensorBasis => first entries basis(toList(#N:1),Tmod)
 	}
     )
@@ -113,8 +108,7 @@ makeTensor (VisibleList,TensorSpace) := (L,V) -> (
 	);
     new Tensor from hashTable{
 	coeff => toList(L) / (i -> sub(i, V#baseRing)),
-	tensorSpace => V,
-	tensorOrder => #(V#dims)
+	tensorSpace => V
 	}
     )
 
@@ -199,15 +193,13 @@ TensorSpace ** TensorSpace := (V,W) -> (
     new TensorSpace from hashTable{
 	baseRing => V#baseRing,
 	dims => N,
-	tensorSpaceOrder => #(V#dims)+#(W#dims),
-	tensorSpaceDim => (V#tensorSpaceDim)*(W#tensorSpaceDim),
 	tensorBasis => first entries basis(toList(#N:1),R)
 	}
     )
 
 pickSymbol = method();
 pickSymbol (TensorSpace) := V -> (
-    d := V#tensorSpaceOrder;
+    d := #(V#dims);
     M := decompose ideal first V#tensorBasis;
     return for i to d-1 list (
 	(baseName((M#(d-1-i))_0))#0
@@ -408,9 +400,3 @@ I = ideal (generic222 - orbitT)#coeff
 eliminate(Isym,toList(a_0..a_8))
 eliminate(I,toList(a_0..a_8 | b_0..b_8 | c_0..c_8))
 
-
-
-
-T1 = P222_(1,1,1)
-I = ideal (T1-orbitT)#coeff
-radical I
