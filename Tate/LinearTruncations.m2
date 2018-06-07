@@ -11,7 +11,6 @@ newPackage(
 
 export {
     "LL",
-    "linearTruncations",
     "multigradedPolynomialRing",
     "coarseMultigradedRegularity",
     "isLinearComplex",
@@ -169,6 +168,7 @@ restart
 uninstallPackage "LinearTruncations"
 restart
 installPackage "LinearTruncations"
+debug needsPackage "LinearTruncations"
 
     S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
     I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
@@ -203,6 +203,31 @@ TEST ///
 *-
 
 beginDocumentation()
+doc ///
+Key
+  LinearTruncations
+Headline
+  Truncating module at multigraded degree and check the linearlity  
+Description
+  Text
+    This package is useful while using multidegrees.
+     It computes the minimal multidegrees where we get linear resolution after truncating the module at that multidegree.
+  Example
+    S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
+    I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
+    M = S^1/I
+    d = regularity M      
+    c = sum coarseMultigradedRegularity M
+    L = findAllLinearTruncations({d,c},M)
+    for i in L list isLinearComplex (res truncate(i,M))
+  Text
+    It is enough to search for the multidegrees where their total degree is between the regularity and the total degree of coarse multigraded regularity.
+    The output are the minimal multidegree where we get linear resolution after truncating.
+Caveat
+  Note that if the ring has standard grading then the answer is just the regularity.
+SeeAlso
+  "????"
+///
 
 doc ///
 Key
@@ -236,55 +261,10 @@ Description
     it gives all pairs with total degree d in a ring S.
 ///
 ///Caveat
-  ?????
+  "?????"
 SeeAlso
-  ???????
+  "???????"
 ///
-
-doc ///
-Key
-   linearTruncations
-  (linearTruncations,Module)
-  (linearTruncations,Module,List)
-Headline
-  compute the minimal pairs when we get linear resolution after truncation
-Usage
-  LinearTruncation(M)
-  LinearTruncation(M,L)
-Inputs
-  M: Module
-    the module that we want to truncate
-  L: List
-    a candidate list to chech if we get linear resolution after truncation or not
-Outputs
-  L: List
-    a List of multigraded degree
-Description
-  Text
-    this function computes the minimal multigraded degrees when we get linear resolution after truncating at that multigraded degree. 
-  Example
-    S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
-    I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
-    t = degreeLength S
-    L = LL(regularity (S^1/I), t )
-    linearTruncations(S^1/I)
-    linearTruncations(S^1/I,L)	  
-    findOtherLinearTruncations (S^1/I)
-  Text
-    Note that linearTruncation does not give all the minimal pairs.
-  Example
-    S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}]
-    I = ideal(x_1*x_4*x_6, x_1*x_3^2, x_3^2*x_4*x_5, x_2^2*x_5^2, x_1*x_4^2*x_5, x_1*x_2^2*x_4)
-    betti res I
-    linearTruncations(S^1/I)
-  Text
-    In this example the total degree of the pairs are different
-Caveat
-  ?????
-SeeAlso
-  truncate
-///
-
 doc ///
 Key
    coarseMultigradedRegularity
@@ -306,12 +286,12 @@ Description
     S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
     I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
     t = degreeLength S
-    linearTruncations(S^1/I)	 
+  --  linearTruncations(S^1/I)	 
     coarseMultigradedRegularity(S^1/I)
   Text
     we see that coarseMultigradedRegularity is not a minimal multidegree.
 Caveat
-  ?????
+  "?????"
 SeeAlso
   regularity
 ///
@@ -355,63 +335,112 @@ Description
   Text
     the function also works in the multigraded case
 Caveat
-  ???
+  "???"
 SeeAlso
   betti
 ///
+
+doc ///
+Key
+    findAllLinearTruncations
+   (findAllLinearTruncations,List,Module)
+Headline
+ Find all minimal multidegree where we get lienar resolution after truncating on a range.
+Usage
+  findAllLinearTruncations(L,M)
+Inputs
+  M: Module
+    the module that we want to truncate
+  L: List
+    indicates the range that we are looking for multidegrees.
+Outputs
+  L: List
+    a List of multigraded degree
+Description
+  Text
+    This function computes all the multidegrees where their total degree is in the desired range and we have linear resolution after truncating.
+  Example
+    S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}]
+    I = ideal(x_1*x_4*x_6, x_1*x_3^2, x_3^2*x_4*x_5, x_2^2*x_5^2, x_1*x_4^2*x_5, x_1*x_2^2*x_4)
+    M = S^1/I;
+    d = regularity M
+    c = coarseMultigradedRegularity M
+    findAllLinearTruncations({regularity M, sum coarseMultigradedRegularity M}, M)
+  Text
+    In this example one can see the minimal multidegree have different total degree. If the range is
+    (regularity of M, total degree of coarse multigraded regularity of M) then we are sure we do not miss anything.
+Caveat
+  By choosing different range the output will be different. 
+SeeAlso
+  coarseMultigradedRegularity
+///
+doc ///
+Key
+    multigradedPolynomialRing
+   (multigradedPolynomialRing,List)
+Headline
+ Multigraded PolynomialRing
+Usage
+  multigradedPolynomialRing(L)
+Inputs
+  L: List
+    indicates the dimension of the projective spaces that we want to have.
+Outputs
+  S: PolynomialRing
+    a multigraded polynomial ring
+Description
+  Text
+    it computes the coordinated ring of product of projective spaces.
+  Example
+    multigradedPolynomialRing({2,3,5})
+    --multigradedPolynomialRing({2,3,5},CoefficientField => ZZ/5)
+  Text
+    There is an option to choose the coefficient field
+Caveat
+    By default, the coefficient fielf=d is ZZ/32003 
+SeeAlso
+    "???"
+///
+
 
 --------------------------------------------------------
 end--
 --------------------------------------------------------
 uninstallPackage "LinearTruncations"
 restart
-
 installPackage"LinearTruncations"
-
+debug needsPackage "LinearTrunctions"
 needsPackage "TateOnProducts"
-
-needsPackage "LinearTruncations"
 needsPackage "RandomIdeals"
 
-(S,E) = productOfProjectiveSpaces{2,2}
-S' = coefficientRing S[gens S]
-ran = L -> substitute(randomMonomialIdeal(L,S'), S)
-I = ran{3,4,5,5,5,6};
-M = S^1/I
-linearTruncations M
-low = -{3,3}
-cohomologyMatrix(M,low, -2*low)
-regularity M
-coarseMultigradedRegularity M
+--(S,E) = productOfProjectiveSpaces{2,2}
+--S' = coefficientRing S[gens S]
+--ran = L -> substitute(randomMonomialIdeal(L,S'), S)
+--I = ran{3,4,5,5,5,6};
+--M = S^1/I
+--linearTruncations M
+--low = -{3,3}
+--cohomologyMatrix(M,low, -2*low)
+--regularity M
+--coarseMultigradedRegularity M
 
 
-netList apply(10, i->(
-I = ran{3,3,7,9};
-M = S^1/I;
-{coarseMultigradedRegularity M, linearTruncations M}
-))
-
+--netList apply(10, i->(
+--I = ran{3,3,7,9};
+--M = S^1/I;
+--{coarseMultigradedRegularity M, linearTruncations M}
+--))
+----------------------- Examples of the interval conjecture--------------
 tally apply(10, i->(
 I = ran apply(5,i-> 2+random (2+random 7));
 M = S^1/I;
-L = linearTruncations M
-coarseMultigradedRegularity M
-betti res prune truncate({5,3},M)
+L = linearTruncations M;
+coarseMultigradedRegularity M;
+betti res prune truncate({5,3},M);
 {isSameWeight L,isInterval L}
 ))
-
-
-if not isLinearComplex res truncate(r,M) then print toString M
+--if not isLinearComplex res truncate(r,M) then print toString M
 --lin = linearTruncations M
-
-use S
-M1 = cokernel matrix {{x_(1,0)^2*x_(1,1), x_(0,0)*x_(0,1)^3, x_(0,0)^2*x_(0,1)*x_(1,1)^2, x_(0,0)*x_(0,1)^2*x_(1,1)^2, x_(0,1)^3*x_(1,0)^2, x_(0,0)^3*x_(1,0)^3}}
-M2 = cokernel matrix {{x_(0,0)^2*x_(1,1), x_(0,0)^2*x_(0,1)^2, x_(0,0)^2*x_(1,0)^3, x_(0,0)^3*x_(1,0)^2, x_(0,1)^3*x_(1,0)^2, x_(0,1)^2*x_(1,0)*x_(1,1)^3}}
-linearTruncations M1
-cohomologyMatrix(M1,{-3,-3},2*{3,3})
-linearTruncations M2
-
-
 S = multigradedPolynomialRing({2,2}, CoefficientField => ZZ/5)
 S' = coefficientRing S[gens S]
 M' = coker map(S'^1,,sub(presentation M, S'))
@@ -427,18 +456,29 @@ L = linearTruncations M;
 {isSameWeight L,isInterval L}
 ))
 
+-----------------Example of cohomology table----------------
+use S
+M1 = cokernel matrix {{x_(1,0)^2*x_(1,1), x_(0,0)*x_(0,1)^3, x_(0,0)^2*x_(0,1)*x_(1,1)^2, x_(0,0)*x_(0,1)^2*x_(1,1)^2, x_(0,1)^3*x_(1,0)^2, x_(0,0)^3*x_(1,0)^3}}
+M2 = cokernel matrix {{x_(0,0)^2*x_(1,1), x_(0,0)^2*x_(0,1)^2, x_(0,0)^2*x_(1,0)^3, x_(0,0)^3*x_(1,0)^2, x_(0,1)^3*x_(1,0)^2, x_(0,1)^2*x_(1,0)*x_(1,1)^3}}
+linearTruncations M1
+cohomologyMatrix(M1,{-3,-3},2*{3,3})
+linearTruncations M2
 
-M = S^1/ran{2,3,4,5}
-linearTruncations M
 
-coarseMultigradedRegularity M
+--M = S^1/ran{2,3,4,5}
+--linearTruncations M
+
+--coarseMultigradedRegularity M
 
 --interesting example, where the degree for linear res is {1,5}
 I = ideal(x_(0,1)*x_(0,2),x_(0,2)^2*x_(1,1),
     x_(0,1)*x_(1,0)*x_(1,1)^2,x_(1,0)^4*x_(1,2))
 M = S^1/ideal random(S^1, S^{2:{0,-2},2:-{2,3},2:-{2,0}})
-linearTruncations M
-coarseMultigradedRegularity M
+d = regularity M
+c = sum coarseMultigradedRegularity M
+findAllLinearTruncations({d,c},M)
+--linearTruncations M
+
 
 cokernel | x_(0,1)^2x_(1,0) x_(0,0)^2x_(0,1)x_(1,0) x_(1,0)^3x_(1,1)^2 x_(0,1)x_(1,0)^3x_(1,1) x_(0,0)^4x_(0,1) x_(0,1)x_(1,0)^5
 
@@ -456,28 +496,74 @@ linearTruncations M
 
 ----- An example where linearTruncation gives pairs with different total degree-----
 S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}]
-S'=QQ[gens S]
 I = ideal(x_1*x_4*x_6, x_1*x_3^2, x_3^2*x_4*x_5, x_2^2*x_5^2, x_1*x_4^2*x_5, x_1*x_2^2*x_4)
 betti res I
-linearTruncations(S^1/I)
-coarseMultigradedRegularity(S^1/I)
-
-viewHelp linearTruncations
+M = S^1/I
+d = regularity M
+c = sum coarseMultigradedRegularity(M)
+linearTruncations(M)
+coarseMultigradedRegularity(M)
+findAllLinearTruncations({d,c},M)
+findAllLinearTruncations({d+1,c},M)--------- It seems to be a region!!-----
 
 ///
-restart
-uninstallPackage"LinearTruncations"
-restart
-installPackage"LinearTruncations"
-needsPackage "TateOnProducts"
-needsPackage "RandomIdeals"
-(S,E) = productOfProjectiveSpaces{2,2}
-S' = coefficientRing S[gens S]
-ran = L -> substitute(randomMonomialIdeal(L,S'), S)
-I = ran{3,4,5,5,5,6};
-M = S^1/I
-linearTruncations M
-findOtherLinearTruncations M
+--restart
+--uninstallPackage"LinearTruncations"
+--restart
+--installPackage"LinearTruncations"
+--needsPackage "TateOnProducts"
+--needsPackage "RandomIdeals"
+--(S,E) = productOfProjectiveSpaces{2,2}
+--S' = coefficientRing S[gens S]
+--ran = L -> substitute(randomMonomialIdeal(L,S'), S)
+--I = ran{3,4,5,5,5,6};
+--M = S^1/I
+--linearTruncations M
+--findOtherLinearTruncations M
+
+----------------------Documentation for LinearTruncation------------ 
+doc ///
+Key
+   linearTruncations
+  (linearTruncations,Module)
+  (linearTruncations,Module,List)
+Headline
+  compute the minimal pairs when we get linear resolution after truncation
+Usage
+  LinearTruncation(M)
+  LinearTruncation(M,L)
+Inputs
+  M: Module
+    the module that we want to truncate
+  L: List
+    a candidate list to chech if we get linear resolution after truncation or not
+Outputs
+  L: List
+    a List of multigraded degree
+Description
+  Text
+    this function computes the minimal multigraded degrees when we get linear resolution after truncating at that multigraded degree. 
+  Example
+    S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
+    I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
+    t = degreeLength S
+    L = LL(regularity (S^1/I), t )
+    --linearTruncations(S^1/I)
+    --linearTruncations(S^1/I,L)	  
+    --findOtherLinearTruncations (S^1/I)
+  Text
+    Note that linearTruncation does not give all the minimal pairs.
+  Example
+    S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}]
+    I = ideal(x_1*x_4*x_6, x_1*x_3^2, x_3^2*x_4*x_5, x_2^2*x_5^2, x_1*x_4^2*x_5, x_1*x_2^2*x_4)
+    betti res I
+  --  linearTruncations(S^1/I)
+  Text
+    In this example the total degree of the pairs are different
+Caveat
+ " ?????"
+SeeAlso
+  truncate
+///
 
 
- 
