@@ -15,7 +15,8 @@ export {
     "multigradedPolynomialRing",
     "coarseMultigradedRegularity",
     "isLinearComplex",
-    "findOtherLinearTruncations",
+--    "findOtherLinearTruncations",
+    "findAllLinearTruncations",        
     -- Options
     "CoefficientField"
     }
@@ -52,7 +53,8 @@ LL (ZZ,List) := (d,n) -> (
 findMins = L->(
     if L == {} then return {};
     t := #(L_0);
-    P := ZZ/101[vars(0..t-1)];
+    u := symbol u;
+    P := ZZ/101[u_0..u_(t-1)];
     I := ideal apply(L, ell-> product(t, j-> P_j^(ell_j)));
     apply(flatten entries mingens I, m-> flatten exponents m)
     )
@@ -126,6 +128,70 @@ findOtherLinearTruncations = M->(
     linearTruncations(M,candidates1|candidates2)
     )
 
+isInteresting = method()
+isInteresting (Ideal,List) := (I,m) ->(
+    --tests whether x^m is in range and not in the ideal
+    T := ring I; -- ring of multi-degrees
+    if numgens T != #m then 
+        error "m should correspond to a monomial in ring I";
+    mm =product(#m,i->(T_i)^(m_i));
+    if mm % I ==0 then false else true)
+T = ZZ/2[u,v]
+I = ideal"u2,uv,v3"
+m = {0,2}
+isInteresting(I,m)
+
+findAllLinearTruncations=method()
+findAllLinearTruncations (List,Module) := (range,M) ->(
+     u := symbol u;
+     t := degreeLength ring M;
+     T := ZZ/2[u_0..u_(t-1)];
+     I := ideal 0_T;
+     L := {};
+     linTruncs := {};
+     d0 := range_0;
+     d1 := range_1;     
+     for i from d0 to d1 do(
+     L := LL(i,t);
+     scan(L, ell -> (
+	     if isInteresting(I,ell) and
+	      isLinearComplex(res prune truncate(ell,M))
+	      then (linTruncs = linTruncs|{ell};
+--		  error"";
+	      I = I + ideal(product(t,i->(T_i)^(ell_i)))
+	      )
+		  ));
+	      );
+	  linTruncs)
+
+///
+restart
+uninstallPackage "LinearTruncations"
+restart
+installPackage "LinearTruncations"
+
+    S=QQ[x_1..x_4,Degrees=>{{1,0},{1,0},{0,1},{0,1}}]
+    I = ideal(x_1^3*x_3, x_2*x_3*x_4, x_3^4*x_4, x_4*x_2^2, x_1*x_4*x_3^3)
+    M = S^1/I
+d = regularity M      
+c = sum coarseMultigradedRegularity M
+
+linearTruncations M
+findOtherLinearTruncations M
+findAllLinearTruncations({d,c},M)
+---
+S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}]
+I = ideal(x_1*x_4*x_6, x_1*x_3^2, x_3^2*x_4*x_5, x_2^2*x_5^2, x_1*x_4^2*x_5, x_1*x_2^2*x_4)
+M = S^1/I
+
+d = regularity M
+c = sum coarseMultigradedRegularity M
+linearTruncations M
+findOtherLinearTruncations M
+findAllLinearTruncations({d,c},M)
+findAllLinearTruncations({d,c+3},M)
+
+///     
 
 -------------------------
 
@@ -203,6 +269,7 @@ Description
     L = LL(regularity (S^1/I), t )
     linearTruncations(S^1/I)
     linearTruncations(S^1/I,L)	  
+    findOtherLinearTruncations (S^1/I)
   Text
     Note that linearTruncation does not give all the minimal pairs.
   Example
@@ -411,10 +478,6 @@ I = ran{3,4,5,5,5,6};
 M = S^1/I
 linearTruncations M
 findOtherLinearTruncations M
-known = linearTruncations (M, Verbose => true)
-minfirst = min(known/first)
-minlast = min(known/last)
-linearTruncations
-code (linearTruncations,Module,List)
-candidates1|candidates2
 
+
+ 
