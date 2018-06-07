@@ -24,20 +24,28 @@ formalLog = (f, d) -> (
 )
 
 momentIdealToCumulants = (I,truncAbove) -> (
-    k := symbol k;
+    idealTransform(I, truncAbove, formalExp, 0)  
+    )
+
+cumulantToMoments = (I, truncAbove) -> (
+    idealTransform(I, truncAbove, formalLog, 1)
+    )
+
+idealTransform = (I, truncAbove, f, substVal) -> (
+    s := symbol s;
     t := symbol t;
-    R2 := QQ[k_0..k_truncAbove];
+    R2 := QQ[s_0..s_truncAbove];
     use R2;
     R2' := R2[t]/t^(truncAbove+1);
     use R2';
-    p := sum for i from 0 to truncAbove list 1/i! * k_i * t^i;
-    q := formalExp(p,truncAbove+1);
+    p := sum for i from 0 to truncAbove list 1/i! * s_i * t^i;
+    q := f(p,truncAbove+1);
     -- NOTE: here, we dehomogenize. May think about giving homog/nonhomog as an option.
-    li := for i from 0 to truncAbove list i! * coefficient(t^i, q),{k_0 => 0};
-    li = for i from 0 to truncAbove list sub(li_i, k_0 => 0);
+    li := for i from 0 to truncAbove list i! * coefficient(t^i, q);
+    li = for i from 0 to truncAbove list sub(li_i, s_0 => substVal);
     phi := map(R2, ring I,li);
-    phi I   
-)
+    phi I
+    )
 
 -- momentsTensorFormat is a tensor (M_I)_I where M_I = m_I, I 
 momentIdealToCumulantsMultivariate = (I, truncAbove, momentsTensorFormat) -> (
@@ -62,7 +70,12 @@ li = cumulantsToMoments(cumulants,R)
 momentsToCumulants(li,R)
 
 truncAbove = 4
-transpose gens gb momentIdealToCumulants(momentIdealGaussian(1,truncAbove),truncAbove)
+I = momentIdealGaussian(1,truncAbove)
+transpose gens gb I
+C = momentIdealToCumulants(I,truncAbove)
+M = cumulantIdealToMoments(C, truncAbove)
+transpose gens gb M
+transpose gens gb sub(I, {first gens ring I => 1})
 
 truncAbove = 4
 momentsTensorFormat = {truncAbove, truncAbove}
