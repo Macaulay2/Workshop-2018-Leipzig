@@ -333,8 +333,9 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := Ideal => (r,n,d) -> (
 )
 
 --Mixtures of Multinomial Distributions
-momentIdealMultiMixture = method()
-momentIdealMultiMixture (ZZ,ZZ,ZZ,ZZ) := Ideal => (r,n,mix,d) -> (
+momentIdealMultiMixture = method(Options=>{Mixture=>1})
+momentIdealMultiMixture (ZZ,ZZ,ZZ) := o -> (r,n,d) -> (
+    mix := o.Mixture;
     t := symbol t;
     S := QQ[t_1..t_r];
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
@@ -481,6 +482,33 @@ momentIdealLaplace (ZZ, ZZ) := Ideal => (mix,d)->(
     	series2:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t)*(1+sum for j from 1 to d list (b_i^2*t^2)^j) + amix*exp(mn_mix*t)*(1+sum for j from 1 to d list (b_mix^2*t^2)^j);
     	I=ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
     	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I),m_0)
+	)
+)
+
+--cumulant ideal of Laplace with parameters mu and b
+cumulantIdealLaplace = method()
+cumulantIdealLaplace (ZZ, ZZ) := Ideal => (mix,d)->(
+    mn := symbol mn;
+    b := symbol b;
+    k := symbol k;
+    t := symbol t;
+    a := symbol a;
+    R := symbol R;
+    I := symbol I;
+    if mix == 1 then(
+	R=QQ[mn_1..mn_mix,b_1..b_mix,k_0..k_d][t]/t^(d+1);
+	use R;
+    	series:= formalLog(exp(mn_1*t)*(1+sum for i from 1 to d list (b_1^2*t^2)^i),d);
+    	I=ideal for i from 1 to d list i!*coefficient(t^i,series)-k_i;
+    	return eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I);
+	)
+    else( 
+	R=QQ[mn_1..mn_mix,b_1..b_mix,a_1..a_(mix-1),k_0..k_d][t]/t^(d+1);
+	use R;
+    	amix := 1 - sum for i from 1 to mix-1 list a_i;
+    	series2:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t)*(1+sum for j from 1 to d list (b_i^2*t^2)^j) + amix*exp(mn_mix*t)*(1+sum for j from 1 to d list (b_mix^2*t^2)^j);
+    	I=ideal for i from 1 to d list i!*coefficient(t^i,series2)-k_i;
+    	eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I)
 	)
 )
 
