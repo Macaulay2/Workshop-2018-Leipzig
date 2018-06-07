@@ -15,7 +15,6 @@ newPackage(
 
 export { 
      "nefCone",
-     "nefCone2",
      "effCone",
      "isContainedCones",
      "chowGroupBasis",
