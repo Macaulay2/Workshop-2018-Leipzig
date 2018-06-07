@@ -416,9 +416,9 @@ cumulantIdealGaussian (ZZ,ZZ) := Ideal => (mix,d) -> (
 --note: l_i's are actually (l_i)^(-1)
 cumulantIdealExponential = method()
 cumulantIdealExponential = (mix,d) -> (
-    l := local l;
-    a := local a;
-    k := local k;
+    l := symbol l;
+    a := symbol a;
+    k := symbol k;
     R:=QQ[l_1..l_mix,a_1..a_mix,k_0..k_d][t]/t^(d+1);
     use R;
     series := formalLog(sum(apply(toList(1..mix),j->sum(apply(toList(1..d),i->a_j*l_j^i*t^i)))),d);
