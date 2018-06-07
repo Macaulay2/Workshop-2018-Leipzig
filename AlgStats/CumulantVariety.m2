@@ -30,3 +30,18 @@ cumulantIdealExponential = (mix,d) -> (
     eliminate(toList(l_1..l_mix)|toList(a_1..a_mix),I)
 )
 
+cumulantIdealPoisson = method()
+cumulantIdealPoisson = (mix,d) -> (
+    l := symbol l;
+    a := symbol a;
+    k := symbol k;
+    t := symbol t;
+    R:=QQ[l_1..l_mix,a_1..a_mix,k_0..k_d][t]/t^(d+1);
+    use R;
+    series:=formalLog(sum for i from 1 to mix list a_i*exp(l_i*(exp(t)-1)),d);
+    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-k_i+ideal(-1+sum for i from 1 to mix list a_i);
+    eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list l_i),I)
+)    
+    
+    
+)
