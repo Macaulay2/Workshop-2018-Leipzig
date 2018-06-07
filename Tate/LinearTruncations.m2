@@ -16,6 +16,16 @@ export {
     "coarseMultigradedRegularity",
     "isLinearComplex",
     "findOtherLinearTruncations",
+    -- Options
+    "CoefficientField"
+    }
+
+-- Code here
+
+multigradedPolynomialRing = method(Options=>
+    {CoefficientField=>ZZ/32003,
+    Variables=>getSymbol "x"})
+
 multigradedPolynomialRing(List) := opts -> n -> (
      kk := opts.CoefficientField;
      x:= opts.Variables; -- symbol x;
