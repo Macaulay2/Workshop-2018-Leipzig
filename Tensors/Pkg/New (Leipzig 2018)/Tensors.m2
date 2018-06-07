@@ -28,6 +28,8 @@ export {
     "mergeTensor",
     "glAction",
     "flattening",
+    "slice",
+    "contraction",
     -- symbols
     "dims", "coeff", "baseRing", "tensorBasis", "tensorSpaceDim", "tensorSpaceOrder", "tensorOrder"
     }
@@ -73,14 +75,14 @@ Tensor = new Type of HashTable
 --    	  an exterior algebra instead of a symmetric algebra;
 --    	  Default value: Anti = {false,...,false}
 tensorSpace = method();
-tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> (
+tensorSpace (Ring, VisibleList, VisibleList) := (R,Xs,N) -> (
     d := #N;
     if d == 0 then (
 	Tmod := R;
     	) else (
-	Tmod = R[X_(0,0)..X_(0,N_0-1)];
+	Tmod = R[(Xs#0)_(0,0)..(Xs#0)_(0,N_0-1)];
 	for i from 1 to d-1 do (
-	    Tmod = Tmod ** R[X_(i,0)..X_(i,N_i-1)];
+	    Tmod = Tmod ** R[(Xs#i)_(i,0)..(Xs#i)_(i,N_i-1)];
 	    );
 	);
     new TensorSpace from hashTable{
@@ -91,10 +93,14 @@ tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> (
 	tensorBasis => first entries basis(toList(#N:1),Tmod)
 	}
     )
+tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> tensorSpace(R, #N:X, N)
 
 -- Definition of the way a tensor space 'looks like' when printed in output
 expression (TensorSpace) := V -> (
     N := V#dims;
+    if #N == 0 then (
+        return toString(V#baseRing);
+        );
     expr := toString(V#baseRing)|"[";
     for i to #N-2 do (
 	expr = expr | toString(N_i) | "x";
@@ -195,7 +201,7 @@ TensorSpace ** TensorSpace := (V,W) -> (
 	return "error: base rings are different"
     );
     N := V#dims | W#dims;
-    R := ring (first V#tensorBasis) ** ring (first W#tensorBasis);   
+    R := if #(V#dims) == 0 then W#baseRing else if #(W#dims) == 0 then V#baseRing else ring (first V#tensorBasis) ** ring (first W#tensorBasis);
     new TensorSpace from hashTable{
 	baseRing => V#baseRing,
 	dims => N,
@@ -324,7 +330,7 @@ Tensor == Tensor := (T,T') -> (
     )
 
 Tensor + Tensor := (T,T') -> (
-     if not  T'#tensorSpace ===  T#tensorSpace then error "Tensor+Tensor not from the same TensorSpace";
+     if not  T'#tensorSpace ==  T#tensorSpace then error "Tensor+Tensor not from the same TensorSpace";
      makeTensor(T#coeff + T'#coeff, T'#tensorSpace)
      )
  
@@ -368,6 +374,52 @@ glAction (Matrix,Tensor) := (G,T) -> (
     )
 
 
+slice = method();
+slice (Tensor, List) := (T,L) -> (
+    left := apply(L, a -> if a === null then 0 else a);
+    right := apply(L, 0..<#L, (a,i) -> if a === null then (T#tensorSpace#dims#i)-1 else a);
+    dims' := for i to #(T#tensorSpace#dims)-1 list if L#i === null then T#tensorSpace#dims#i else continue;
+    Xs := pickSymbol(T#tensorSpace);
+    Xs' := for i to #(T#tensorSpace#dims)-1 list if L#i === null then Xs#i else continue;
+    V := tensorSpace(T#tensorSpace#baseRing, Xs', dims');
+    coeff' := (left..right) / (J -> T_(toSequence(J)));
+    return makeTensor(coeff', V);
+    )
+
+contraction = method();
+contraction (Tensor, List, List) := (T,K,L) -> (
+    D := T#tensorSpace#dims;
+    KD := apply(K, k->D#k);
+    LD := apply(L, k->D#k);
+    if KD != LD then error "dimension mismatch";
+    f := i-> (
+            sliceList := new MutableList from (#D:null);
+            scan(#K, j->(sliceList#(K#j) = i#j; sliceList#(L#j) = i#j));
+            return slice(T, toList sliceList);
+            );
+    Tslices := apply((#K:0)..<(toSequence KD), f);
+     sum toList Tslices
+     );
+contraction (Tensor, ZZ, ZZ) := (T,k,l) -> contraction(T,{k},{l});
+contraction (Tensor,Tensor,List,List) := (T,U,K,L) -> (
+    Td := T#tensorSpace#dims;
+    Ud := U#tensorSpace#dims;
+    KD := apply(K, k->Td#k);
+    LD := apply(L, k->Ud#k);
+    if KD != LD then error "dimension mismatch";
+    slices := apply((#K:0)..<(toSequence KD), i-> (
+            TsliceList := new MutableList from (#Td:null);
+            UsliceList := new MutableList from (#Ud:null);
+            scan(#K, j->(TsliceList#(K#j) = i#j; UsliceList#(L#j) = i#j));
+            Tslice := slice(T, toList TsliceList);
+            Uslice := slice(U, toList UsliceList);
+            -- if #K == #Td or #K == #Ud then Tslice*Uslice else Tslice**Uslice
+            Tslice**Uslice
+            ));
+     sum toList slices
+     );
+contraction (Tensor,Tensor,ZZ,ZZ) := (T,U,k,l) -> contract(T,U,{k},{l})
+
 
 -- TESTS --------------------------------------------------------
 
@@ -381,6 +433,20 @@ TEST ///
     assert(class V_(1,1,1) === Tensor)
     assert(class T1_(0,0,1) === T1#tensorSpace#baseRing)
     V**W
+
+    T3 = slice(T1, {,0,})
+    assert(T3#tensorSpace#dims == {2,2})
+    assert(T3#coeff == {1,2,5,6})
+    T4 = slice(T1, {1,,0})
+    assert(T4#coeff == {5,7})
+
+    T5 = contraction(T1, {0}, {1})
+    assert(T5#coeff == {8,10})
+
+    W = tensorSpace(QQ,symbol Y,{2,2,2})
+
+    assert(contraction(V_(0,0,0), W_(0,0,0), {0,1,2}, {0,1,2}) == makeTensor({1}, tensorSpace(QQ, {}, {})))
+    assert(contraction(V_(0,0,0), W_(0,0,0), {0,1}, {1,2}) == makeTensor({1,0,0,0}, tensorSpace(QQ, {symbol X, symbol Y}, {2,2})))
 ///
 
 end--------------------------------------------------------------
