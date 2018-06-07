@@ -21,7 +21,12 @@ needsPackage "NumericalAlgebraicGeometry"
 ---UNEXPORTED-
 --------------
 
-parsePolynomial = p -> replace("p[0-9]+","0",toExternalString p)--replace("p[0-9]+(\\*|\\}|,)","*",replace("p[0-9]+e","e",toExternalString p))
+parsePolynomial = p -> replace("ii","im",replace("p[0-9]+","0",toExternalString p))
+
+parseSolutions = out -> (
+    L=select("\\[([0-9]|| |-|\\.|e|i|m|\\+|,)*\\]",out);
+    sols=apply(L,s->point{apply(separate(",",replace("\\[|\\]","",replace("im","*ii",s))),x->value x)})
+    )
 
 --todo: write exported wrapper for first two signatures
 writeSys = method(Options=>{IncludeTemplate=>false,WithImports=>false,ImportList=>{"using HomotopyContinuation","import DynamicPolynomials: PolyVar"}})
@@ -65,14 +70,11 @@ isOpen JuliaProcess
 
 importJulia = (importList,f) -> f<<concatenate apply(importList,pkg->pkg | "\n")
 
-
-parseSolutions = out -> (
-    L=select("\\[([0-9]|| |-|\\.|e|i|m|\\+|,)*\\]",out);
-    sols=apply(L,s->point{apply(separate(",",replace("\\[|\\]","",replace("im","*ii",s))),x->value x)})
-    )
-
 -- todo: replace arbitrary variable name "f" for julia system
 -- todo: remove bottom two lines from print
+-- todo: parse other solutions info
+-- todo: finite solutions only
+-- todo: check all variables are used
 solveJulia = method(Options=>{})
 solveJulia PolySystem := o -> P -> (
     if not isOpen JuliaProcess then error(noProcessError);
@@ -112,30 +114,27 @@ end
 close JuliaProcess
 restart
 needs "julia.m2"
-needs "./ExampleSystems/jointsR6.m2"
 importJulia({"using HomotopyContinuation","import DynamicPolynomials: PolyVar"},JuliaProcess)
 
 R=CC[x,y]
 f= x^2+y
-g=y^2-pi
+g=y^2-pi*ii
 P=polySystem {f,g}
+apply(equations P, p -> parsePolynomial p)
 out=solveJulia P;
-
-#oo
-
-out=replace("-","",replace("\n","xxx",solveJulia P));
-match("Paths tracked.*Array",out)
-substring(first lastMatch,out)
-
-parseSolutions out
 
 writeSys(P,"test.jl",WithImports=>true)
 
-#sols
-
+needs "./ExampleSystems/jointsR6.m2"
 Q=polySystem jointsR6(CC_53)
 sols=solveJulia Q;
-
+ourSols = solveSystem Q
+apply(
+    sortSolutions ourSols, 
+    sortSolutions sols,
+    (a,b) -> areEqual(a,b)
+    )
 #sols--too many?
+#ourSols
 
 writeSys(Q,"joints.jl",WithImports=>true)
