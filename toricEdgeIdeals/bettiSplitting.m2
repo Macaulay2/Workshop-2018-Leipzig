@@ -1,4 +1,3 @@
-restart
 
 --The function gives a boolean for the definition of splitting vertex:
 --INPUTS : The ideal I, a vertex
@@ -18,7 +17,39 @@ isSplittingVertex = ( I , v ) -> (
 --isSplittingVertex(I,v)
 --false
 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
 
+--The function gives a boolean for the definition of splitting edges:
+--INPUTS : The ideal I, a edge in the form of list of its vertices
+--OUTPUT : boolean
+
+isSplittingEdge= (I,e)->(
+    G = graph I;
+    print G;
+	N=set neighbors(G,e_0);
+	N1=N+set{e_0};
+	M=set neighbors(G,e_1);
+	M1=M+set{e_1};
+	return (isSubset(N,M1) or isSubset(M,N1));
+	    )
+	
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+--The function gives a list of spliting edges
+--INPUTS : an edge ideal I
+--OUTPUT : list
+
+splittingEdges = (G) -> (
+    select (edges G, e -> isSplittingEdge(I,e) )
+    )
 
 --The function that checks Betti Splitting:
 
@@ -52,20 +83,6 @@ isBettiSplitting=(R,J,K)->(
 --INPUTS : The ideal I, a vertex or edge u comming from I
 --OUTPUT : Ideals J and k where I=J+k and J and K are splliting for I
 
-
-R=QQ[x_1..x_20]
-
-I=ideal{x_13*x_19, x_8*x_19, x_7*x_19,
-	 x_13*x_15, x_7*x_15,x_11*x_13,
-	  x_7*x_13, x_6*x_13, x_8*x_11, 
-	  x_7*x_11, x_6*x_11, x_7*x_8,
-	  x_3*x_7,x_7*x_20, x_6*x_20, x_3*x_20,
-	 x_3*x_15, x_7*x_13, x_7*x_11,
-	 x_6*x_7, x_3*x_7
-	  }
-      
-
-
 makeSplitting = (I,v)->(
     genI:=first entries mingens I;
     genJ:= delete(v,first entries mingens( I+ideal(v)));
@@ -75,4 +92,3 @@ makeSplitting = (I,v)->(
     return (J,K)    
     )
 
-makeSplitting(I,x_13)
