@@ -1,4 +1,4 @@
--- Lists all moments of the univariate Gaussian
+thu-- Lists all moments of the univariate Gaussian
 listOfMoments = (d,R) -> (
   S := R[t]/t^(d+1);
   use S;
@@ -93,3 +93,19 @@ momentIdealGaussianTest = (mix,d)->(
 )
 
 momentIdealExponential(1,3)
+
+generalMomentIdeal = (mix, d, f, param) ->(
+    n := #param - 1;
+    paramMix := for i to n list (param_i)_1..(param_i)_mix;
+    K := QQ[toSequence paramMix, toSequence param, a_1..a_mix, m_0..m_d];
+    R := K[t]/t^(d+1);
+    use R;
+    paramSubs := for i from 1 to mix list
+    	for j to n list K_(param_j) => K_(paramMix_j_(i-1));
+    f = sub(f,R);
+    series := sum for i from 1 to mix list a_i*sub(f,paramSubs_(i-1));
+    I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
+    homogenize(eliminate((gens K)_{0..(#(gens K)-d-2)},I),m_0)
+)
+
+
