@@ -275,6 +275,7 @@ momentIdealPoisson (ZZ, ZZ) := Ideal => (mix,d)->(
     m := symbol m;
     t := symbol t;
     R:=QQ[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
+    use R;
     series:=sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
     homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list lambda_i),I),m_0)
@@ -294,7 +295,8 @@ momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
 	use R;
     	series:= exp(mn_1*t+(1/2)*sd_1^2*t^2);
     	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
-    	return homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);
+    	I' := homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);
+	return sub(I',QQ[m_0..m_d])
 	)
     else( 
 	R2:=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
@@ -302,7 +304,8 @@ momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
     	amix := 1 - sum for i from 1 to mix-1 list a_i;
     	series2:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
     	I2:=ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
-    	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I2),m_0)
+    	I2' := homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I2),m_0);
+	return sub(I2',QQ[m_0..m_d])
 	)
 )
 
@@ -375,6 +378,7 @@ momentIdealFromMGF (ZZ, ZZ, List, Ring) := Ideal => (mix, d, f, R) ->(
     a := symbol a;
     paramMix := for i to n list (param_i)_1..(param_i)_mix;
     K := QQ[toSequence paramMix, toSequence param, a_1..a_mix, m_0..m_d];
+    use K;
     t := symbol t;
     S := K[t]/t^(d+1);
     use S;

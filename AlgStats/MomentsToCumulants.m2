@@ -19,9 +19,9 @@ formalExp = (f, d) -> (
     sum for k from 0 to d list 1/(k!) * f^k
 )
 
-formalLog = (f, d) -> (
-    sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
-)
+--formalLog = (f, d) -> (
+--    sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
+--)
 
 momentIdealToCumulants = (I,truncAbove) -> (
     idealTransform(I, truncAbove, formalExp, 0)  
