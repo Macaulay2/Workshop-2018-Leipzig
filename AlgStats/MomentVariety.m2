@@ -35,7 +35,7 @@ export {
 -- Lists all moments of the univariate Gaussian
 listOfMoments = method()
 listOfMoments (ZZ,Ring) := List => (d,R) -> (
-  t := local t;
+  t := symbol t;
   S := R[t]/t^(d+1);
   use S;
   g := gens R;
@@ -66,7 +66,8 @@ momentIdeal (ZZ, Ring) := Ideal => (d, R)->(
 
 --Exponential mixture
 --takes highest  degree d of moments and number of mixtures
-momentIdealExponential = (mix,d) ->(
+momentIdealExponential = method()
+momentIdealExponential (ZZ, ZZ) := Ideal => (mix,d) ->(
     l := symbol l;
     a := symbol a;
     m := symbol m;
@@ -98,13 +99,14 @@ momentIdealGaussian (ZZ, ZZ) := Ideal => (mix,d)->(
 
 momentMapGaussians =  (n,d) -> (
   x := symbol x;    
+  s := symbol s;
   par:=toList(x_1..x_n);
   for i from 1 to n do (for j from i to n do (par=append(par,s_(i,j))) );
   par=toSequence(par);
   R := QQ[par];
   mu := matrix({toList(x_1..x_n)});
   Sigma := genericSymmetricMatrix(R,s_(1,1),n);
-     
+  t := symbol t;   
   S := R[t_1..t_n]/((ideal(t_1..t_n))^(d+1));
   use S;
   a := vars(S)*transpose(mu) + (1/2) * vars(S)*Sigma*transpose(vars(S));
@@ -125,7 +127,7 @@ momentMapGaussians =  (n,d) -> (
       );
   C = matrix(C);
   C=lift(C,R);
-  
+  m := symbol m;
   momvars := toSequence reverse (apply(lexpM,e->m_e));
   
   return (matrix({(reverse((entries(transpose(C)))_0))}),momvars);
@@ -146,7 +148,10 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
   I := kernel f;
   I = homogenize(I,varmoms_0);
   
-  return I;  
+  zeroes = for i from 0 to n - 1 list 0;
+  full = for i from 0 to n - 1 list d;
+  return sub(I,QQ[m_zeroes..m_full]);  
+--  return I
    
 )
 
@@ -254,11 +259,15 @@ momentIdealBinomial = (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
 --computes the homogeneous moment ideal 
 momentIdealFromMGF = method()
 momentIdealFromMGF (ZZ, ZZ, List, Ring) := Ideal => (mix, d, f, R) ->(
+    param := symbol param;
     param = f_1;
     f = f_0;
     n := #param - 1;
+    m := symbol m;
+    a := symbol a;
     paramMix := for i to n list (param_i)_1..(param_i)_mix;
     K := QQ[toSequence paramMix, toSequence param, a_1..a_mix, m_0..m_d];
+    t := symbol t;
     S := K[t]/t^(d+1);
     use S;
     paramSubs := flatten for i from 1 to mix list
@@ -269,6 +278,7 @@ momentIdealFromMGF (ZZ, ZZ, List, Ring) := Ideal => (mix, d, f, R) ->(
     I = homogenize(eliminate((gens K)_{0..(#(gens K)-d-2)},I),m_0);
     sub(I, QQ[m_0..m_d])
 )
+
 
 --Cumulant ideals
 formalLog = (f, d) -> (
@@ -337,6 +347,34 @@ cumulantIdealMultinomial = (r,n,mix,d) -> (
     sub((eliminate(toList(p_(1,1)..p_(mix,r))|toList(a_1..a_mix),I),T))
 )
 
+
+
+--moment ideal of Laplace with parameters mu and b
+momentIdealLaplace = method()
+momentIdealLaplace (ZZ, ZZ) := Ideal => (mix,d)->(
+    mn := symbol mn;
+    b := symbol b;
+    m := symbol m;
+    t := symbol t;
+    a := symbol a;
+    R := symbol R;
+    I := symbol I;
+    if mix == 1 then(
+	R=QQ[mn_1..mn_mix,b_1..b_mix,m_0..m_d][t]/t^(d+1);
+	use R;
+    	series:= exp(mn_1*t)*(1+sum for i from 1 to d list (b_1^2*t^2)^i);
+    	I=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
+    	return homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I),m_0);
+	)
+    else( 
+	R=QQ[mn_1..mn_mix,b_1..b_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
+	use R;
+    	amix := 1 - sum for i from 1 to mix-1 list a_i;
+    	series2:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t)*(1+sum for j from 1 to d list (b_i^2*t^2)^j) + amix*exp(mn_mix*t)*(1+sum for j from 1 to d list (b_mix^2*t^2)^j);
+    	I=ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
+    	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list b_i),I),m_0)
+	)
+)
 
 --DOCUMENTATION--
 
@@ -420,8 +458,8 @@ doc ///
       given the highest degree of the moments and the number of mixtures compute the ideal of the Exponential distribution
     Text
       Here we show an example
-    Example
-      MISSING
+    -- Example
+    --   MISSING
     
 ///
 
@@ -460,7 +498,7 @@ doc ///
 doc ///
   Key
     momentIdealPoisson 
-    (momenItdealPoisson, ZZ, ZZ)
+    (momentIdealPoisson, ZZ, ZZ)
   Headline
     compute the homogeneous moment ideal
   Usage
@@ -498,8 +536,8 @@ doc ///
        TO BE GIVEN
      Text
        Here we show an example
-     Example
-       TO BE GIVEN
+     -- Example
+     --   TO BE GIVEN
        
  ///
  
