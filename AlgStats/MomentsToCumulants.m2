@@ -59,23 +59,40 @@ raiseTo = (t, multiIndex) -> (
 
 -- momentsTensorFormat should contain the indices that are _included_ (generalizes truncAbove) 
 momentIdealToCumulantsMultivariate = (I, momentsTensorFormat) -> (
+    idealTransformMultivariate(I, momentsTensorFormat, formalExp, 0)
+)
+
+-- momentsTensorFormat should contain the indices that are _included_ (generalizes truncAbove) 
+cumulantIdealToMomentsMultivariate = (I, cumulantsTensorFormat) -> (
+    idealTransformMultivariate(I, cumulantsTensorFormat, formalLog, 1)
+)
+
+-- Applies a change of variables to the ideal I
+idealTransformMultivariate = (I, tensorFormat, f, substVal) -> (
+    s := symbol s;
     t := symbol t;
-    zeroes := for i from 0 to #momentsTensorFormat - 1 list 0;
-    R2 := QQ[k_zeroes..k_momentsTensorFormat];
-    R2' := R2[t_1..t_#momentsTensorFormat,MonomialOrder => Lex]/
-           (for i from 1 to #momentsTensorFormat list t_i^(momentsTensorFormat_(i - 1)+1));
+    zeroes := for i from 0 to #tensorFormat - 1 list 0;
+    R2 := QQ[s_zeroes..s_tensorFormat];
+    R2' := R2[t_1..t_#tensorFormat,MonomialOrder => Lex]/
+           (for i from 1 to #tensorFormat list t_i^(tensorFormat_(i - 1)+1));
     use R2';
-    p := sum for I in zeroes..momentsTensorFormat list 1/factorial(I) * k_I * raiseTo(t,I);
-    q := formalExp(p,max(momentsTensorFormat));
-    li := for I in zeroes..momentsTensorFormat list factorial(I) * coefficient(raiseTo(t,I), q);
-    li = for x in li list sub(x, k_zeroes => 0);
+    p := sum for I in zeroes..tensorFormat list 1/factorial(I) * s_I * raiseTo(t,I);
+    q := f(p,max(tensorFormat));
+    li := for I in zeroes..tensorFormat list factorial(I) * coefficient(raiseTo(t,I), q);
+    li = for x in li list sub(x, s_zeroes => substVal);
     phi := map (R2, ring I, li);
     phi I
-)
+    )
+
 
 end
 
 -- TEST --
 
+I = momentIdealGaussian(1, 4)
+C = momentIdealToCumulantsMultivariate(I, {4})
+M = cumulantIdealToMomentsMultivariate(C, {4})
+transpose gens gb M
+transpose gens gb I
 transpose gens gb momentIdealToCumulantsMultivariate(momentIdealGaussian(1,4),{4})
 transpose gens gb momentIdealToCumulantsMultivariate(momentVarietyGaussians(2,3),{3,3})
