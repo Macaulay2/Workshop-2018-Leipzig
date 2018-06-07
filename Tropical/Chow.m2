@@ -583,6 +583,8 @@ doc ///
     Description
         Text
           A toric cycle on X is a finite formal sum of closed torus orbits corresponding to cones in the fan of X.
+	Text
+	  Examples can be found on the toricCycle constructor page.
     SeeAlso
         toricCycle
 ///
@@ -602,6 +604,21 @@ doc ///
             the variety the cycle lives on
     Outputs
         :ToricCycle
+    Description
+        Text
+	  Toric cycles can be created with the constructor, and as they form an abelian group under addition,
+	  arithmetic can be done with them.
+	Example
+	  rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	  coneList={{0,1},{1,2},{2,3},{3,0}}
+	  X = normalToricVariety(rayList,coneList)
+	  cyc = toricCycle({({2,3},1),({3,0}, 4)},X)
+	  altcyc = (-2)*cyc
+	  cyc + altcyc
+	  cyc - altcyc
+	  -cyc
+    SeeAlso
+      (symbol +, ToricCycle, ToricCycle)
 ///
 
 
@@ -658,7 +675,7 @@ doc ///
        X:NormalToricVariety
        S:Ring
      Outputs
-       :Rint
+       :Ring
          the Chow ring of X
      Description
        Text 
