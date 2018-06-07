@@ -10,6 +10,7 @@ newPackage(
 	    HomePage => "http://your.website.html"}},
     Headline => "a package that computes the moments of some distributions",
     AuxiliaryFiles => false,
+    Reload => true,
     DebuggingMode => true
     )
 
