@@ -582,7 +582,9 @@ doc ///
         the class of a toric cycle on a NormalToricVariety
     Description
         Text
-            A toric cycle on X is a finite formal sum of closed torus orbits corresponding to cones in the fan of X.
+          A toric cycle on X is a finite formal sum of closed torus orbits corresponding to cones in the fan of X.
+    SeeAlso
+        toricCycle
 ///
 
 doc ///
@@ -656,8 +658,8 @@ doc ///
        X:NormalToricVariety
        S:Ring
      Outputs
-       :Ideal
-         which defines the relations on the Chow ring of X
+       :Rint
+         the Chow ring of X
      Description
        Text 
          The ring of the ideal has one generator for each ray of X, and
