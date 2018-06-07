@@ -340,10 +340,10 @@ Vector * Vector := (a,b) -> (
 ToricDivisor * List := (D, C) -> (
     -- D is a divisor on X
     -- C is a cone in the fan of X
-    -- if not isTransverse(D,C) then (
-    --     u := vector(random(ZZ^(#(rays X)),ZZ^1));
-    --     D = D + tDivisor(u,variety D);
-    -- );
+    if not isTransverse(D,C) then (
+        u := vector(random(ZZ^(#(rays X)),ZZ^1));
+        D = D + tDivisor(u,variety D);
+    );
     assert(isCartier(D));
     X := variety D;
     local i;
