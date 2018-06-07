@@ -37,4 +37,4 @@ toricEdgeIdeal = (GRAPH) -> (
 
 J=toricEdgeIdeal(G)
 
-f = (a) -> print a
+--aaaaaaaaaaaaaaaaaaaaaaaaa
