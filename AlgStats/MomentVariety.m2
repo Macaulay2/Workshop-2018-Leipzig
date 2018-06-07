@@ -128,8 +128,11 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
 -------------------------------------------------------------------------------------
 --------------------------------------------------------------
 -- This tries to compute mixtures of multivariate Gaussians
-
-momentMapGaussiansMixtures = (n,d,k,KK) -> (
+-- n: dimension pf the Gaussian
+-- d: order of the moments
+-- k: number of mixtures
+momentMapGaussiansMixtures = method()
+momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,k,d,KK) -> (
  
   x := symbol x;
   parx := {};
@@ -216,7 +219,8 @@ momentMapGaussiansMixtures = (n,d,k,KK) -> (
 ----------------------------------------------------------------
 -- This computes the homogeneous ideal of the moment variety of multidimensional Gaussian mixtures
 
-momentVarietyGaussiansMixtures = (n,d,k,KK) -> (
+momentVarietyGaussiansMixtures = method()
+momentVarietyGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Ideal => (n,d,k,KK) -> (
  
   (C,momvars) := momentMapGaussiansMixtures(n,d,k,KK);
   R := ring(C);
@@ -737,6 +741,67 @@ doc ///
      -- Example
      --   TO BE GIVEN
        
+ ///
+ 
+  doc ///
+   Key
+     momentMapGaussiansMixtures
+     (momentMapGaussiansMixtures, ZZ, ZZ, ZZ, Ring)
+   Headline
+     computes the moments of multidimensional Gaussian mixtures
+   Usage
+     momentMapGaussiansMixtures (n,k,d,KK)
+   Inputs
+     n : ZZ
+     k : ZZ
+     d : ZZ
+     KK : Ring
+   Outputs
+     : Sequence -*(Matrix,Sequence)*-
+   Description
+     Text
+       computes the moments of multidimensional Gaussian mixtures given
+       n: dimension pf the Gaussian
+       d: order of the moments
+       k: number of mixtures
+     Text
+       Here we show an example
+     Example
+       n = 2
+       d = 3
+       k = 2
+       KK = QQ
+       momentMapGaussiansMixtures (n,k,d,KK) 
+ 
+ ///
+ 
+ doc ///
+   Key
+     momentVarietyGaussiansMixtures
+     (momentVarietyGaussiansMixtures, ZZ, ZZ, ZZ, Ring)
+   Headline
+     computes the ideal of the moment variety for multidimensional Gaussian mixtures
+   Usage
+     momentVarietyGaussiansMixtures (n,d,k,KK)
+   Inputs
+     n : ZZ
+     d : ZZ
+     k : ZZ
+     KK : Ring
+   Outputs
+     : Ideal
+   Description
+     Text
+       computes the ideal of the moment variety for multidimensional Gaussian mixtures
+     Text
+       Here we show an example
+     Example
+       n = 1
+       d = 3
+       k = 2
+       KK = QQ
+       momentVarietyGaussiansMixtures (n,k,d,KK) 
+ 
  ///
  
  doc ///
