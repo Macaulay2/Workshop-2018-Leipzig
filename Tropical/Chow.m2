@@ -876,7 +876,7 @@ psi = map(R,S,{R_3,R_1})
 assert(matrix inverse psi == matrix phi)
 
 D = X_3
---assert(D*{3} == -1)
+assert(D*{3} == - toricCycle({({2,3},1)},X))
 assert(D*{2} == toricCycle({({2,3},1)},X))
 assert(D*{1} == toricCycle({},X))
 -- test reverse order
