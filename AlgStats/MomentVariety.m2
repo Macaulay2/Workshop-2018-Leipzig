@@ -25,7 +25,11 @@ export {
     "momentIdealPoisson",
     "momentIdealGaussianTest",
     "momentIdealMultinomial",
-    "momentIdealMultinomialMixture"
+    "momentIdealMultinomialMixture",
+    "formalLog",
+    "cumulantIdealGaussian",
+    "cumulantIdealExponential",
+    "cumulantIdealPoisson"
     }
 
 -- Lists all moments of the univariate Gaussian
@@ -191,35 +195,35 @@ momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
 
 
 --computing the moment ideal for the multinomial distribution
---k = #possible outcomes
+--r = #possible outcomes
 --n = #trials
---p_1,..,p_k are the probabilities of each outcome so that their sum is 1
---t_1..t_k are the variables of the moment generating function
+--p_1,..,p_r are the probabilities of each outcome so that their sum is 1
+--t_1..t_r are the variables of the moment generating function
 --d is the truncation order
 momentIdealMultinomial = method()
-momentIdealMultinomial (ZZ, ZZ, ZZ) := Ideal => (k,n,d) -> (
+momentIdealMultinomial (ZZ, ZZ, ZZ) := Ideal => (r,n,d) -> (
     t := symbol t;
-    S := QQ[t_1..t_k];
+    S := QQ[t_1..t_r];
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
     Mons := ideal(apply(quotientExps, e->S_e));
     p := symbol p;
     m := symbol m;
-    R := QQ[p_1..p_k,apply(exps,i->m_i)][t_1..t_k];
+    R := QQ[p_1..p_r,apply(exps,i->m_i)][t_1..t_r];
     Mons = sub(Mons,R);
     R = R / Mons;
     use R;
-    series := (sum apply(toList(1..k), j-> p_j*exp(t_j)))^n; --moment gen fxn of the multinomial distribution
-    I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + ideal( 1 - sum apply(toList(1..k), i -> p_i));
+    series := (sum apply(toList(1..r), j-> p_j*exp(t_j)))^n; --moment gen fxn of the multinomial distribution
+    I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + ideal( 1 - sum apply(toList(1..r), i -> p_i));
     T := QQ[apply(exps,i->m_i)];
-    homogenize(sub((eliminate(toList(p_1..p_k),I),T)),m_(exps#0))
+    homogenize(sub((eliminate(toList(p_1..p_r),I),T)),m_(exps#0))
 )
 
 --Mixtures of Multinomial Distributions
 momentIdealMultiMixture = method()
-momentIdealMultiMixture (ZZ,ZZ,ZZ,ZZ) := Ideal => (k,n,d,mix) -> (
+momentIdealMultiMixture (ZZ,ZZ,ZZ,ZZ) := Ideal => (r,n,mix,d) -> (
     t := symbol t;
-    S := QQ[t_1..t_k];
+    S := QQ[t_1..t_r];
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
     Mons := ideal(apply(quotientExps, e->S_e));
@@ -227,17 +231,22 @@ momentIdealMultiMixture (ZZ,ZZ,ZZ,ZZ) := Ideal => (k,n,d,mix) -> (
     p := symbol p;
     a := symbol a;
     m := symbol m;
-    R := QQ[p_(1,1)..p_(mix,k),a_1..a_mix,apply(exps,i->m_i)][t_1..t_k];
+    R := QQ[p_(1,1)..p_(mix,r),a_1..a_mix,apply(exps,i->m_i)][t_1..t_r];
     Mons = sub(Mons,R);
     R = R / Mons;
     use R;
-    series := sum apply(toList(1..mix),i->a_i*(sum apply(toList(1..k), j-> p_(i,j)*exp(t_j)))^n); --moment gen fxn of the multinomial distribution
+    series := sum apply(toList(1..mix),i->a_i*(sum apply(toList(1..r), j-> p_(i,j)*exp(t_j)))^n); --moment gen fxn of the multinomial distribution
     I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + 
-    	ideal( apply(toList(1..mix),i-> 1 - sum apply(toList(1..k), j -> p_(i,j)))) + 
+    	ideal( apply(toList(1..mix),i-> 1 - sum apply(toList(1..r), j -> p_(i,j)))) + 
 	ideal(1 - sum apply(toList(1..mix),i -> a_i));
     T := QQ[apply(exps,i->m_i)];
-    homogenize(sub((eliminate(toList(p_(1,1)..p_(mix,k))|toList(a_1..a_mix),I),T)),m_(exps#0))
+    homogenize(sub((eliminate(toList(p_(1,1)..p_(mix,r))|toList(a_1..a_mix),I),T)),m_(exps#0))
 )
+
+--Binomial Distribution
+--n trials, truncation order d
+momentIdealBinomial = method()
+momentIdealBinomial = (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
 
 
 --Moment Ideal from Moment Generating function
@@ -260,6 +269,74 @@ momentIdealFromMGF (ZZ, ZZ, List, Ring) := Ideal => (mix, d, f, R) ->(
     I = homogenize(eliminate((gens K)_{0..(#(gens K)-d-2)},I),m_0);
     sub(I, QQ[m_0..m_d])
 )
+
+--Cumulant ideals
+formalLog = (f, d) -> (
+    sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
+)
+
+cumulantIdealGaussian = method()
+cumulantIdealGaussian (ZZ,ZZ) := Ideal => (mix,d) -> (
+    mn := symbol mn;
+    sd := symbol sd;
+    t := symbol t;
+    k := symbol k;
+    a := symbol a;
+    R := QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,k_0..k_d][t]/t^(d+1);
+    use R;
+    series:=formalLog(sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2),d);
+    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-k_i +ideal(-1+sum for i from 1 to mix list a_i);
+    eliminate(toList(mn_1..mn_mix)|toList(sd_1..sd_mix)|toList(a_1..a_mix),I)
+)
+
+--note: l_i's are actually (l_i)^(-1)
+cumulantIdealExponential = method()
+cumulantIdealExponential = (mix,d) -> (
+    l := local l;
+    a := local a;
+    k := local k;
+    R:=QQ[l_1..l_mix,a_1..a_mix,k_0..k_d][t]/t^(d+1);
+    use R;
+    series := formalLog(sum(apply(toList(1..mix),j->sum(apply(toList(1..d),i->a_j*l_j^i*t^i)))),d);
+    --am i missing a factorial? unclear.
+    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-k_i +ideal(-1+sum for i from 1 to mix list a_i);
+    eliminate(toList(l_1..l_mix)|toList(a_1..a_mix),I)
+)
+
+cumulantIdealPoisson = method()
+cumulantIdealPoisson = (mix,d) -> (
+    l := symbol l;
+    a := symbol a;
+    k := symbol k;
+    t := symbol t;
+    R:=QQ[l_1..l_mix,a_1..a_mix,k_0..k_d][t]/t^(d+1);
+    use R;
+    series:=formalLog(sum for i from 1 to mix list a_i*exp(l_i*(exp(t)-1)),d);
+    I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-k_i+ideal(-1+sum for i from 1 to mix list a_i);
+    eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list l_i),I)
+)    
+    
+cumulantIdealMultinomial = (r,n,mix,d) -> (
+    t := symbol t;
+    S := QQ[t_1..t_r];
+    exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
+    quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
+    Mons := ideal(apply(quotientExps, e->S_e));
+    p := symbol p;
+    a := symbol a;
+    k := symbol k;
+    R := QQ[p_(1,1)..p_(mix,r),a_1..a_mix,apply(exps,i->k_i)][t_1..t_r];
+    Mons = sub(Mons,R);
+    R = R / Mons;
+    use R;
+    series := formalLog(sum apply(toList(1..mix),i->a_i*(sum apply(toList(1..r), j-> p_(i,j)*exp(t_j)))^n),d); --moment gen fxn of the multinomial distribution
+    I :=ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-k_e) ) + 
+    	ideal( apply(toList(1..mix),i-> 1 - sum apply(toList(1..r), j -> p_(i,j)))) + 
+	ideal(1 - sum apply(toList(1..mix),i -> a_i));
+    T := QQ[apply(exps,i->k_i)];
+    sub((eliminate(toList(p_(1,1)..p_(mix,r))|toList(a_1..a_mix),I),T))
+)
+
 
 --DOCUMENTATION--
 
