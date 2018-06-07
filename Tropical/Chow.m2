@@ -19,11 +19,11 @@ export {
      "isContainedCones",
      "chowGroupBasis",
      "chowGroup",
-     "IntersectionRing",
      "intersectionRing",
      "ToricCycle",
      "toricCycle",
-     "isTransverse"
+     "isTransverse",
+     "tDivisor"
      }
 
 protect ChowGroupBas 
@@ -56,35 +56,6 @@ latticeIndex = (tau, X) ->(
       return(lift(b/a,ZZ));
 )     
      
-     
---Greg says this has been superseded - see orbits
---cones (ZZ, NormalToricVariety) :=  List => (i,X) ->(
--- cones (ZZ, NormalToricVariety) :=  (i,X) ->(
---      if not X.cache.?cones then X.cache.cones = new MutableHashTable;
---      if not X.cache.cones#?i then (
--- 	  if isSimplicial(X) then (
--- 	      X.cache.cones#i = unique flatten for sigma in max X  list subsets(sigma,i);
--- 	  )
---      	  else (     
--- 	       F:=fan X;
--- 	       Conesi:=cones(i,F);
--- 	       X.cache.cones#i=apply(Conesi,C->(
--- 		    RaysC := entries transpose rays C;
--- --This next bit to be changed when Rene fixes Polyhedra
--- RaysC2:=apply(RaysC,i->(apply(i,j->(lift(j,ZZ)))));
--- RaysC=RaysC2;		    
---      	       	    P:=positions(rays X, i->member(i,RaysC));
--- 		    P
--- 	       ));
---      	  );
---      );
---      X.cache.cones#i=sort X.cache.cones#i;
---      return X.cache.cones#i;
--- ) 
-
-
-
-
 --Is cone with generators given by columns of M contained in cone generated
 --by columns of N?
 --Temporarily assuming full dimensional
@@ -157,11 +128,6 @@ chowGroup=(i,X) -> (
 );	 
 	 
 
---isCartier = D -> (
-     
---)     
-
-
 -- intersect (List, ZZ, List, NormalToricVariety) := List => (D, k, tau, X)  -> (
 --      if isCartier(D) then (
 --      n:=dim X;
@@ -207,7 +173,7 @@ chowGroup=(i,X) -> (
 --Create SR ideal
 intersectionRing = method()
 intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
-     if (not X.cache.?IntersectionRing) or (not coefficientRing(X.cache.IntersectionRing) === S) then (
+     if (not X.cache.?intersectionRing) or (not coefficientRing(X.cache.intersectionRing) === S) then (
  	 z:=symbol z;
      	 R:=S[z_0..z_(#(rays X)-1)];
        	 I:= ideal apply(max X, sigma->(
@@ -225,10 +191,10 @@ intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
 	       );
 	       genJ    
      	 ));
-     X.cache.IntersectionRing=R/(ideal mingens I);
+     X.cache.intersectionRing=R/(ideal mingens I);
      X.cache.AmbientRing = R;
      );
-     X.cache.IntersectionRing
+     X.cache.intersectionRing
 );
 intersectionRing(NormalToricVariety) := X -> (intersectionRing(X,QQ));
 
@@ -353,12 +319,34 @@ toricCycle (List, NormalToricVariety) := (conesWithMultiplicities, X) -> (
     }
 )
 
+-- IMHO this should be called toricDivisor
+tDivisor = method()
+tDivisor(Vector,NormalToricVariety) := (u,X) -> (
+    -- u is a vector in M
+    -- returns the divisor of zeros and poles of chi^u
+    -- u = flatten entries u;
+    -- u := vector({-3,2});
+    cs := for r in rays X list (
+        u * vector(r)    
+    );
+    sum apply(cs,0..(#(rays X) - 1), (c,i) -> c*X_i)
+)
+
+Vector * Vector := (a,b) -> (
+    first entries ((matrix {entries a}) * b )
+)
+
+
 ToricDivisor * List := (D, C) -> (
     -- D is a divisor on X
     -- C is a cone in the fan of X
+    -- if not isTransverse(D,C) then (
+    --     u := vector(random(ZZ^(#(rays X)),ZZ^1));
+    --     D = D + tDivisor(u,variety D);
+    -- );
     assert(isCartier(D));
     X := variety D;
-    i := -1;
+    local i;
     for k in keys(orbits X) do (
         if member(C,orbits(X,k)) then i = k
     );
@@ -837,7 +825,18 @@ scan(5,i->(summ=summ+(hilbertFunction(i,R/I)-rank(chowGroup(i,X)))^2;));
 <<summ<<endl;
 
 
+uninstallPackage "Chow"
+uninstallPackage "NormalToricVarieties"
+restart
+loadPackage "Chow"
+installPackage "Chow"
+check "Chow"
 
+X = projectiveSpace 4
+D = X_1
+u = vector({1,2,3,4})
+Z = tDivisor(u,X)
+D' = D + Z
 
 rayList={{1,0},{0,1},{-1,-1},{0,-1}}
 coneList={{0,1},{1,2},{2,3},{3,0}}
@@ -846,7 +845,11 @@ D = X_0 + 2*X_1+3*X_2+4*X_3
 C = (orbits X)#1#0
 D*C
 
-
+u = vector({-3,2})
+cs = for r in rays X list (
+    u * vector(r)    
+)
+sum apply(cs,0..(#(rays X) - 1), (c,i) -> c*X_i)
 
 -- X = projectiveSpace 4
 D = X_0 + 2*X_1 - 7*X_3
