@@ -21,11 +21,36 @@ S = CC[take(gens S',6)]
 
 f = sub(J_0, S');
 
+
+bs=apply(0..5,i->random CC)
 F = for i from 1 to 5 list 
-	sub(sub((1/100.0)*f, {
-	b_1 => random CC,
-	b_2 => random CC,
-	b_3 => random CC,
-	b_4 => random CC,	
-	b_5 => random CC,
-	b_6 => random CC}),S);
+	sub(sub((1/10.0)*f, {
+	b_1 => b#0,
+	b_2 => b#1,
+	b_3 => b#2,
+	b_4 => b#3,	
+	b_5 => b#4,
+	b_6 => b#5}),S);
+
+needs "../julia.m2"
+importJulia({"using HomotopyContinuation","import DynamicPolynomials: PolyVar"},JuliaProcess)
+P=polySystem F;
+peek P
+
+sols=solveJulia P;
+
+nonSing=0
+elapsedTime for s in sols do(
+    print("nonsingular vs total conics so far: " | nonSing | " vs " | tot);
+    p=s.Coordinates;
+    R'=CC[x,y,z];
+    f'=polySystem {p#0*x^2 + p#1 *x*y + p#2*y^2 + p#3*x*z + p#4*y*z + p#5*z^2};
+    if #(solveSystem polySystem(ideal(f')+ ideal jacobian f'))==1 then nonSing=nonSing+1;
+    tot=tot+1;
+    )
+    
+
+
+L=apply(sols,x->x-> first x.Coordinates);
+netList sort L
+x=first L
