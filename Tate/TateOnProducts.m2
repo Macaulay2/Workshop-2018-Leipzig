@@ -61,7 +61,7 @@ export {
     "TateData",
     "bgg",
     --the following could all be part of ChainComplexExtras
---    "isIsomorphic",
+    "isIsomorphic",
 --    "prependZeroMap",
 --    "appendZeroMap",
 --    "removeZeroTrailingTerms",
@@ -1129,9 +1129,11 @@ beilinson = method(Options=>{BundleType=>PrunedQuotient}) -- other options: Quot
 --   from the category of graded free E-modules to the category of graded S-modules
 --   (the actual beilinson functor is this followed by sheafification).
 -- example uses:
---   (S,E) = --productOfProjectiveSpaces {1,2}
---   beilinson(E^{-1,-1})
---   beilinson random(E^{{-1,0}}, E^{{-2,-1}})
+-*
+     (S,E) = productOfProjectiveSpaces {1,2}
+     beilinson(E^{{-1,-1}})
+     beilinson random(E^{{-1,0}}, E^{{-2,-1}})
+*-
 
 -- The following function should be moved to the Macaulay2 Core.
 tensor(Matrix,Matrix) := opts -> (A,B) -> A ** B
@@ -1365,8 +1367,18 @@ inBeilinsonWindow(List, Ring) := (deg, E) -> (
     true
     )
 
-beilinson Module := Module => opts -> o -> (
-    -- TODO (Mike will do this).
+beilinson Module := Module => opts -> F -> (
+    -- F is a free E-module, and the result is the direct sum of
+    --  the beilinson bundles of each rank 1 summand.
+    if not isFreeModule F then error "expected a free module";
+    if not member(opts#BundleType, set{PrunedQuotient, QuotientBundle, SubBundle})
+    then error "expected BundleType to be one of PrunedQuotient, QuotientBundle, SubBundle";
+    E1 := ring F;
+    tD := tateData E1;
+    (S,E) := tD.Rings;
+    degs := degrees F;
+    pos := positions(degs, a -> inBeilinsonWindow(a,E));
+    if #pos == 0 then S^0 else directSum for a in pos list beilinsonBundle(degs#a,S,opts)
     )
 
 beilinson Matrix := Matrix => opts -> o -> (
@@ -1564,8 +1576,9 @@ debug needsPackage "TateOnProducts"
 ///
 
 
-  -- This function checks that beilinson is functorial, by creating random matrices in all possible degrees,
-  -- and 
+  -- This function checks that beilinson is functorial, by creating random 
+  -- matrices in all possible degrees and checking functoriality on these.
+  -- these two functions are not exported.
   testBeilinson = method(Options => options beilinson)
   testBeilinson List := opts -> n -> (
       (S,E) := productOfProjectiveSpaces n;
@@ -1574,6 +1587,7 @@ debug needsPackage "TateOnProducts"
       m1 := random(E^degs, E^degs);
       m2 := random(E^degs, E^degs);
       shouldBeZero := beilinson(m1*m2,opts) - beilinson(m1,opts) * beilinson(m2,opts);
+-*  
       if shouldBeZero == 0 then return "OK";
       map(E^degs, E^degs, for tar in degs list for src in degs list (
           p1 := random(E^{tar}, E^degs);
@@ -1582,6 +1596,8 @@ debug needsPackage "TateOnProducts"
           then 0_E
           else 1_E
           ))
+*-
+      assert(shouldBeZero == 0)
       )
 
   testBeilinson1 = method(Options => options beilinson)
@@ -1602,7 +1618,8 @@ debug needsPackage "TateOnProducts"
           << "beilinson functoriality fails for " << x << endl;
           x => (p1, p2)
           );
-      if #keys H == 0 then null else H
+      assert(# keys H == 0);
+      -- if #keys H == 0 then null else H
       )
   
 ----------------------------------------
@@ -3737,6 +3754,169 @@ assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
 ///
 
+TEST ///
+  -- XXX Mike working on this test
+  -- of beilinson functor
+-*
+  restart
+  needsPackage "TateOnProducts"
+*-
+  (S,E) = productOfProjectiveSpaces{1,2}
+  assert(beilinson(E^1) == S^1)
+  U1 = beilinson(E^{{-1,0}})
+  V1 = beilinson(E^{{0,-1}})
+  V2 = beilinson(E^{{0,-2}})
+  assert(V2 == S^{{0,-1}})
+  assert(beilinson(E^{{-1,-1}}) == U1 ** V1)
+  assert(beilinson(E^{{-1,-2}}) == U1 ** V2)
+  assert(beilinson(E^{{-2,0}}) == 0)
+  
+  n = {2, 1}
+  (S,E) = productOfProjectiveSpaces n
+  m = map(E^1, E^0, 0)
+  bm = beilinson m
+  assert(map(beilinsonBundle({0,0},S), S^0, 0) == bm)
+
+  m = map(E^0, E^0, 0)
+  bm = beilinson m
+  assert(map(S^0, S^0, 0) == bm)
+
+  m = map(E^0, E^1, 0)
+  bm = beilinson m
+  assert(map(S^0, beilinsonBundle({0,0},S), 0) == bm)
+
+  debug TateOnProducts -- for inBeilinsonWindow
+  degs = flatten for a from -3 to 3 list for b from -3 to 3 list {a,b}
+  for d in degs do (
+      assert(inBeilinsonWindow(d, E) or beilinson(E^{-d}) == 0)
+      )
+/// 
+
+TEST ///
+  -- XXX Mike working on this test
+  -- of beilinson functor
+-*
+  restart
+  needsPackage "TateOnProducts"
+*-
+  (S,E) = productOfProjectiveSpaces{3,3}
+  assert(beilinson(E^1) == S^1)
+  U1 = beilinson(E^{{-1,0}})
+  V1 = beilinson(E^{{0,-1}})
+  V2 = beilinson(E^{{0,-2}})
+  assert(V2 == S^{{0,-1}})
+  assert(beilinson(E^{{-1,-1}}) == U1 ** V1)
+  assert(beilinson(E^{{-1,-2}}) == U1 ** V2)
+  assert(beilinson(E^{{-2,0}}) == 0)
+  
+  debug TateOnProducts -- for inBeilinsonWindow
+  degs = flatten for a from -3 to 3 list for b from -3 to 3 list {a,b}
+  for d in degs do (
+      assert(inBeilinsonWindow(d, E) or beilinson(E^{-d}) == 0)
+      )
+/// 
+
+TEST ///
+  -- XXX Mike working on this test
+  -- of beilinson functoriality
+-*
+  restart
+*-
+  debug needsPackage "TateOnProducts"
+  testBeilinson({1,2}, BundleType=>PrunedQuotient)
+  testBeilinson({1}, BundleType=>PrunedQuotient)
+  testBeilinson({4}, BundleType=>PrunedQuotient)
+  testBeilinson({1,1,1,1}, BundleType=>PrunedQuotient)
+  testBeilinson({1,1,2,1}, BundleType=>PrunedQuotient)
+  testBeilinson({2,2}, BundleType=>PrunedQuotient)
+  testBeilinson({1,2,3}, BundleType=>PrunedQuotient)
+  testBeilinson({2,2,2}, BundleType=>PrunedQuotient)
+  testBeilinson({3,3}, BundleType=>PrunedQuotient)
+  testBeilinson({3,4}, BundleType=>PrunedQuotient)
+
+  testBeilinson({1,2}, BundleType=>QuotientBundle)
+  testBeilinson({1}, BundleType=>QuotientBundle)
+  testBeilinson({4}, BundleType=>QuotientBundle)
+  testBeilinson({1,1,1,1}, BundleType=>QuotientBundle)
+  testBeilinson({1,1,2,1}, BundleType=>QuotientBundle)
+  testBeilinson({2,2}, BundleType=>QuotientBundle)
+  testBeilinson({1,2,3}, BundleType=>QuotientBundle)
+  testBeilinson({2,2,2}, BundleType=>QuotientBundle)
+  testBeilinson({3,3}, BundleType=>QuotientBundle)
+  testBeilinson({3,4}, BundleType=>QuotientBundle)
+
+  testBeilinson1({1,2}, BundleType=>PrunedQuotient)
+  testBeilinson1({1}, BundleType=>PrunedQuotient)
+  testBeilinson1({4}, BundleType=>PrunedQuotient)
+  testBeilinson1({1,1,1,1}, BundleType=>PrunedQuotient)
+  testBeilinson1({1,1,2,1}, BundleType=>PrunedQuotient)
+  testBeilinson1({2,2}, BundleType=>PrunedQuotient)
+  testBeilinson1({1,2,3}, BundleType=>PrunedQuotient)
+  testBeilinson1({2,2,2}, BundleType=>PrunedQuotient)
+  testBeilinson1({3,3}, BundleType=>PrunedQuotient)
+  testBeilinson1({3,4}, BundleType=>PrunedQuotient)
+
+  testBeilinson1({1,2}, BundleType=>QuotientBundle)
+  testBeilinson1({1}, BundleType=>QuotientBundle)
+  testBeilinson1({4}, BundleType=>QuotientBundle)
+  testBeilinson1({1,1,1,1}, BundleType=>QuotientBundle)
+  testBeilinson1({1,1,2,1}, BundleType=>QuotientBundle)
+  testBeilinson1({2,2}, BundleType=>QuotientBundle)
+  testBeilinson1({1,2,3}, BundleType=>QuotientBundle)
+  testBeilinson1({2,2,2}, BundleType=>QuotientBundle)
+  testBeilinson1({3,3}, BundleType=>QuotientBundle)
+  testBeilinson1({3,4}, BundleType=>QuotientBundle)
+
+  testBeilinson {1,1}
+  testBeilinson {1,2}
+  testBeilinson {2,1}
+  testBeilinson {3,1}
+  testBeilinson {2,2}
+  testBeilinson {1,3}
+  testBeilinson {4,1}
+  testBeilinson {3,2}
+  testBeilinson {2,3}
+  testBeilinson {1,4}
+  testBeilinson {1}
+  testBeilinson {2}
+  testBeilinson {3}
+  testBeilinson {4}
+  testBeilinson {5}
+  testBeilinson {6}
+  testBeilinson {5,3}
+  testBeilinson {1,3,1,1}
+  testBeilinson {1,3,1,2}
+
+  testBeilinson1 {1,1}
+  testBeilinson1 {1,2}
+  testBeilinson1 {2,1}
+  testBeilinson1 {3,1}
+  testBeilinson1 {2,2}
+  testBeilinson1 {1,3}
+  testBeilinson1 {4,1}
+  testBeilinson1 {3,2}
+  testBeilinson1 {2,3}
+  testBeilinson1 {1,4}
+  testBeilinson1 {1}
+  testBeilinson1 {2}
+  testBeilinson1 {3}
+  testBeilinson1 {4}
+  testBeilinson1 {5}
+  testBeilinson1 {6}
+
+  testBeilinson1 {1,1,1}
+  testBeilinson1 {1,1,2}
+  testBeilinson1 {1,2,1}
+  testBeilinson1 {2,1,1}
+  testBeilinson1 {3,1,1}
+
+  testBeilinson1 {1,2,2}
+  testBeilinson1 {2,1,2}
+  testBeilinson1 {2,2,1}
+  
+  testBeilinson1 {1,1,1,1}
+///
+
 ------------Tests that aren't necessarily tests yet:
 TEST ///
 n={1,2}
@@ -3927,11 +4107,14 @@ restart
 ///
 
 TEST ///
+-- Keep this one?  It takes a bit of time...
   -- Take a sheaf on P^2 x P^3, e.g. the graph of a rational map
-restart
+-*
+  restart
   needsPackage "TateOnProducts"
+*-
   n={2,3};
-(S,E) = productOfProjectiveSpaces n;
+  (S,E) = productOfProjectiveSpaces n;
   
   m = random(S^1, S^{4:{-3,0}}) || matrix {{S_3, S_4, S_5, S_6}}
   M = coker m
@@ -3950,92 +4133,18 @@ restart
   betti BW
   B = beilinson BW;
   betti B
-  B.dd^2 == 0  -- BUG!!!
-  B.dd_1 * B.dd_2 -- not yet 0...!
+  assert(B.dd^2 == 0)
 
-  tallyDegrees BW
-  B000 = positions(degrees BW_0, a -> a == {0,0})
-  B002 = positions(degrees BW_0, a -> a == {0,2})
-  B101 = positions(degrees BW_1, a -> a == {0,1})
-  B103 = positions(degrees BW_1, a -> a == {0,3})
-  B110 = positions(degrees BW_1, a -> a == {1,0})
-  B112 = positions(degrees BW_1, a -> a == {1,2})
-  B213 = positions(degrees BW_2, a -> a == {1,3})
-  B220 = positions(degrees BW_2, a -> a == {2,0})
-  B222 = positions(degrees BW_2, a -> a == {2,2})
-
-  a1 = submatrix(BW.dd_1, B000, B101) --
-  a2 = submatrix(BW.dd_1, B000, B103)
-  a3 = submatrix(BW.dd_1, B000, B110) -- 
-  a4 = submatrix(BW.dd_1, B000, B112)
-
-  -- 2nd (block) row of BW.dd_1
-  b1 = submatrix(BW.dd_1, B002, B101) -- 0
-  b2 = submatrix(BW.dd_1, B002, B103)
-  b3 = submatrix(BW.dd_1, B002, B110) -- 0
-  b4 = submatrix(BW.dd_1, B002, B112)
-
-  -- 1st column of BW.dd_2
-  c1 = submatrix(BW.dd_2, B101, B213)    
-  c2 = submatrix(BW.dd_2, B103, B213)  
-  c3 = submatrix(BW.dd_2, B110, B213)
-  c4 = submatrix(BW.dd_2, B112, B213)  
-  
-  -- 2nd column of BW.dd_2
-  d1 = submatrix(BW.dd_2, B101, B220) -- 0
-  d2 = submatrix(BW.dd_2, B103, B220) -- 0
-  d3 = submatrix(BW.dd_2, B110, B220)
-  d4 = submatrix(BW.dd_2, B112, B220) -- 0
-
-  -- 3rd column of BW.dd_2
-  f1 = submatrix(BW.dd_2, B101, B222) -- 
-  f2 = submatrix(BW.dd_2, B103, B222) -- 0
-  f3 = submatrix(BW.dd_2, B110, B222)
-  f4 = submatrix(BW.dd_2, B112, B222) -- 
-
-  a1 * c1 + a2 * c2 + a3 * c3 + a4 * c4 == 0 -- true
-  beilinson(a1 * c1) + beilinson(a2 * c2) + beilinson(a3 * c3) + beilinson(a4 * c4) == 0 -- true
-  beilinson a1 * beilinson c1 == beilinson(a1*c1) -- true
-  beilinson a2 * beilinson c2 == beilinson(a2*c2) -- true
-  beilinson a3 * beilinson c3 == beilinson(a3*c3) -- true
-  beilinson a4 * beilinson c4 + beilinson(a4*c4) -- WRONG SIGN. 
-
-  a3 * d3 == 0
-  beilinson a3 * beilinson d3 == 0 -- true
-  
-  a1 * f1 + a2 * f2 + a3 * f3 + a4 * f4 == 0  
-  beilinson a1 * beilinson f1 == beilinson(a1*f1) -- true
-  beilinson a2 * beilinson f2 == beilinson(a2*f2) -- true
-  beilinson a3 * beilinson f3 + beilinson(a3*f3) -- WRONG SIGN
-  beilinson a4 * beilinson f4 == beilinson(a4*f4) -- true
-
-  b2*c2 + b4*c4 == 0
-  beilinson(b2*c2) + beilinson(b4*c4) == 0
-  beilinson(b2*c2) == beilinson b2 * beilinson c2 -- true
-  beilinson(b4*c4) + beilinson b4 * beilinson c4 -- WRONG SIGN.
-
-  beilinson(b2*f2) + beilinson(b4*f4) == 0
-  beilinson(b2*f2) == beilinson b2 * beilinson f2 -- true
-  beilinson(b4*f4) + beilinson b4 * beilinson f4 -- WRONG SIGN.
-
-  degrees source a4
-  degrees target a4
-  tally degrees source c4
-  tally degrees target c4
-
-  m1 = map(E^{{0,0}}, E^{{-1,-2}}, {{e_(0,1)*e_(1,0)*e_(1,1)}})
-  m2 = map(E^{{-1,-2}}, E^{{-1,-3}}, {{e_(1,2)}})
-  beilinson(m1*m2) 
-  beilinson m1 * beilinson m2
 ///
 
 TEST ///
+-- YYY
   -- test of beilinsonBundle and numgensU
 restart
   debug needsPackage "TateOnProducts"
 
   for n in toList({1,1}..{5,5}) do (
-(S,E) = productOfProjectiveSpaces n;
+      (S,E) = productOfProjectiveSpaces n;
       for x in toList({0,0}..n) do assert((numgens beilinsonBundle(x,S) == numgensU(x,S)))
       )
 
@@ -4052,93 +4161,6 @@ restart
       )
 ///  
 
-TEST ///
-  -- test of beilinson, on small examples
-  -- XX
-restart
-  debug needsPackage "TateOnProducts"
-
-  n = {2, 1}
-  (S,E) = productOfProjectiveSpaces n
-  m = map(E^1, E^0, 0)
-  bm = beilinson m
-  assert(map(beilinsonBundle({0,0},S), S^0, 0) == bm)
-
-  m = map(E^0, E^0, 0)
-  bm = beilinson m
-  assert(map(S^0, S^0, 0) == bm)
-
-  m = map(E^0, E^1, 0)
-  bm = beilinson m
-  assert(map(S^0, beilinsonBundle({0,0},S), 0) == bm)
-
-  n = {1,2}
-  testBeilinson {1,1} -- ok
-  testBeilinson({1,1}, BundleType=>QuotientBundle)
-  testBeilinson {1,2} -- 
-  testBeilinson {2,1} -- ok
-  testBeilinson {3,1} -- ok
-  testBeilinson({3,1}, BundleType => QuotientBundle) -- ok
-  testBeilinson {2,2} -- 
-  testBeilinson {1,3} --
-  testBeilinson {4,1} -- ok
-  testBeilinson {3,2} -- 
-  testBeilinson {2,3} --
-  testBeilinson {1,4} --
-  testBeilinson {1} -- ok
-  testBeilinson {2} -- ok
-  testBeilinson {3} -- ok
-  testBeilinson {4} -- ok
-  testBeilinson {5} -- ok
-  testBeilinson {6} -- ok
-  testBeilinson {5,3} -- ok
-  testBeilinson {1,3,1,1} -- ok
-  testBeilinson {1,3,1,2} -- ok
-
-  testBeilinson1 {1,1} -- ok
-  testBeilinson1 {1,2} -- 
-  testBeilinson1 {2,1} -- ok
-  testBeilinson1 {3,1} -- ok
-  testBeilinson1 {2,2} -- 
-  testBeilinson1 {1,3} --
-  testBeilinson1 {4,1} -- ok
-  testBeilinson1 {3,2} -- 
-  testBeilinson1 {2,3} --
-  testBeilinson1 {1,4} --
-  testBeilinson1 {1} -- ok
-  testBeilinson1 {2} -- ok
-  testBeilinson1 {3} -- ok
-  testBeilinson1 {4} -- ok
-  testBeilinson1 {5} -- ok
-  testBeilinson1 {6} -- ok
-
-  testBeilinson1 {1,1,1} -- ok
-  testBeilinson1 {1,1,2}
-  testBeilinson1 {1,2,1}
-  testBeilinson1 {2,1,1} -- ok
-  testBeilinson1 {3,1,1} -- ok
-
-  testBeilinson1 {1,2,2}
-  testBeilinson1 {2,1,2}
-  testBeilinson1 {2,2,1} -- ok
-  
-  testBeilinson1 {1,1,1,1} -- ok
-
-  n = {1, 2}
-  (S,E) = productOfProjectiveSpaces n
-  p1 = map(E^{{0,0}}, E^{{-1,0}}, e_(0,0))
-  p2 = map(E^{{-1,0}}, E^{{-1,-2}}, e_(1,0)*e_(1,1))
-  isHomogeneous p1          
-  isHomogeneous p2
-  p1*p2
-  beilinson p1
-  beilinson p2
-  beilinson (p1*p2)
-
-  p1 = map(E^{{0,0}}, E^{{0,-2}}, e_(1,0)*e_(1,1))
-  p2 = map(E^{{0,-2}}, E^{{-1,-2}}, e_(0,0))
-
-///
 
 
 ------------------------------------
@@ -4184,6 +4206,10 @@ restart
   m2 = numgens U2
   p1 = numgens V1
 
+  map(E^{{-1,0}}, E^{{-1,-1}}, {{e_(1,1)}})
+  isHomogeneous oo
+  beilinson ooo
+  beilinson(e_(1,1), 
   m = beilinson1(e_(1,1), {0,1}, {0,1}, S)
   assert((numRows m, numColumns m)  == (1, p1))
 
@@ -4193,8 +4219,9 @@ restart
 ///
 
 TEST ///
+-- XXX how much of this to keep?
 restart
-  needsPackage "TateOnProducts"
+  debug needsPackage "TateOnProducts"
   n={2,1};
   (S,E) = productOfProjectiveSpaces n;
 
@@ -4374,7 +4401,10 @@ viewHelp TateOnProducts
 viewHelp
 netList cornerCohomologyTablesOfUa({1,2})
 
--- experiment with the old dual: Question can the wrong dula produce a resolution with wrong betti numbers?
+restart
+needsPackage "TateOnProducts"
+
+-- experiment with the old dual: Question can the wrong dual produce a resolution with wrong betti numbers?
 
         kk=ZZ/101;n=4;
 	E=kk[e_0..e_n,SkewCommutative =>true]
