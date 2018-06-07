@@ -171,6 +171,7 @@ momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
     sd := symbol sd;
     m :=  symbol m;
     t :=  symbol t;
+    a := symbol a;
     if mix == 1 then(
 	R:=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
 	use R;
@@ -238,6 +239,27 @@ momentIdealMultiMixture (ZZ,ZZ,ZZ,ZZ) := Ideal => (k,n,d,mix) -> (
     homogenize(sub((eliminate(toList(p_(1,1)..p_(mix,k))|toList(a_1..a_mix),I),T)),m_(exps#0))
 )
 
+
+--Moment Ideal from Moment Generating function
+--takes as input the number of mixtures, the highest degree of moments appearing, a list with the MGF and the parameters of this function, and a Ring.
+--computes the homogeneous moment ideal 
+momentIdealFromMGF = method()
+momentIdealFromMGF (ZZ, ZZ, List, Ring) := Ideal => (mix, d, f, R) ->(
+    param = f_1;
+    f = f_0;
+    n := #param - 1;
+    paramMix := for i to n list (param_i)_1..(param_i)_mix;
+    K := QQ[toSequence paramMix, toSequence param, a_1..a_mix, m_0..m_d];
+    S := K[t]/t^(d+1);
+    use S;
+    paramSubs := flatten for i from 1 to mix list
+    	for j to n list K_(param_j) => K_(paramMix_j_(i-1));
+    f = sub(f,S);
+    series := sum for i from 1 to mix list a_i*sub(f,paramSubs_(i-1));
+    I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
+    I = homogenize(eliminate((gens K)_{0..(#(gens K)-d-2)},I),m_0);
+    sub(I, QQ[m_0..m_d])
+)
 
 --DOCUMENTATION--
 
