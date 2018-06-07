@@ -11,6 +11,8 @@ Daniele Agostini (daniele.agostini@mis.mpg.de)
 
 Lamprini Ananiadi (lamprini.ananiadi@ovgu.de)
 
+Jane Coons (jicoons@ncsu.edu)
+
 Oliver Gäfvert (oliverg@kth.se)
 
 Marina Garrote-López (marina.garrote@upc.edu)
@@ -19,7 +21,6 @@ Alex Grosdos (algrosdoskou@uos.de)
 
 Orlando Marigliano (orlando.marigliano@mis.mpg.de)
 
-(let us know if you want to join)
 
 ----------------------------------------------------------------
 Potential Projects
