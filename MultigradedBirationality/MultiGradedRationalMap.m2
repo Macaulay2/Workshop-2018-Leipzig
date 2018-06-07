@@ -612,7 +612,7 @@ doc ///
    degreeOfMap
    (degreeOfMap,Ideal)
   Headline
-   Computation of the degree of a rational map
+   computes the degree of a rational map
   Usage
    degreeOfMap(I)
   Inputs
@@ -683,7 +683,7 @@ doc ///
     degreeOfMapIter
     (degreeOfMapIter,Ideal,ZZ)
   Headline
-    Computation of the degree of a rational map
+    computes the degree of a rational map
   Usage
     degreeOfMapIter(I, nsteps)
   Inputs
@@ -726,7 +726,7 @@ doc ///
     isBiratMap 
     (isBiratMap ,Ideal)
   Headline
-    Birationality is tested with the Jacobian dual criterion
+    tests the birationality of a rational with the Jacobian dual criterion
   Usage
     isBiratMap(I)
   Inputs
@@ -782,7 +782,7 @@ doc ///
        Hm1Rees0
        (Hm1Rees0, Ideal)
     Headline
-       It computes the module [Hm^1(Rees(I))]_0
+       computes the module [Hm^1(Rees(I))]_0
     Usage
        Hm1Rees0(I)
     Inputs
@@ -827,7 +827,7 @@ doc ///
 	(gensSatSpecialFib, Ideal, ZZ)
     	(gensSatSpecialFib, Ideal)
     Headline 
-    	It computes generators of the saturated special fiber ring
+        computes generators of the saturated special fiber ring
     Usage 
         gensSatSpecialFib(I, nsteps)
 	gensSatSpecialFib(I)
@@ -889,7 +889,7 @@ doc ///
 	(satSpecialFiber, Ideal, ZZ)
     	(satSpecialFiber, Ideal)
     Headline 
-    	It computes the saturated special fiber ring
+       computes the saturated special fiber ring
     Usage 
         satSpecialFiber(I, nsteps)
         satSpecialFiber(I)
@@ -962,7 +962,7 @@ doc ///
 	(satSpecialFiberIdeal, Ideal, ZZ)
     	(satSpecialFiber, Ideal)
     Headline 
-    	It computes the defining equations of the saturated special fiber ring
+    	computes the defining equations of the saturated special fiber ring
     Usage 
         satSpecialFiberIdeal(I, nsteps)
         satSpecialFiberIdeal(I)
@@ -1021,7 +1021,7 @@ doc ///
     jDRank 
     (jDRank ,Ideal)
   Headline
-    Computes the full Jacobian dual rank
+    computes the full Jacobian dual rank
   Usage
     jDRank(I)
   Inputs
@@ -1075,7 +1075,7 @@ doc ///
     partialJDRs 
     (partialJDRs ,Ideal)
   Headline
-    Computes the partial Jacobian dual ranks
+    computes the partial Jacobian dual ranks
   Usage
     partialJDRs(I)
   Inputs
@@ -1130,7 +1130,7 @@ doc ///
    upperBoundDegreeSingleGraded
    (upperBoundDegreeSingleGraded,Ideal)
   Headline
-   Computes an upper bound for the degree of a rational map
+   computes an upper bound for the degree of a rational map
   Usage
    upperBoundDegreeSingleGraded(I)
   Inputs
@@ -1231,31 +1231,31 @@ TEST ///
     R = QQ[x,y,z]
       I = ideal(random(4, R), random(4, R), random(4, R));
       betti res I
-      degreeOfMap I
+      assert(degreeOfMap I != 1)
       A = matrix{ {x, x^2 + y^2},
                   {-y, y^2 + z*x},
 	          {0, x^2}
 	        };
       I = minors(2, A) -- a birational map
-      degreeOfMap I
+      assert(degreeOfMap I == 1)
       A = matrix{ {x^2, x^2 + y^2},
                   {-y^2, y^2 + z*x},
 	          {0, x^2}
 	        };
       I = minors(2, A) -- a non birational map
-      degreeOfMap I 
+      assert(degreeOfMap I != 1) 
       A = matrix{ {x^3, x^2 + y^2},
                   {-y^3, y^2 + z*x},
 	          {0, x^2}
 	        };
       I = minors(2, A) -- a non birational map
-      degreeOfMap I 
+      assert(degreeOfMap I != 1) 
       A = matrix{ {x^3, x^4},
                   {-y^3, y^4},
 	          {z^3, x^4}
 	        };
       I = minors(2, A) -- a non birational map
-      degreeOfMap I 
+      assert(degreeOfMap I != 1)
       R = QQ[x,y,z,v,w]
       I = ideal(random(1, R), random(1, R), random(1, R), random(1, R), random(1, R));
       degreeOfMap(I, Strategy=>SatSpecialFibStrategy)    	
@@ -1268,15 +1268,15 @@ TEST ///
 TEST ///
     R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
     I = ideal(x*u, y*u, y*v) -- a birational map
-    degreeOfMapIter(I, 5)
+    assert(degreeOfMapIter(I, 5) == 1)
     I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
-    degreeOfMapIter(I, 5)
+    assert(degreeOfMapIter(I, 5) != 1)
     A = matrix{ {x^5*u,  x^2*v^2},
                 {y^5*v, x^2*u^2},
                 {0,     y^2*v^2}
               };
     I = minors(2, A)  -- a non birational
-    degreeOfMapIter(I, 5)
+    assert(degreeOfMapIter(I, 5) != 1)
     
 ///
 
@@ -1287,18 +1287,18 @@ TEST ///
                   {0, x^2}
                };
      I = minors(2, A) -- a birational map
-     gensSatSpecialFib I
-     gensSatSpecialFib(I, 5)
+     assert(length gensSatSpecialFib I == 3)
+     assert(length gensSatSpecialFib(I,5) == 3)
      A = matrix{ {x^3, x^2 + y^2},
                  {-y^3, y^2 + z*x},
                  {0, x^2}
                 };
      I = minors(2, A) -- a non birational map
-     gensSatSpecialFib I
-     gensSatSpecialFib(I, 5)
+     assert(length gensSatSpecialFib I != 3)
+     assert(length gensSatSpecialFib(I,5) != 3)
      R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
      I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
-     gensSatSpecialFib(I, 5)
+     assert(length gensSatSpecialFib(I,5) != 3)
     
 ///
 
@@ -1310,19 +1310,19 @@ TEST ///
                  {0, x^5}
                };
      I = minors(2, A) -- a birational map
-     satSpecialFiber I
+     assert(isPolynomialRing satSpecialFiber I)
      A = matrix{ {x^3, x^2 + y^2},
                  {-y^3, y^2 + z*x},
                  {0, x^2}
                };
      I = minors(2, A) -- a non birational map
-     satSpecialFiber I 
+     assert(not isPolynomialRing satSpecialFiber I)
      R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
      I = ideal(x*u, y*u, y*v) -- a birational map
+     assert(isPolynomialRing satSpecialFiber(I,5))
      satSpecialFiber(I, 5)
      I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
-     satSpecialFiber(I, 5) 
-
+     assert(not isPolynomialRing satSpecialFiber(I,5))
 ///
 
 
@@ -1333,18 +1333,20 @@ TEST ///
                  {0, x^5}
                };
      I = minors(2, A) -- a birational map
-     satSpecialFiberIdeal I
+     assert(numgens satSpecialFiberIdeal I == 0)
      A = matrix{ {x^3, x^2 + y^2},
                  {-y^3, y^2 + z*x},
                  {0, x^2}
                 };
      I = minors(2, A) -- a non birational map
-     satSpecialFiberIdeal I 
+     assert(numgens satSpecialFiberIdeal I != 0) 
      R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
      I = ideal(x*u, y*u, y*v) -- a birational map
+     assert(numgens satSpecialFiberIdeal(I,5) == 0)
      satSpecialFiberIdeal(I, 5)
      I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
      satSpecialFiberIdeal(I, 5) 
+     assert(numgens satSpecialFiberIdeal(I,5) != 0)
 	
 ///
 
@@ -1352,15 +1354,15 @@ TEST ///
 TEST ///
     	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
         I = ideal(x*u, y*u, y*v) -- a birational map
-        jDRank I
+        assert(jDRank I == 2)
      	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
-        jDRank I
+        assert(jDRank I != 2)
 	A = matrix{ {x^5*u,  x^2*v^2},
     	            {y^5*v, x^2*u^2},
 	            {0,     y^2*v^2}
     	          };
         I = minors(2, A)  -- a non birational
-        jDRank I
+        assert(jDRank I != 2)
 	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
         jDRank I 
     	R = QQ[x,y,z,w]
@@ -1370,9 +1372,9 @@ TEST ///
 	            {y - z,  w, x + y}
 	          };
         I = minors(3, A) -- a birational map
-        jDRank I
+        assert(jDRank I == 3)
         I = ideal(random(2, R), random(2, R), random(2, R), random(2, R)); -- a non birational 
-        jDRank I
+        assert(jDRank I != 3)
 
 ///
 
@@ -1380,7 +1382,7 @@ TEST ///
 TEST ///
       	R = QQ[x,y,u,v, Degrees => {{1,0}, {1,0}, {0,1}, {0,1}}]
         I = ideal(x*u, y*u, y*v) -- a birational map
-        partialJDRs I
+        assert((partialJDRs I) == {1,1})
      	I = ideal(x*u, y*v, x*v + y*u) -- a non birational map
         partialJDRs I
 	A = matrix{ {x^5*u,  x^2*v^2},
@@ -1388,7 +1390,7 @@ TEST ///
 	            {0,     y^2*v^2}
     	          };
         I = minors(2, A)  -- a non birational
-        partialJDRs I
+     	assert((partialJDRs I) != {1,1})
 	I = ideal(x*u^2, y*u^2, x*v^2) -- non birational map
         partialJDRs I
     	R = QQ[x,y,z,w]
@@ -1406,12 +1408,40 @@ TEST ///
 ///
 
 
+TEST ///
+      R = QQ[x,y,z]
+      I = ideal(random(4, R), random(4, R), random(4, R));
+      betti res I
+      assert((degreeOfMap I) <= (upperBoundDegreeSingleGraded I))
+      A = matrix{ {x, x^2 + y^2},
+                  {-y, y^2 + z*x},
+	          {0, x^2}
+	        };
+      I = minors(2, A) -- a birational map
+      assert((degreeOfMap I) <= (upperBoundDegreeSingleGraded I))
+      A = matrix{ {x^2, x^2 + y^2},
+                  {-y^2, y^2 + z*x},
+	          {0, x^2}
+	        };
+      I = minors(2, A) -- a non birational map
+      assert((degreeOfMap I) <= (upperBoundDegreeSingleGraded I))
+      A = matrix{ {x^3, x^2 + y^2},
+                  {-y^3, y^2 + z*x},
+	          {0, x^2}
+	        };
+      I = minors(2, A) -- a non birational map
+      assert((degreeOfMap I) <= (upperBoundDegreeSingleGraded I))
+    
+///
+
+
 end--
 
 uninstallPackage "MultiGradedRationalMap"
 restart
 installPackage "MultiGradedRationalMap"
 viewHelp "MultiGradedRationalMap"
+check "MultiGradedRationalMap"
 
 loadPackage "MultiGradedRationalMap"
 
