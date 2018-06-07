@@ -10,6 +10,7 @@ newPackage(
 	    HomePage => "http://your.website.html"}},
     Headline => "a package that computes the moments of some distributions",
     AuxiliaryFiles => false,
+    Reload => true,
     DebuggingMode => true
     )
 
@@ -23,7 +24,8 @@ export {
     "momentVarietyGaussians",
     "momentIdealPoisson",
     "momentIdealGaussianTest",
-    "momentIdealMultinomial"
+    "momentIdealMultinomial",
+    "momentIdealMultinomialMixture"
     }
 
 -- Lists all moments of the univariate Gaussian
@@ -44,10 +46,10 @@ listOfMoments (ZZ,Ring) := List => (d,R) -> (
 momentIdeal = method()
 momentIdeal (ZZ, Ring) := Ideal => (d, R)->(
     -- Append auxilliary vars to construct power series
-    mn := local mn;
-    sd := local sd;
+    mn := symbol mn;
+    sd := symbol sd;
     (S, phi) :=  flattenRing(R[mn, sd]);
-    t := local t;
+    t := symbol t;
     T := S[t]/t^(d+1);
     use T;
     g := gens R;
@@ -60,15 +62,14 @@ momentIdeal (ZZ, Ring) := Ideal => (d, R)->(
 
 --Exponential mixture
 --takes highest  degree d of moments and number of mixtures
---NEEDS TO EB HOMOGENISED, NEEDS TO FIX DOUBLE ELIMINATE
 momentIdealExponential = (mix,d) ->(
-    lam := local lam;
-    alp := local alp;
-    m := local m;
-    R:=QQ[lam_1..lam_mix,alp_1..alp_mix,m_0..m_d];
-    I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list alp_j*lam_j^i*i!) +
-       ideal(-1+sum for i from 1 to mix list alp_i);
-    eliminate ((for j from 1 to mix list alp_j)|(for i from 1 to mix list lam_i) ,I)
+    l := symbol l;
+    a := symbol a;
+    m := symbol m;
+    R:=QQ[l_1..l_mix,a_1..a_mix,m_0..m_d];
+    I:=ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list a_j*l_j^i*i!) +
+       ideal(-1+sum for i from 1 to mix list a_i);
+    homogenize(eliminate (toList(a_1..a_mix)|toList(l_1..l_mix) ,I),m_0)
 )
 
 --Gaussian Mixtures
@@ -76,22 +77,23 @@ momentIdealExponential = (mix,d) ->(
 --computes the homogeneous moment ideal by eliminating the means and standard deviations
 momentIdealGaussian = method()
 momentIdealGaussian (ZZ, ZZ) := Ideal => (mix,d)->(
-    mn := local mn;
-    sd := local sd;
-    a := local a;
-    m := local m;
-    t := local t;
+    mn := symbol mn;
+    sd := symbol sd;
+    a := symbol a;
+    m := symbol m;
+    t := symbol t;
     R:=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     use R;
     series:=sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2);
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
-    homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0)
+    I = homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);
+    sub(I, QQ[m_0..m_d])
 )
 
 --------------------------------------------------------------------------------------
 
 momentMapGaussians =  (n,d) -> (
-  x := local x;    
+  x := symbol x;    
   par:=toList(x_1..x_n);
   for i from 1 to n do (for j from i to n do (par=append(par,s_(i,j))) );
   par=toSequence(par);
@@ -151,10 +153,10 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
 --computes the homogeneous moment ideal 
 momentIdealPoisson = method()
 momentIdealPoisson (ZZ, ZZ) := Ideal => (mix,d)->(
-    lambda := local lambda;
-    a := local a;
-    m := local m;
-    t := local t;
+    lambda := symbol lambda;
+    a := symbol a;
+    m := symbol m;
+    t := symbol t;
     R:=QQ[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     series:=sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
@@ -165,21 +167,26 @@ momentIdealPoisson (ZZ, ZZ) := Ideal => (mix,d)->(
 --written to eliminate a_mix
 momentIdealGaussianTest = method()
 momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
-    mn := local mn;
-    sd := local sd;
-    m := local m;
-    t := local t;
+    mn := symbol  mn;
+    sd := symbol sd;
+    m :=  symbol m;
+    t :=  symbol t;
+    a := symbol a;
     if mix == 1 then(
 	R:=QQ[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
+	use R;
     	series:= exp(mn_1*t+(1/2)*sd_1^2*t^2);
     	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
-    	return homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);)
+    	return homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);
+	)
     else( 
-	R:=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
+	R2:=QQ[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
+	use R2;
     	amix := 1 - sum for i from 1 to mix-1 list a_i;
-    	series:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
-    	I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
-    	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0))
+    	series2:=sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
+    	I2:=ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
+    	return homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I2),m_0)
+	)
 )
 
 
@@ -191,10 +198,13 @@ momentIdealGaussianTest (ZZ, ZZ) := Ideal => (mix,d)->(
 --d is the truncation order
 momentIdealMultinomial = method()
 momentIdealMultinomial (ZZ, ZZ, ZZ) := Ideal => (k,n,d) -> (
+    t := symbol t;
     S := QQ[t_1..t_k];
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
     Mons := ideal(apply(quotientExps, e->S_e));
+    p := symbol p;
+    m := symbol m;
     R := QQ[p_1..p_k,apply(exps,i->m_i)][t_1..t_k];
     Mons = sub(Mons,R);
     R = R / Mons;
@@ -206,12 +216,17 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := Ideal => (k,n,d) -> (
 )
 
 --Mixtures of Multinomial Distributions
-momentIdealMultiMixture = (k,n,d,mix) -> (
+momentIdealMultiMixture = method()
+momentIdealMultiMixture (ZZ,ZZ,ZZ,ZZ) := Ideal => (k,n,d,mix) -> (
+    t := symbol t;
     S := QQ[t_1..t_k];
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
     Mons := ideal(apply(quotientExps, e->S_e));
     --need different parameters p-1...p_k for each distribution in the mixture
+    p := symbol p;
+    a := symbol a;
+    m := symbol m;
     R := QQ[p_(1,1)..p_(mix,k),a_1..a_mix,apply(exps,i->m_i)][t_1..t_k];
     Mons = sub(Mons,R);
     R = R / Mons;
@@ -224,6 +239,27 @@ momentIdealMultiMixture = (k,n,d,mix) -> (
     homogenize(sub((eliminate(toList(p_(1,1)..p_(mix,k))|toList(a_1..a_mix),I),T)),m_(exps#0))
 )
 
+
+--Moment Ideal from Moment Generating function
+--takes as input the number of mixtures, the highest degree of moments appearing, a list with the MGF and the parameters of this function, and a Ring.
+--computes the homogeneous moment ideal 
+momentIdealFromMGF = method()
+momentIdealFromMGF (ZZ, ZZ, List, Ring) := Ideal => (mix, d, f, R) ->(
+    param = f_1;
+    f = f_0;
+    n := #param - 1;
+    paramMix := for i to n list (param_i)_1..(param_i)_mix;
+    K := QQ[toSequence paramMix, toSequence param, a_1..a_mix, m_0..m_d];
+    S := K[t]/t^(d+1);
+    use S;
+    paramSubs := flatten for i from 1 to mix list
+    	for j to n list K_(param_j) => K_(paramMix_j_(i-1));
+    f = sub(f,S);
+    series := sum for i from 1 to mix list a_i*sub(f,paramSubs_(i-1));
+    I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
+    I = homogenize(eliminate((gens K)_{0..(#(gens K)-d-2)},I),m_0);
+    sub(I, QQ[m_0..m_d])
+)
 
 --DOCUMENTATION--
 
