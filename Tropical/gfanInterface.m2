@@ -1,6 +1,7 @@
 --TODO: gfan errors printed on screen in:
 -- QQ[x,y,z,w]; I=ideal(x-y,w+y-x); gfanTropicalStartingCone I; tropicalVariety I; tropicalVariety ideal(x);
 
+path = prepend ("~/src/M2/Workshop-2018-Leipzig/Tropical/", path)
 
 -- -*- coding: utf-8 -*-
 
@@ -4405,15 +4406,7 @@ doc///
 	    balanced fans.  The input is two fans, and two lists of
 	    multiplicities that makes the fan balanced.  The function
 	    does not check whether this fan is in fact balanced.
-	Example
-    	    QQ[x,y,z,w]
-	    I = ideal(x+y+z+w);
-	    J = ideal(x-y);
-	    (F,m1)=gfanTropicalTraverse(gfanTropicalStartingCone(I))
-	    (G,m2)=gfanTropicalTraverse(gfanTropicalStartingCone(J))
-	    H = gfanStableIntersection(F,m1,G,m2)
-	    rays H
-	    maxCones H
+	
 ///	    
 
 

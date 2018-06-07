@@ -1,3 +1,5 @@
+path = prepend ("~/src/M2/Workshop-2018-Leipzig/Tropical/", path)
+--Delete the line above when the "loading the wrong version" has been fixed.
 polymakeOkay := try replace( "polymake version ", "", first lines get "!polymake --version 2>&1") >= "3.0" else false;
 
 --TODO: uncomment examples for isBalanced and stableIntersection in next release of M2
@@ -21,7 +23,7 @@ newPackage(
 	Configuration => {
 		"path" => "",
 		"fig2devpath" => "",
-		"keepfiles" => false,
+		"keepfiles" => true,
 		"cachePolyhedralOutput" => true,
 		"tropicalMax" => false
 	},
@@ -159,7 +161,6 @@ tropicalPrevariety (List) := o -> L -> (
 tropicalPrevariety (List, List) := o -> (L, symmetryList) -> ( 
 	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
 	"symmetryExploit" => true,"restrict" => false,"stable" => false};
-	
 --using strategy gfan
     if (o.Strategy=="gfan") then (
     	F:= gfanTropicalIntersection(L, symmetryList, gfanopt); 
@@ -758,8 +759,8 @@ doc///
 			tropicalPrevariety L
 			QQ[x_0,x_1]
 			tropicalPrevariety({x_0+x_1+1}, {{1,0}})
-			QQ[x,y]
-			tropicalPrevariety({x+y+1,x+y},Strategy => "gfan")
+			QQ[x_0,x_1]
+			tropicalPrevariety({x_0+x_1+1,x_0+x_1},Strategy => "gfan")
 ///
 
 
@@ -1005,14 +1006,22 @@ doc///
     
     Description
 		Text
-			If the option is used, the specified symmetries are used in the calculation of the tropical variety. For an ideal I of a polynomial ring R = KK[x_0 .. x_N], each symmetry is a permutation encoded in a list \{s_0, s_1, ..., s_N\} of numbers from 0 to N which records that swapping the variable x_j with the variable x_{s_j} in R leaves the ideal I fixed. Exploiting symmetries reduces the number of computations needed. The length of each symmetry equals the number of generators of R, otherwise an error is raised.
+			If the option is used, the specified
+			symmetries are used in the calculation of the
+			tropical variety. For an ideal I of a
+			polynomial ring R = KK[x_0 .. x_N], each
+			symmetry is a permutation encoded in a list
+			\{s_0, s_1, ..., s_N\} of numbers from 0 to N
+			which records that swapping the variable x_j
+			with the variable x_{s_j} in R leaves the
+			ideal I fixed. Exploiting symmetries reduces
+			the number of computations needed. The length
+			of each symmetry equals the number of
+			generators of R, otherwise an error is raised.
 		Example
 		          QQ[x_0,x_1,x_2];
 			  I=ideal(x_0+x_1+x_2+1);
-			  T=tropicalVariety (I,Symmetry=>{
-				                          {1,0,2}, --Swapping x_0 with x_1 leaves I fixed
-							  {2,1,0} --Swapping x_0 with x_2 leaves I fixed
-							  })
+			  T=tropicalVariety (I,Symmetry=>{{1,0,2}, {2,1,0} })
 ///
 
 
