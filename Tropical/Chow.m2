@@ -319,6 +319,24 @@ toricCycle (List, NormalToricVariety) := (conesWithMultiplicities, X) -> (
     }
 )
 
+
+ZZ * ToricCycle := ToricCycle => (k,C) -> (
+    V := for orbit in flatten values orbits variety C list (orbit,k*(C#orbit));
+    toricCycle(V,variety C)
+);
+
+ToricCycle + ToricCycle := ToricCycle => (C,D) -> (
+    assert(variety C === variety D);
+    V := for orbit in flatten values orbits variety C list (orbit, (C#orbit)+(D#orbit));
+    toricCycle(V, variety C)
+);
+
+ToricCycle - ToricCycle := ToricCycle => (C,D) -> (
+    C + (-1)*D
+);
+
+- ToricCycle := ToricCycle => (C) -> (-1)*C
+
 -- IMHO this should be called toricDivisor
 tDivisor = method()
 tDivisor(Vector,NormalToricVariety) := (u,X) -> (
@@ -827,6 +845,19 @@ psi = map(R,S,{R_0,R_1})
 assert(matrix inverse psi == matrix phi)
 ///
 
+--test ToricCycle addition, subtraction, multiplication, etc
+TEST ///
+rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+coneList={{0,1},{1,2},{2,3},{3,0}}
+X = normalToricVariety(rayList,coneList)
+
+cyc = toricCycle({({2,3},1),({3,0}, 4)},X)
+altcyc = (-2)*cyc
+assert(altcyc == toricCycle({({2,3},-2),({3,0}, -8)},X))
+assert(cyc + altcyc == ((-1)*cyc))
+assert(cyc - altcyc == 3*cyc)
+assert(-cyc = (-1)*cyc)
+///
 
 end
 
