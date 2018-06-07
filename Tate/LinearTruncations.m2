@@ -286,7 +286,7 @@ end--
 --------------------------------------------------------
 uninstallPackage "LinearTruncations"
 restart
-installPackage"LinearTruncation"
+installPackage"LinearTruncations"
 needsPackage "LinearTruncations"
 needsPackage "RandomIdeals"
 
