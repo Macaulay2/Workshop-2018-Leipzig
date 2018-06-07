@@ -699,6 +699,73 @@ doc ///
           This currently assumes that both cones are full-dimensional, and is implemented in 
           a somewhat hackish manner.
 ///
+
+doc ///
+    Key
+      (symbol *, ToricDivisor, List)
+    Headline
+      restriction of a Cartier toric divisor to the orbit closure of a cone
+    Usage
+      D*C
+    Inputs
+      D:ToricDivisor
+      C:List
+    Outputs
+      :ToricCycle
+         Returns the toric cycle given by restricting a Cartier toric divisor to the
+	 orbit closure of the given cone
+    Description
+      Example
+        rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	coneList={{0,1},{1,2},{2,3},{3,0}}
+	X = normalToricVariety(rayList,coneList)
+	D = X_3
+      Text
+        The only cone containing rays 2 and 3 is the cone {2,3}. There is no cone
+	containing rows 1 and 3.
+      Example
+        D*{2}
+        D*{1}
+      Text
+        This can also compute more complicated sums.
+      Example
+        D = X_0 + 2*X_1+3*X_2+4*X_3
+	C = (orbits X)#1#0
+	D*C
+///
+
+doc ///
+    Key
+      (symbol == , ToricCycle, ToricCycle)
+    Headline
+      equality of toric cycles
+    Usage
+      C == D
+    Inputs
+      C:ToricCycle
+      D:ToricCycle
+    Description
+      Text
+        In order for this method to work, the varieties C and D are on must be the same object. Given this, 
+	this function checks that the coefficient of each orbit of the toric varieties in both toric cycles
+	are the same.
+      Example
+        rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	coneList={{0,1},{1,2},{2,3},{3,0}}
+	X = normalToricVariety(rayList,coneList)
+	D = X_3
+	D*{2} == toricCycle({({2,3},1)},X)
+	D*{1} == toricCycle({},X)
+      Text
+        The elements of the list in the constructor of toric cycle may be in any order. For example,
+	the following example has {3,0} instead of {0,3}.
+      Example
+	D*{0} == toricCycle({({3,0},1)},X)
+    SeeAlso
+      (symbol *, ToricDivisor, List)
+///
+
+
 ---------------------------------------------------------------------------
 -- TEST
 ---------------------------------------------------------------------------
@@ -870,3 +937,5 @@ restart
 loadPackage "Chow"
 installPackage "Chow"
 check "Chow"
+
+
