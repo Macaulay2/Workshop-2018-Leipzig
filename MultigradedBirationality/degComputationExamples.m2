@@ -238,6 +238,7 @@ degree rationalMap gens I
 degreeOfMap I 
 isBiratMap I
 jDRank I
+degreeOfMapIter(I,5)
 
 I = ideal(x^2 + z^2, y^2 + z^2, x^2 - y^2)
 degree rationalMap gens I 
