@@ -44,3 +44,5 @@ for j from 0 to 9 do (
 ```
 
 The loop above "restart" executes successfully on my machine, while the code below hangs (consistent with the warning given in the documentation for openInOut.) Is there a better general way communicate then reading immediately after writing?
+
+- How does M2 relate to other computer algebra systems? The closest competitor seems to be singular? When should I choose one over the other? How do they differ in design philosophy?
