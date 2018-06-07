@@ -5,6 +5,17 @@ loadPackage "Polyhedra"
 
 viewHelp Polyhedra
 
+P = convexHull transpose matrix {{0,0},{2,0},{2,3},{-1,4}}
+vertices P
+facets P
+latticePoints P
+isEmpty P
+isCompact P
+F = normalFan P
+rays F
+isSimplicial F
+isSmooth F
+
 -- 'cellDecompose' has become 'regularSubdivision'
 V = transpose matrix {{1,1},{0,0},{1,0},{0,1}}
 w = matrix{{1,0,0,1}}
