@@ -172,6 +172,25 @@ chowGroup=(i,X) -> (
 
 --Create SR ideal
 intersectionRing = method()
+
+--matrix representing a map from ring we want to ring we get
+intersectionRing(NormalToricVariety,Ring,Matrix) := (X,S,M) -> (
+    assert(numColumns M == rank chowGroup(1,X));
+    assert(numRows M == #(rays X));
+    inRing := intersectionRing(X,S);
+    z:=symbol z;
+    R := S[z_0..z_(numColumns M - 1)];
+    T := ring presentation inRing;
+    L := for i from 0 to numColumns M - 1 list (
+	sum (for j from 0 to numRows M - 1 list M_(j,i)*T_i)
+	);
+    phi := map(T, R, L);
+    I := preimage(phi,ideal(inRing));
+    R/I
+);
+
+intersectionRing(NormalToricVariety,Matrix) := (X,M) -> (intersectionRing(X,QQ,M));
+
 intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
      if (not X.cache.?intersectionRing) or (not coefficientRing(X.cache.intersectionRing) === S) then (
  	 z:=symbol z;
