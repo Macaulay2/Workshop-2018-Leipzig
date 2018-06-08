@@ -25,7 +25,7 @@ newPackage(
 export {
     "symExt",
     "cohomologyMatrix",
-    "cohomologyHashTable",    
+    "cohomologyHashTable",
     "eulerPolynomialTable",
     "tallyDegrees",
     "lowerCorner",
@@ -47,8 +47,8 @@ export {
     "productOfProjectiveSpaces",
     "contractionData", -- probably doesn't need to be exported
     "BundleType",
-    "PrunedQuotient", 
-    "QuotientBundle", 
+    "PrunedQuotient",
+    "QuotientBundle",
     "SubBundle",
     --
 --    "cornerCohomologyTablesOfUa",
@@ -67,7 +67,7 @@ export {
 --    "removeZeroTrailingTerms",
     "trivialHomologicalTruncation",
 --    "isChainComplex",
---    "nonzeroMin", 
+--    "nonzeroMin",
 --    "nonzeroMax",
 --    "minimize",
 --    "isMinimalChainComplex",
@@ -121,7 +121,7 @@ coarseMultigradedRegularity Module := o-> M -> (
     F' := res(M', FastNonminimal=>true);
     F = allGradings(F',Tm, S));
     coarseMultigradedRegularity F
-    ) 
+    )
 *-
 LL = method()
 LL (ZZ,ZZ) := (d,t) -> (
@@ -177,9 +177,9 @@ allGradings (ChainComplex,Module, Ring) := (fJ,F0,Sall) -> (
 
 
 cornerComplex=method()
-cornerComplex(ChainComplex,List) := (C,c) -> 
+cornerComplex(ChainComplex,List) := (C,c) ->
        (d:=c-toList(#c:1);cornerComplex1(C,d))
-    
+
 cornerComplex1=method()
 cornerComplex1(ChainComplex,List) := (C,c) -> (
     -- addded this line to make the function  work for the zero complex
@@ -187,7 +187,7 @@ cornerComplex1(ChainComplex,List) := (C,c) -> (
     --
     t:= numFactors ring C;
 --    if max C -min C < #t then error " need a complex of length at least t";
-    C':= C[min C+1]; 
+    C':= C[min C+1];
     Cge := firstQuadrantComplex1(C'[-#t+1],c);
     Cle := lastQuadrantComplex1(C',c);
 --    <<(betti Cge, betti Cle) <<endl;
@@ -204,7 +204,7 @@ cornerComplex(Module, List, List) := (M,low, high) ->(
     regs := coarseMultigradedRegularity M; --regs
     hi := apply(#regs, i->max(regs_i, high_i+1)); --hi
     N := presentation truncate(hi, M)**S^{hi};-- betti N
-    Q := symExt(N,E); --betti Q   
+    Q := symExt(N,E); --betti Q
     (res (coker Q,LengthLimit=>(sum hi-sum low)))**E^{hi}[sum hi]
     )
 
@@ -266,9 +266,9 @@ minimalBetti truncate(R, M)
 apply(1+ length G, i-> tally degrees G_i)
 ///
 
- 
+
 tateData = method()
-tateData Ring := (S) -> if not S.?TateData then 
+tateData Ring := (S) -> if not S.?TateData then
    error "expected ring created with
    'productOfProjectiveSpaces'" else S.TateData
 
@@ -303,7 +303,7 @@ symExt(Matrix,Ring) := (m,E) -> (
      mt := transpose jacobian m;
      jn := ev(syz mt);
      a:=(vars E**E^(rank target m));
---betti a,tally degrees source a, isHomogeneous a     
+--betti a,tally degrees source a, isHomogeneous a
 --betti jn, tally degrees target jn, tally degrees source jn, isHomogeneous jn
 --tally(     degrees target jn+degrees source a)
      b:=a*jn;
@@ -311,12 +311,12 @@ symExt(Matrix,Ring) := (m,E) -> (
      c:=map(target b,E^(degrees source jn),b);
      transpose c)
 
-    
+
 
 subMatrix=(m,d,e) -> (
      columns:=select(rank source m, i-> degree m_i==e);
      rows:=select(rank target m, i-> (degrees target m)_i ==d);
-     transpose (transpose m_columns)_rows) 
+     transpose (transpose m_columns)_rows)
 
 upperCorner=method()
 --  needs update if we work with negative grading on exterior algebra.
@@ -330,11 +330,11 @@ upperCorner(ChainComplex,List) := (F,deg) ->(
      -- sign change for k
      k:=sum deg;
      degsa:=degrees F_(-k-1);
-     -- sign change -deg_j three times and inequalities 
+     -- sign change -deg_j three times and inequalities
      L1:=select(#degsa,i->#select(#deg,j->degsa_i_j <= -deg_j and degsa_i_j >= -(deg_j+n_j+1) )==#deg);
      degsb:=degrees F_(-k);
      L2:=select(#degsb,i->#select(#deg,j->degsb_i_j==-deg_j)==#deg);
-     ((F.dd_(-k))^L1)_L2     
+     ((F.dd_(-k))^L1)_L2
      )
 
 
@@ -349,7 +349,7 @@ lowerCorner(ChainComplex,List) := (F,deg) ->(
      -- sign change for k
      k:= sum deg;
      degsa:=degrees F_(-k);
-     -- sign change -deg_j three times and inequalities    
+     -- sign change -deg_j three times and inequalities
      L1:=select(#degsa,i->#select(#deg,j->degsa_i_j==-deg_j)==#deg);
      degsb:=degrees F_(-k+1);
      L2:=select(#degsb,i->#select(#deg,j->degsb_i_j<=-(deg_j-n_j-1) and degsb_i_j>=-deg_j)==#deg);
@@ -366,7 +366,7 @@ corner(ChainComplex,List) := (F,deg) ->(
 	  );
      box:=boxDegrees E;
      k:=-sum deg;
-     degsa:=degrees F_k;     
+     degsa:=degrees F_k;
      L1:=flatten apply(box,boxdeg->select(#degsa,i->degsa_i==-deg+boxdeg));
      degsb:=degrees F_(k-1);
      L2:=unique flatten apply(degsE,degE-> flatten apply(box,boxdeg->select(#degsb,i->degsb_i==-deg+boxdeg-degE)));
@@ -381,7 +381,7 @@ corner(ChainComplex,ZZ,List) := (F,k,deg) ->(
      assert(
 	  #(degrees E)_0 == # deg
 	  );
-     degsa:=degrees F_k;     
+     degsa:=degrees F_k;
      L1:=select(#degsa,i->#select(#deg,j->degsa_i_j<=-deg_j+n_j)==#deg);
      degsb:=degrees F_(k-1);
      L2:=select(#degsb,i->#select(#deg,j->degsb_i_j<=-deg_j+n_j)==#deg);
@@ -401,21 +401,21 @@ cohomologyMatrix=method()
 
 cohomologyMatrix(ChainComplex,List,List) := (F,da,db) -> (
        --Under the assumption that T is part of a Tate resolution of a sheaf F on a product of
-       --two projective space P^{n_1} x P^{n_2}, the function returns a matrix of cohomology polynomials 
+       --two projective space P^{n_1} x P^{n_2}, the function returns a matrix of cohomology polynomials
        --$$\sum_{i=0}^{|n|} \, dim H^i(\mathbb P^{n_1}\times \mathbb P^{n_2},\mathcal F(c_1,c_2)) * h^i \in \, \mathbb Z[h,k]$$
        --for every c=(c_1,c_2) with $a_1 \le c_1 \le b_1$ and $a_2 \le c_2 \le b_2$.
        --In case T corresponds to an object in the derived category D^b(P^{n_1}x P^{n_2}), then
        --hypercohomology polynomials are returned, with the convention that k stands for k=h^{ -1}.
-       
-       --If T is not a large enough part of the Tate resolution, such as W below, 
+
+       --If T is not a large enough part of the Tate resolution, such as W below,
        --then the function collects only
        --the contribution of T to the cohomology table of the Tate resolution, according to the formula in
        --Corollary 0.2 of @ HREF("http://arxiv.org/abs/","Tate Resolutions on Products of Projective Spaces") @.
-        
+
        --The polynomial for
        --(b_1,b_2) sits in the north-east corner, the one corresponding to (a_1,a_2) in the south-west
-       --corner.       
-     E:= ring F; 
+       --corner.
+     E:= ring F;
      if not #unique degrees E==2 then error "works only for two factors";
      L:=flatten apply(toList(min F..max F), k->
 	 apply(degrees F_k, deg->
@@ -426,7 +426,7 @@ cohomologyMatrix(ChainComplex,List,List) := (F,da,db) -> (
      C:=matrix  apply(toList(-db_1..-da_1),j->
 	 apply(toList(da_0..db_0),i->
 	     sum(min F..max F,d-> (p=d+i-j;
-		 if p<=0 then h^(-p) else k^(p))*(tally degrees F_(d))_({ -i,j}))));  
+		 if p<=0 then h^(-p) else k^(p))*(tally degrees F_(d))_({ -i,j}))));
      C
      )
 cohomologyMatrix(Module, List, List) := (M, low, high) -> (
@@ -441,7 +441,7 @@ eulerPolynomialTable = method()
 eulerPolynomialTable HashTable := H ->(
     nonzeros := unique ((keys H)/first);
     low := {min (nonzeros/first), min(nonzeros/last)};
-    high := {max (nonzeros/first), max(nonzeros/last)};    
+    high := {max (nonzeros/first), max(nonzeros/last)};
     h := getSymbol "h";
     k := getSymbol "k";
     coh := ZZ[h,k];
@@ -464,12 +464,12 @@ cohomologyHashTable(ChainComplex,List,List) := (F,low,high) -> (
        --projective spaces P^{n_1} x ... x P^{n_t}, the function returns a hashTable
        --In case T corresponds to an object in the derived category D^b(P^{n_1}x P^{n_2}), then
        --hypercohomology is returned.
-       
-       --If T is not a large enough part of the Tate resolution, such as W below, 
+
+       --If T is not a large enough part of the Tate resolution, such as W below,
        --then the function collects only
        --the contribution of T to the cohomology table of the Tate resolution, according to the formula in
        --Corollary 0.2 of @ HREF("http://arxiv.org/abs/","Tate Resolutions on Products of Projective Spaces") @.
-     E:= ring F; 
+     E:= ring F;
      deglen := degreeLength E;
      minF := min F;
      maxF := max F;
@@ -477,16 +477,16 @@ cohomologyHashTable(ChainComplex,List,List) := (F,low,high) -> (
      keylist := toList(low..high);
      hashTable flatten apply(keylist, a ->
 	 (suma := sum a;
-	     apply(toList(minF..maxF), d-> 
+	     apply(toList(minF..maxF), d->
 		     ({a,-d-suma},#select(degrees F_d, c->c==-a)))))
-     )	 
+     )
 
 cohomologyHashTable(Module, List, List) := (M, low, high) -> (
     if not all(#low, i-> low_i<=high_i) then error"low should be less than high";
     C := cornerComplex(M, low, high);
     cohomologyHashTable(C, low , high))
-    
-    
+
+
 
 tallyDegrees=method()
 tallyDegrees(ChainComplex) := C -> (
@@ -505,7 +505,7 @@ boxDegrees(Ring) := E -> (
 	  box=flatten apply(box,deg-> apply(n_k+1,i->deg+i*degs_k))
 	  );
      box)
- 	    
+
 
 
 
@@ -540,7 +540,7 @@ outsideBeilinsonRange(Matrix) :=  m -> (
      d:=0;
 	  --source indices not in the Beilison window
      sourcem := select(rank source m,i-> (d=degree (source m)_i;#select(#d,i->d_i<0 or d_i>n_i)>0));
-     m_sourcem)	
+     m_sourcem)
 
 
 -*
@@ -550,8 +550,8 @@ truncateInE(List,Module):= (d,M) -> (
     base:=basis(M);
     degs:=degrees source base;
     m:=base_(select(#degs,k->#select(#d,i->degs_k_i >= d_i)==#d));
-    image m 	
-    )    
+    image m
+    )
 *-
 
 
@@ -560,7 +560,7 @@ truncateInE(List,Module):= (d,M) -> (
 -------------------------
 numFactors=method(TypicalValue=>List)
     -- given the symmetric or exterior Cox ring E of the product pf projective spaces
-    -- compute the number t of factors and return the List {0,...,t-1} 
+    -- compute the number t of factors and return the List {0,...,t-1}
 numFactors(Ring) := E-> (
     t:= #unique degrees E;
     return toList(0..(t-1)))
@@ -574,13 +574,13 @@ quadrantMap(Matrix,List,List,List) := (M,c,I,J) -> (
     J':=select(t,j-> not member(j,J));
     --sign change for c ??
     cc:=c;
-    goodColumns:=select(#degSource,k -> (#select(I,i-> degSource_k_i >= cc_i)==#I and #select(I',i->degSource_k_i < cc_i)==#I')); 
-    goodRows:=select(#degTarget,k -> (#select(J,i-> degTarget_k_i >= cc_i)==#J and #select(J',i->degTarget_k_i < cc_i)==#J')); 	
-    return ((M^goodRows)_goodColumns)) 
+    goodColumns:=select(#degSource,k -> (#select(I,i-> degSource_k_i >= cc_i)==#I and #select(I',i->degSource_k_i < cc_i)==#I'));
+    goodRows:=select(#degTarget,k -> (#select(J,i-> degTarget_k_i >= cc_i)==#J and #select(J',i->degTarget_k_i < cc_i)==#J'));
+    return ((M^goodRows)_goodColumns))
 
 firstQuadrantComplex=method()
-     
-firstQuadrantComplex(ChainComplex,List) := (C,c) -> ( 
+
+firstQuadrantComplex(ChainComplex,List) := (C,c) -> (
      -- c index of the lower corner of the first quadrant
      firstQuadrantComplex1(C,c-toList(#c:1)) )
 
@@ -626,11 +626,11 @@ cornerMap(ChainComplex,List,ZZ) := (C,c,d) -> (
     Is:=reverse apply(t,i->select(t,j->j<i));
     --sign change for c (2x)
     M:= quadrantMap(C.dd_d,-c,t,Is_0);
-    Ms:=apply(#t-1,j->quadrantMap(C.dd_(d-j-1),-c,Is_j,Is_(j+1))); 
+    Ms:=apply(#t-1,j->quadrantMap(C.dd_(d-j-1),-c,Is_j,Is_(j+1)));
     -- multiplication of empty matrices some times does not work! so there is a work around.
-    scan(Ms, N-> if source N == E^0 then M=map(target N, source M,0) else M=N*M); 
+    scan(Ms, N-> if source N == E^0 then M=map(target N, source M,0) else M=N*M);
     return M)
-    
+
 
 
 regionComplex=method()
@@ -638,7 +638,7 @@ regionComplex(ChainComplex,List,Sequence) := (T,c,IJK) -> (
     T1:=trivialHomologicalTruncation(T,nonzeroMin T, nonzeroMax T);
     T2:=T1[min T1];
     Ls:=apply(toList(min T2..max T2),k->goodColumns(T2_k,c,IJK));
-    rT:=chainComplex apply(min T2+1..max T2,k-> ((T2.dd_k))^(Ls_(k-1))_(Ls_(k)));	
+    rT:=chainComplex apply(min T2+1..max T2,k-> ((T2.dd_k))^(Ls_(k-1))_(Ls_(k)));
     rT[-min T1])
 
 goodColumns=method()
@@ -654,7 +654,7 @@ goodDegree=method()
 goodDegree(List,List,Sequence) := (d,c,IJK) -> (
     (I,J,K) := IJK;
     #select(I,i-> d_i<c_i)==#I and #select(J,j->d_j==c_j)==#J and #select(K,k->d_k>=c_k)==#K
-    )	
+    )
 
 
 
@@ -677,7 +677,7 @@ chainComplexData = C->(
 )
 chainComplexFromData = method()
 chainComplexFromData List := L ->(
-    --format of L is desired min, desired max, list of 
+    --format of L is desired min, desired max, list of
     --shifted maps
     C := chainComplex L_2;
     assert( min C == 0);
@@ -695,7 +695,7 @@ chainComplexFromData(ZZ, List) := (minC,L) ->(
 trivialHomologicalTruncation=method()
 trivialHomologicalTruncation(ChainComplex,ZZ,ZZ) := (C,d,e) -> (
     F := C;
-    -- given a chain complex 
+    -- given a chain complex
     -- ... <- C_{k-1} <- C_{k} <- C_{k+1} <- ...
     -- return the trivial truncation
     --   0 <- C_d <- C_{d+1} <- ... < C_e <- 0
@@ -715,8 +715,8 @@ betti C
 C1=trivialHomologicalTruncation(C,-2,2)
 trivialHomologicalTruncation(C1,-3,3)
 ///
-	
-    
+
+
 
 prependZeroMap= method()
 prependZeroMap ChainComplex := C->(
@@ -725,21 +725,21 @@ prependZeroMap ChainComplex := C->(
     newd := map((ring C)^0, target L_2_0, 0);
     (chainComplexFromData(minC-1,prepend(newd,L_2)))[1]
     )
-    
+
 appendZeroMap= method()
 appendZeroMap ChainComplex := C->(
     L := chainComplexData(C);
     minC := L_0;
     newd := map(source last L_2,(ring C)^0, 0);
     chainComplexFromData(minC,append(L_2,newd))
-    )    
-    
-    
+    )
+
+
 
 nonzeroMin = method()
 nonzeroMin(ChainComplex) := C -> (
     --assert( not C==0);
-    if C==0 then return min C; 
+    if C==0 then return min C;
     m:= min C;
     while C_m==0 do (m=m+1);
     m)
@@ -748,7 +748,7 @@ nonzeroMin(ChainComplex) := C -> (
 nonzeroMax = method()
 nonzeroMax(ChainComplex) := C -> (
     --assert( not C==0);
-    if C==0 then return max C; 
+    if C==0 then return max C;
     m:= max C;
     while C_m==0 do (m=m-1);
     m)
@@ -791,9 +791,9 @@ extendFromMiddle (ChainComplex, ChainComplex, Matrix, ZZ) := (F1, F2, f, i) ->(
     F1i := chainComplex F1List_{i+1..max F1};
     fi := extend(F1i,F2,f);
     F2e := chainComplex(
-	apply(ind, j-> 
+	apply(ind, j->
 	    if j<i-1 then map (S^0,S^0,0) else
-	    if j == i-1 then map(S^0, F2_0,0) else 
+	    if j == i-1 then map(S^0, F2_0,0) else
 	    F2.dd_(j-i+1))
 	);
     map(F1, F2e, j->
@@ -825,8 +825,8 @@ chainComplexMap(ChainComplex,ChainComplex,List):= o -> (D,C,maps) -> (
 resolutionOfChainComplex = method(Options=>{LengthLimit => infinity})
 resolutionOfChainComplex ChainComplex := o -> C -> (
     -- computes a (generally non-minimal) resolution of a complex by the method
-    -- of iterated mapping cones, and returns the ChainComplexMap from this to C. 
-    -- If 
+    -- of iterated mapping cones, and returns the ChainComplexMap from this to C.
+    -- If
     -- C: 0 -> Cn ->...->Cm ->0
     -- is a chain complex, and Gi is a resolution of
     -- Ci, and [G -> F] denotes the mapping cone of a map of complexes G \to F,
@@ -845,7 +845,7 @@ resolutionOfChainComplex ChainComplex := o -> C -> (
     ind := toList(minC..maxC);
     reslist := apply(ind, i-> res(C_i, LengthLimit => lengthLimit-(i-minC)));
     mats := apply(ind, i-> matrix C.dd_i);
-    --mats_i is the map from the free cover of C_i to 
+    --mats_i is the map from the free cover of C_i to
     --the free cover of C_(i-1)
     F := reslist_0;
     comp :={id_(F_0)};
@@ -867,7 +867,7 @@ resolutionOfChainComplex ChainComplex := o -> C -> (
 	comp = comp |{F_i^[1]};
 	);
 --    compMap := chainComplexMap(C[minC],F,comp);
---    compMap := chainComplexMap(C,F[-minC],comp);    
+--    compMap := chainComplexMap(C,F[-minC],comp);
 --    Cres := F[-minC];
 --    Cres.cache.comparisonMap = compMap[-minC];
 --    Cres
@@ -883,8 +883,8 @@ minimize ChainComplex := E ->(
     --The algorithm:
     --Set dbar = the reduction of the differential d mod the maximal ideal.
     --choose a complement of ker dbar, and compute the idempotent rho: E -> E.
-    -- the map rho is not a chain complex map, but the image of 
-    --(rho | d*rho): C ++ C[1] --> C is a subcomplex and 
+    -- the map rho is not a chain complex map, but the image of
+    --(rho | d*rho): C ++ C[1] --> C is a subcomplex and
     --the minimization of  C is the complex C/image(rho|d*rho).
     --The script returns the ChainComplexMap from the minimization to C.
     complete E;
@@ -897,7 +897,7 @@ minimize ChainComplex := E ->(
     --For each i choose an idempotent rho#i:C_i\to C_i
     --whose image is the complement
     --image g#i, Note that rho#0 = 0.
-    rho := hashTable for i from 0 to M+1 list 
+    rho := hashTable for i from 0 to M+1 list
 	{i,id_(C_i) - g#i*(id_(target g#i)//g#i)};
     minC := coker map(C, C++C[1], i-> rho#i | C.dd_(i+1)*rho#(i+1));
     pmC := prune minC;
@@ -905,10 +905,10 @@ minimize ChainComplex := E ->(
     m[-min E]
     )
 --    if o.Check==true then
---      if not isChainComplex minC then 
+--      if not isChainComplex minC then
 --           error"didn't produce a chain complex";
 --    if o.Check==true then
---      if not isQuism m then 
+--      if not isQuism m then
 --           error"didn't produce a quasi-isomorphic complex";
 --    E' := pmC[-min E];
 --    E'.cache.pruningMap = m[-min E];
@@ -935,8 +935,8 @@ minimize ChainComplex := o -> E ->(
     --The algorithm:
     --Set dbar = the reduction of the differential d mod the maximal ideal.
     --choose a complement of ker dbar, and compute the idempotent rho: E -> E.
-    -- the map rho is not a chain complex map, but the image of 
-    --(rho | d*rho): C ++ C[1] --> C is a subcomplex and 
+    -- the map rho is not a chain complex map, but the image of
+    --(rho | d*rho): C ++ C[1] --> C is a subcomplex and
     --minimize C = C/image(rho|d*rho).
     --The script sets (minimize C).cache.pruningMap equal to the map from C to minimize C.
     complete E;
@@ -949,16 +949,16 @@ minimize ChainComplex := o -> E ->(
     --For each i choose an idempotent rho#i:C_i\to C_i
     --whose image is the complement
     --image g#i, Note that rho#0 = 0.
-    rho := hashTable for i from 0 to M+1 list 
+    rho := hashTable for i from 0 to M+1 list
 	{i,id_(C_i) - g#i*(id_(target g#i)//g#i)};
     minC := coker map(C, C++C[1], i-> rho#i | C.dd_(i+1)*rho#(i+1));
     pmC := prune minC;
     if o.Check==true then
-      if not isChainComplex minC then 
+      if not isChainComplex minC then
            error"didn't produce a chain complex";
     m := map(pmC, C, i-> (pmC_i.cache.pruningMap)^(-1) * inducedMap(minC_i, C_i));
     if o.Check==true then
-      if not isQuism m then 
+      if not isQuism m then
            error"didn't produce a quasi-isomorphic complex";
     E' := pmC[-nonZeroMin E];
     E'.cache.pruningMap = m[-min E];
@@ -990,20 +990,20 @@ target minimize C
 -----------------------------------------------
 
 inWindow = method()
-inWindow(List,List) := (D,n) -> 
+inWindow(List,List) := (D,n) ->
     #D == #select(#D, i->(0<=D_i and D_i<=n_i))
 
 inWindow(ChainComplex) := W -> (
     (t,v,n,varsList,irrList) := ringData ring W;
     L:=flatten apply(toList(nonzeroMin W.. nonzeroMax W),d-> degrees W_d);
-    #select(L, D-> not inWindow(D,n))==0)    
+    #select(L, D-> not inWindow(D,n))==0)
 
 {*aboveWindow = method()
 aboveWindow(List,List) := (D,n) -> #D == #select(#D, i-> D_i>n_i)
 
 gensInWindow = method()
 gensInWindow(Module) := M ->(
-    rd = ringData ring M; 
+    rd = ringData ring M;
     #D == #select(#D, i->(0<=D_i and D_i<=n_i)))
 *}
 ///
@@ -1025,7 +1025,7 @@ pushAboveWindow Module := M -> (
     g := gens M;
     degList := last degrees g;
     if degList == {} then return M;
-    directSum apply(degList, D->if inWindow(D,n) 
+    directSum apply(degList, D->if inWindow(D,n)
     then powers(v-D,irrList)**E^{ -D} else id_(E^{ -D}))
     )
 ///
@@ -1100,12 +1100,12 @@ tateExtension(ChainComplex) := W -> (
     (t,v,n,irrList,idealList) := ringData ring W;
     if not inWindow W then error "expect a complex with terms only in the Beilinson window";
     W1 := removeZeroTrailingTerms W;
-    -- W1:= W;    
-    TW1:=pushAboveWindow W1;    
-    ma:= nonzeroMax TW1; mi:=nonzeroMin TW1; 
+    -- W1:= W;
+    TW1:=pushAboveWindow W1;
+    ma:= nonzeroMax TW1; mi:=nonzeroMin TW1;
     --betti W1,betti TW1
---Bbounds given for the length of the resolution have to be discussed 
---They should come out of the proof of the theorem !!     
+--Bbounds given for the length of the resolution have to be discussed
+--They should come out of the proof of the theorem !!
     TW1e := res(coker TW1.dd_(ma),LengthLimit=>(3*sum v))[-ma];
     --betti TW1e
     --changed a sign here
@@ -1125,7 +1125,7 @@ beilinson = method(Options=>{BundleType=>PrunedQuotient}) -- other options: Quot
 -- beilinson(free E-Module, BundleType=>PrunedQuotient) returns an S-module
 -- beilinson(free E-Matrix, BundleType=>PrunedQuotient) returns a matrix over S
 -- beilinson(free E-ChainComplex, BundleType=>PrunedQuotient) returns a chain complex over S.
--- These three functions implement the beilinson functor     
+-- These three functions implement the beilinson functor
 --   from the category of graded free E-modules to the category of graded S-modules
 --   (the actual beilinson functor is this followed by sheafification).
 -- example uses:
@@ -1192,7 +1192,7 @@ beilinsonBundle = method(Options=>options beilinson)
 --   notes:
 --     (1) can use S as well as E, where (S,E) is the result of productOfProjectiveSpaces.
 --     (2) BundleType is either PrunedQuotient(default) or QuotientBundle
---       SubBundle is not implemented. 
+--       SubBundle is not implemented.
 --     (3) if (S,E) has blocks n = {n0, ..., n(r-1)}
 --       then 0 <= whichblock <= r-1
 --       and 0 <= i <= n_whichblock
@@ -1318,7 +1318,7 @@ beilinsonContraction = method(Options => options beilinson)
 --   returns a map between two Beilinson generators
 --     (i.e. the beilinson generators beilinsonBundle(a, E)
 --      of the derived category).
--- notes: 
+-- notes:
 --  (1) (S,E) is the result of productOfProjectiveSpaces
 --  (2) e is a homogeneous element of E
 --     giving a map from E^(-coldeg) --> E^(-rowdeg).
@@ -1334,18 +1334,18 @@ beilinsonContraction(RingElement, List, List) := opts -> (e, rowdeg, coldeg) -> 
         (mc, mr, changemat) := contractionData(rowdeg, coldeg, ring e, opts);
         missing := for i from 0 to t-1 list if rowdeg#i == 0 and coldeg#i == 0 then 1 else 0;
         signchange1 := sum(0..t-2, i -> edeg#i * sum(i+1..t-1, j -> missing#j));
-        signchange := if odd signchange1 then -1 else 1;    
-        if e == 0 then 
+        signchange := if odd signchange1 then -1 else 1;
+        if e == 0 then
             map(S^(numgensU(rowdeg,E,opts)), S^(numgensU(coldeg,E,opts)), 0)
         else
-            changemat * signchange * substitute(contract(diff(e, mc), mr), S)      
+            changemat * signchange * substitute(contract(diff(e, mc), mr), S)
         )
     else if opts.BundleType === QuotientBundle then (
         (mc, mr) = contractionData(rowdeg, coldeg, ring e, opts);
-        if e == 0 then 
+        if e == 0 then
             map(S^(numgensU(rowdeg,E,opts)), S^(numgensU(coldeg,E,opts)), 0)
         else
-            substitute(contract(diff(e, mc), mr), S)      
+            substitute(contract(diff(e, mc), mr), S)
         )
     else if opts.BundleType === SubBundle then (
         error "not done yet"
@@ -1403,7 +1403,7 @@ beilinson Matrix := Matrix => opts -> o -> (
             cdeg := coldegs#c;
             beilinsonContraction(elems#r#c, rdeg, cdeg,opts)
           );
-    map(tar,src,mats)    
+    map(tar,src,mats)
     )
 
 beilinson ChainComplex := opts -> (BT) -> (
@@ -1467,7 +1467,7 @@ contractionFunctor Matrix := Matrix => m -> (
             else
               substitute(contract(diff(elems#r#c, mc), mr), S)
           );
-    map(tar,src,mats)    
+    map(tar,src,mats)
     )
 
 contractionFunctor ChainComplex := (C) -> (
@@ -1494,7 +1494,7 @@ contractionWindow ChainComplex := (C)-> (
 contractionSequence = method()
 contractionSequence ChainComplex := (T) -> (
     -- given a complex of E-modules, forms two
-    -- exact sequences, 
+    -- exact sequences,
     --   C: beilinson(T, BundleType=>QuotientBundle)
     --   D: contractionComplex (T ** E^{{-1,...,-1}})
     -- and the natural map
@@ -1540,7 +1540,7 @@ debug needsPackage "TateOnProducts"
   elapsedTime cT4 = contractionFunctor T4;
   cT4
   prune HH cT4
-  cT4.dd^2 == 0  
+  cT4.dd^2 == 0
 
   -- now we compute the chain complex map beilinson T2 --> contractionFunctor T2
   BT2 = beilinson(T2, BundleType=>QuotientBundle)
@@ -1549,7 +1549,7 @@ debug needsPackage "TateOnProducts"
   contractionFunctor (T2 ** E^{{-1,-1}})
   tallyDegrees contractionWindow (T2 ** E^{{-1,-1}})
   --TODO: want the map of block Koszul matrices.
-  
+
   (h1,h2,C,D) = contractionSequence T2
   for r in h1#-1 list for c in h2#-1 list (
       << "doing " << r << " and " << c << endl;
@@ -1560,14 +1560,14 @@ debug needsPackage "TateOnProducts"
 
         -- XXXX
 
-  koszulsize = (n,a) -> product for i from 0 to #n-1 list binomial(n#i,a#i)  
+  koszulsize = (n,a) -> product for i from 0 to #n-1 list binomial(n#i,a#i)
   koszulsize({2,1},{2,0})
   koszulsize({3,2},{2,1})
   koszulm = (n,rowdeg,coldeg,S) -> (
       deg := coldeg-rowdeg;
       for i from 0 to #deg-1 do if deg#i < 0 or deg#i > n#i+1 then return map(S^(koszulsize(n,rowdeg)), S^(koszulsize(n,coldeg)), 0);
       tensor for i from 0 to #rowdeg-1 list koszulmap(deg#i,(sortedBases S)#i,S)
-      )  
+      )
 
   koszulm(n,{0,0},{1,1},S)
   koszulm(n,{0,0},{2,1},S)
@@ -1576,7 +1576,7 @@ debug needsPackage "TateOnProducts"
 ///
 
 
-  -- This function checks that beilinson is functorial, by creating random 
+  -- This function checks that beilinson is functorial, by creating random
   -- matrices in all possible degrees and checking functoriality on these.
   -- these two functions are not exported.
   testBeilinson = method(Options => options beilinson)
@@ -1587,7 +1587,7 @@ debug needsPackage "TateOnProducts"
       m1 := random(E^degs, E^degs);
       m2 := random(E^degs, E^degs);
       shouldBeZero := beilinson(m1*m2,opts) - beilinson(m1,opts) * beilinson(m2,opts);
--*  
+-*
       if shouldBeZero == 0 then return "OK";
       map(E^degs, E^degs, for tar in degs list for src in degs list (
           p1 := random(E^{tar}, E^degs);
@@ -1605,11 +1605,11 @@ debug needsPackage "TateOnProducts"
       (S,E) := productOfProjectiveSpaces n;
       zeros := toList(#n:0);
       degs := reverse toList(zeros..n);
-      triples := flatten flatten for d1 in degs list 
-        for d2 in degs list 
-          for d3 in degs list 
-            if all(d2-d1, i -> i >= 0) and all(d3-d2, i -> i >= 0) 
-            then (d1,d2,d3) 
+      triples := flatten flatten for d1 in degs list
+        for d2 in degs list
+          for d3 in degs list
+            if all(d2-d1, i -> i >= 0) and all(d3-d2, i -> i >= 0)
+            then (d1,d2,d3)
             else continue;
       H := hashTable for x in triples list (
           p1 := random(E^{-x#0}, E^{-x#1});
@@ -1621,14 +1621,14 @@ debug needsPackage "TateOnProducts"
       assert(# keys H == 0);
       -- if #keys H == 0 then null else H
       )
-  
+
 ----------------------------------------
 -- Examples in the Paper                                   --
 ----------------------------------------
 cornerCohomologyTablesOfUa = method()
 cornerCohomologyTablesOfUa(List) := n-> (
     if not #n ==2 then error "expect product with two factors only";
-    (S,E) := productOfProjectiveSpaces n;    
+    (S,E) := productOfProjectiveSpaces n;
     a:=0;U:=0;W:=0;T:=0;cTa:=0;cTb:=0;cTb1:=0;
     Us:=flatten apply(n_0+1,a0->apply(n_1+1,a1->(
 	    a={a0,a1};
@@ -1636,7 +1636,7 @@ cornerCohomologyTablesOfUa(List) := n-> (
             W=(chainComplex {map(E^0,U,0),map(U,E^0,0)})[1];
 	    {a,W})
 	));
-        Ts:=apply(Us,aW->( 
+        Ts:=apply(Us,aW->(
 	T=tateExtension aW_1;
 	T=trivialHomologicalTruncation(T,-2*sum n,2*sum n);
 	append(aW,T)));
@@ -1658,7 +1658,7 @@ cornerCohomologyTablesOfUa(List) := n-> (
 
 cornerCohomologyTablesOfUa(List,List) :=(n,a)-> (
     if not #n ==2 then error "expect product with two factors only";
-    if not (a_0 <=n_0 and 0 <= a_0 and a_1 <=n_1 and 0 <= a_1) then error "expected 0 <= a <=n"; 
+    if not (a_0 <=n_0 and 0 <= a_0 and a_1 <=n_1 and 0 <= a_1) then error "expected 0 <= a <=n";
     (S,E) := productOfProjectiveSpaces n;
     U:=0;W:=0;T:=0;cTa:=0;cTb:=0;cTb1:=0;
             U=E^{ -a};
@@ -1689,7 +1689,7 @@ betti M'
 --preliminaries for bgg:
 multMap = method()
 multMap(Module,List,List):= (P,a',a) ->(
-    --produces a map from 
+    --produces a map from
     --a sum of copies of S^a to a sum of copies of S^a'.
     --If the grading is changed to the "correct" one for E,
     --this code will need fixing!
@@ -1706,7 +1706,7 @@ multMap(Module,List,List):= (P,a',a) ->(
 
 multMapE = method()
 multMapE(Module,List,List):= (M,a',a) ->(
-    --produces a map from 
+    --produces a map from
     --a sum of copies of S^a to a sum of copies of S^a'.
     --If the grading is changed to the "correct" one for E,
     --this code will need fixing!
@@ -1747,14 +1747,14 @@ bgg Module := o -> P -> (
     minP := min(Ds/first);
     maxP := max(Ds/first);
     if o.LengthLimit != null then maxP=min(maxP,minP+1+o.LengthLimit);
-    freeModuleDegs := hashTable apply(toList(minP..maxP), i-> 
+    freeModuleDegs := hashTable apply(toList(minP..maxP), i->
 	    (-i=>select(Ds,d-> d_0 == i)/last)
 	    );
     LP := new ChainComplex;
     LP.ring = S;
 --define the modules as direct sums, with one degree per summand
     scan(toList(minP..maxP), i->
-	LP#(-i) = directSum apply(unique freeModuleDegs#(-i), d -> 
+	LP#(-i) = directSum apply(unique freeModuleDegs#(-i), d ->
 	    S^(select(freeModuleDegs#(-i), k-> d ==k))));
 --define the maps
     u = L->unique degrees L;
@@ -1763,7 +1763,7 @@ bgg Module := o -> P -> (
 	    sour = LP_k;
 	    utar = u tar;
 	    usour = u sour;
-	    LP.dd#k = sum(#utar, i-> 
+	    LP.dd#k = sum(#utar, i->
 		      sum(#usour, j->(
 	              a' = -utar_i;
 	              a = -usour_j;
@@ -1783,14 +1783,14 @@ bgg Module := o -> P -> (
     minM := min(Ds/first);
     maxM := max(Ds/first);
 --    (maxM - minM)
-    freeModuleDegs = hashTable apply(toList(minM..maxM), i-> 
+    freeModuleDegs = hashTable apply(toList(minM..maxM), i->
 	    (-i=>select(Ds,d-> d_0 == i)/last)
 	    );
     RM := new ChainComplex;
     RM.ring = E;
 --define the modules as direct sums, with one degree per summand
     scan(toList(minM..maxM), i->
-	RM#(-i) = directSum apply(unique freeModuleDegs#(-i), d -> 
+	RM#(-i) = directSum apply(unique freeModuleDegs#(-i), d ->
 	    E^(select(freeModuleDegs#(-i), k-> d ==k))));
 --define the maps
     u = L->unique degrees L;
@@ -1799,7 +1799,7 @@ bgg Module := o -> P -> (
 	    sour = RM_k;
 	    utar = u tar;
 	    usour = u sour;
-	    RM.dd#k = sum(#utar, i-> 
+	    RM.dd#k = sum(#utar, i->
 		      sum(#usour, j->(
 	              a' = -utar_i;
 	              a = -usour_j;
@@ -1810,7 +1810,7 @@ bgg Module := o -> P -> (
                )
 	);
    return RM))
-       
+
 
 
 ///
@@ -1848,12 +1848,12 @@ isIsomorphic = (A,B) -> (
 beginDocumentation()
 
 
-document { 
+document {
   Key => TateOnProducts,
   Headline => "Computation of parts of the Tate resolution on products",
   "This package contains implementations of the algorithm from our paper ",
   HREF("https://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces"),
-  ". It allows computing the direct image complexes of a coherent sheaf along the projection onto a product 
+  ". It allows computing the direct image complexes of a coherent sheaf along the projection onto a product
   of any of the factors.",
    PARA{},"The main differences from the paper are:",
    UL{  "the exterior algebra E is positively graded ",
@@ -1863,20 +1863,20 @@ document {
 
    PARA{},
     SUBSECTION "Beilinson monads",
-    UL{ 
+    UL{
 	TO beilinsonWindow,
 	TO tateExtension,
 	TO beilinson,
 	TO bgg,
         },
    SUBSECTION "Numerical Information",
-   UL{ 
+   UL{
       TO cohomologyMatrix,
       TO eulerPolynomialTable,
       TO cohomologyHashTable,
       TO tallyDegrees
      },
-   SUBSECTION "From graded modules to Tate resolutions",  
+   SUBSECTION "From graded modules to Tate resolutions",
    UL{   TO productOfProjectiveSpaces,
 	 TO symExt,
 	 TO lowerCorner,
@@ -1892,10 +1892,10 @@ document {
       },
     SUBSECTION "Missing pieces",
     UL{	"various composition of functions",
-	"Example section:  examples from the paper, jumping lines", 
+	"Example section:  examples from the paper, jumping lines",
 	"$Rf_*sF$ for a coherent sheaf
 	$sF$ on $X subset P^{n_1}$ and a morphism $f:X -> P^{n_2}$."
-	} 
+	}
    }
 
 doc ///
@@ -1945,12 +1945,12 @@ doc ///
     [productOfProjectiveSpaces, CoefficientField]
     [productOfProjectiveSpaces, Variables]
     [productOfProjectiveSpaces, CohomologyVariables]
-    
+
   Headline
     Cox ring of a product of projective spaces and it Koszul dual exterior algebra
   Usage
     (S,E)=productOfProjectiveSpaces N
-    (S,E)=productOfProjectiveSpaces n    
+    (S,E)=productOfProjectiveSpaces n
   Inputs
     N: List
        the list \{n_1,...,n_t\} \, of the dimensions of the factors
@@ -1966,7 +1966,7 @@ doc ///
     S: PolynomialRing
        homogeneous coordinate ring of P^{n_1}x ... x P^{n_t}
     E: PolynomialRing
-       the corresponding exterior algebra   
+       the corresponding exterior algebra
   Description
      Text
       The degrees of the variables for the i-th projective space are indexed
@@ -1984,7 +1984,7 @@ doc ///
 	    CoefficientField => QQ)
 	(coefficientRing S) === (coefficientRing E)
 	trim (ideal vars S)^2
-        trim (ideal vars E)^2	
+        trim (ideal vars E)^2
 	peek S.TateData
 ///
 
@@ -2056,12 +2056,12 @@ doc///
     symExt
     (symExt,Matrix,Ring)
   Headline
-    from linear presentation matrices over S to linear presentation matrices over E and conversely 
+    from linear presentation matrices over S to linear presentation matrices over E and conversely
   Usage
     symExt(m,E)
   Inputs
     m: Matrix
-       a linear presentation matrix over S 
+       a linear presentation matrix over S
     E: Ring
        the Koszul dual ring of S
   Outputs
@@ -2100,10 +2100,10 @@ doc ///
     v: List
        the number of generators of E in each degree
     n: List
-       the dimensions of the factors 
+       the dimensions of the factors
     varsList: List
        List of List of generators in the various degrees
-    irrList: List of corresponding (geometrically irrelevant prime) ideals   
+    irrList: List of corresponding (geometrically irrelevant prime) ideals
   Description
      Text
        E is an ZZ^t graded polynomial ring. The functions returns basic data
@@ -2115,7 +2115,7 @@ doc ///
 	(v,n)
 	v==n+toList(t:1)
 	varsList
-	irrList       		
+	irrList
 ///
 *-
 
@@ -2124,35 +2124,35 @@ doc ///
     upperCorner
     (upperCorner,ChainComplex,List)
   Headline
-    compute the upper corner 
+    compute the upper corner
   Usage
      m=upperCorner(F,d)
   Inputs
    F: ChainComplex
       over the exterior algebra
    d: List
-      a (multi)-degree 
+      a (multi)-degree
   Outputs
      : Matrix
        a submatrix of the differential $F_k -> F_{k-1}$
   Description
      Text
-       Let $k = -|d|$ be the total degree and $G \subset F_k$ the summand spanned by the generators of $F_k$ in degree d, 
+       Let $k = -|d|$ be the total degree and $G \subset F_k$ the summand spanned by the generators of $F_k$ in degree d,
        $H \subset F_{k-1}$ the summand spanned by generators of degree d' with $0 \le d'-d \le n$. The function returns
        the corresponding submatrix $m: G -> H$ of the differential.
-       
+
        So the source will be generated in a single degree, and the target will be generated
        in multiple degrees.  The names comes from the fact that when we resolve this map,
        this map creates the "upper corner" in the corner complex.
      Example
         n={1,2};
         (S,E) = productOfProjectiveSpaces n
-        
+
         F=dual res((ker transpose vars E)**E^{{ 2,3}},LengthLimit=>4)
 	cohomologyMatrix(F,-{3,3},{4,4})
         betti F
 	tallyDegrees F
-        deg={2,1} 
+        deg={2,1}
         m=upperCorner(F,deg);
         tally degrees target m, tally degrees source m
         Fm=(res(coker m,LengthLimit=>4))[sum deg+1]
@@ -2167,29 +2167,29 @@ doc ///
     lowerCorner
     (lowerCorner,ChainComplex,List)
   Headline
-    compute the lower corner 
+    compute the lower corner
   Usage
      m=lowerCorner(F,d)
   Inputs
    F: ChainComplex
       over the exterior algebra
    d: List
-      a (multi)-degree 
+      a (multi)-degree
   Outputs
      : Matrix
        a submatrix of the differential $F_{k+1} -> F_{k}$
   Description
      Text
-       Let $k = |deg|$ be the total degree and $G \subset F_k$ the summand spanned by the generators of $F_k$ in degree d, 
+       Let $k = |deg|$ be the total degree and $G \subset F_k$ the summand spanned by the generators of $F_k$ in degree d,
        $H \subset F_{k+1}$ the summand spanned by generators of degree d' with $0 \le d-d' \le n$. The function returns
        the corresponding submatrix $m: H -> G$ of the differential.
      Example
-        n={1,2}; 
+        n={1,2};
 	(S,E) = productOfProjectiveSpaces n
         F=dual res((ker transpose vars E)**E^{{ 2,3}},LengthLimit=>4)
         betti F
 	tallyDegrees F
-        deg={2,1} 
+        deg={2,1}
         m=lowerCorner(F,deg);
         tally degrees target m, tally degrees source m
         Fm=(res(coker m,LengthLimit=>7))[sum deg]
@@ -2210,11 +2210,11 @@ doc ///
   Headline
     cohomology groups of a sheaf on P^{n_1}xP^{n_2}, or of (part) of a Tate resolution
   Usage
-    H=cohomologyMatrix(M,low,high)    
+    H=cohomologyMatrix(M,low,high)
     H=cohomologyMatrix(T,low,high)
   Inputs
     T: ChainComplex
-       free complex over the exterior algebra 
+       free complex over the exterior algebra
     M: Module
        graded module representing a sheaf on a product of projective spaces
     low: List
@@ -2236,25 +2236,25 @@ doc ///
 
        The polynomial for
        \{b_1,b_2\} sits in the north-east corner, the one corresponding to (a_1,a_2) in the south-west
-       corner.       
-       
+       corner.
+
        In the case of a product of more (or fewer) projective spaces, or if a hash table
        output is desired, use
        cohomologyHashTable or eulerPolynomialTable instead.
-              
+
        The script computes a sufficient part of the Tate resolution for F, and then
        calls itself in the version for a Tate resolution. More generally,
        If T is part of a Tate resolution of F
        the function returns a matrix of cohomology polynomials corresponding to T.
-       
-       If T is not a large enough part of the Tate resolution, such as W below, 
+
+       If T is not a large enough part of the Tate resolution, such as W below,
        then the function collects only
        the contribution of T to the cohomology table of the Tate resolution, according to the formula in
        Corollary 0.2 of
        @ HREF("https://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces")@.
-        
+
      Example
-    	(S,E) = productOfProjectiveSpaces{1,2}	
+        (S,E) = productOfProjectiveSpaces{1,2}
 	M = S^1
 	low = {-3,-3};high={0,0};
 	cohomologyMatrix(M,low,high)
@@ -2267,7 +2267,7 @@ doc ///
 	M = S^1/ideal(x_(0,0), x_(1,0)^3+x_(1,1)^3+x_(1,2)^3)
 	low = {-3,-3};high={0,0};
 	cohomologyMatrix(M,low,high)
-     Text	
+     Text
 	and the "1+h" in the Northeast (= upper right) corner signifies that
 	that $h^0(\mathcal O_E) = h^1(\mathcal O_E) = 1.$
   SeeAlso
@@ -2282,13 +2282,13 @@ doc ///
   Headline
     cohomology groups of a sheaf on a product of projective spaces, or of (part) of a Tate resolution
   Usage
-    H=cohomologyHashTable(M,low,high)      
+    H=cohomologyHashTable(M,low,high)
     H=cohomologyHashTable(T,low,high)
   Inputs
     M: Module
        graded module representing a sheaf on a product of projective spaces
     T: ChainComplex
-       free complex over the exterior algebra 
+       free complex over the exterior algebra
     low: List
     high: List
        two lists representing multi-degrees, the range for computation.
@@ -2297,29 +2297,29 @@ doc ///
        values are dimensions of (hyper)cohomology groups
   Description
      Text
-       If M is a multi-graded module representing a coherent sheaf F on $P^n := P^{n_0} x .. x P^{n_{t-1}}$, 
-       the script returns a hash table with entries 
+       If M is a multi-graded module representing a coherent sheaf F on $P^n := P^{n_0} x .. x P^{n_{t-1}}$,
+       the script returns a hash table with entries
        {a,i} => h^i(F(a))
-       where a is a multi-index, low<=a<=high in the partial order 
+       where a is a multi-index, low<=a<=high in the partial order
        (thus the value is 0 when i is not in the range 0..sum n.)
        In case T is a Tate resolution corresponding to an object F in D^b(P^n), then
        the values returned are the dimensions of the hypercohomology groups of twists of F, and
        the values can be nonzero in a wider range.
-       
-       In case the number of factors t is 2, the output of @ TO cohomologyMatrix @ is 
+
+       In case the number of factors t is 2, the output of @ TO cohomologyMatrix @ is
        easier to parse.
-              
+
        The script computes a sufficient part of the Tate resolution for F, and then
-       calls itself in the version for a Tate resolution. 
-       
-       If T is not a large enough part of the Tate resolution, such as W below, 
+       calls itself in the version for a Tate resolution.
+
+       If T is not a large enough part of the Tate resolution, such as W below,
        then the function collects only
        the contribution of T to the cohomology table of the Tate resolution, according to the formula in
-       Corollary 0.2 of 
+       Corollary 0.2 of
        @ HREF("https://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces")@.
-        
+
      Example
-    	(S,E) = productOfProjectiveSpaces{1,2}	
+        (S,E) = productOfProjectiveSpaces{1,2}
 	M = S^1
 	low = {-3,-3};high = {3,3};
 	H = cohomologyHashTable(M, low,high);
@@ -2329,7 +2329,7 @@ doc ///
      Example
 	H' = hashTable(select(pairs H, p-> p_1!=0))
      Text
-        In the case of two factors (t=2), the same 
+        In the case of two factors (t=2), the same
 	information can be read conveniently from a matrix
      Example
         cohomologyMatrix(M, low, high)
@@ -2341,7 +2341,7 @@ doc ///
      Example
 	eulerPolynomialTable H'
   Caveat
-        In case of hypercohomology, we write k 
+        In case of hypercohomology, we write k
 	instead of h^{-1}, and use the cohomology ring
 	ZZ[h,k].
   SeeAlso
@@ -2356,19 +2356,19 @@ doc ///
     eulerPolynomialTable
     (eulerPolynomialTable,Module,List,List)
     (eulerPolynomialTable,ChainComplex,List,List)
-    (eulerPolynomialTable,HashTable)    
+    (eulerPolynomialTable,HashTable)
   Headline
     cohomology groups of a sheaf on a product of projective spaces, or of (part) of a Tate resolution
   Usage
 
-    H=eulerPolynomialTable(M,low,high)      
+    H=eulerPolynomialTable(M,low,high)
     H=eulerPolynomialTable(T,low,high)
-    H=eulerPolynomialTable H'      
+    H=eulerPolynomialTable H'
   Inputs
     M: Module
        graded module representing a sheaf on a product of projective spaces
     T: ChainComplex
-       free complex over the exterior algebra 
+       free complex over the exterior algebra
     H': HashTable
        output of cohomologyHashTable  low: List
     high: List
@@ -2378,31 +2378,31 @@ doc ///
        values are hypercohomology polynomials
   Description
      Text
-       If M is a multi-graded module representing a coherent sheaf F on $P^n := P^{n_0} x .. x P^{n_{t-1}}$, 
-       the script returns a hash table with entries 
-       a => sum_i h^i(F(a))*h^i \in ZZ[h,k], 
+       If M is a multi-graded module representing a coherent sheaf F on $P^n := P^{n_0} x .. x P^{n_{t-1}}$,
+       the script returns a hash table with entries
+       a => sum_i h^i(F(a))*h^i \in ZZ[h,k],
        where k represents h^{-1},
-       where a is a multi-index, low<=a<=high in the partial order 
+       where a is a multi-index, low<=a<=high in the partial order
        (thus the value is 0 when i is not in the range 0..sum n.)
        In case T is a Tate resolution corresponding to an object F in D^b(P^n), then
        the values returned are the polyomials of the hypercohomology groups of twists of F, and
        the values can be nonzero in a wider range.
-       
-       In case the number of factors t is 2, the output of @ TO cohomologyMatrix @ is 
+
+       In case the number of factors t is 2, the output of @ TO cohomologyMatrix @ is
        easier to parse. In general the script @ TO cohomologyHashTable @ gives the same
        information as this script, but in a less compact form.
-              
+
        The script computes a sufficient part of the Tate resolution for F, and then
-       calls itself in the version for a Tate resolution. 
-       
-       If T is not a large enough part of the Tate resolution, such as W below, 
+       calls itself in the version for a Tate resolution.
+
+       If T is not a large enough part of the Tate resolution, such as W below,
        then the function collects only
        the contribution of T to the cohomology table of the Tate resolution, according to the formula in
-       Corollary 0.2 of 
+       Corollary 0.2 of
        @ HREF("https://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces")@.
-        
+
      Example
-    	(S,E) = productOfProjectiveSpaces{1,2}	
+        (S,E) = productOfProjectiveSpaces{1,2}
 	M = S^1
 	low = {-3,-3};high = {3,3};
 	H' = cohomologyHashTable(M, low,high);
@@ -2414,7 +2414,7 @@ doc ///
      Example
 	trimH = hashTable(select(pairs H, p-> p_1!=0))
      Text
-        In the case of two factors (t=2), the same 
+        In the case of two factors (t=2), the same
 	information can be read conveniently from a matrix
      Example
         cohomologyMatrix(M, low, high)
@@ -2422,7 +2422,7 @@ doc ///
         where the entry in the a= \{a_0,a_1\} place is
 	sum_i h^i(F(a)*h^i \in ZZ[h].
   Caveat
-        In case of hypercohomology, we write k 
+        In case of hypercohomology, we write k
 	instead of h^{-1}, and use the cohomology ring
 	ZZ[h,k].
   SeeAlso
@@ -2453,15 +2453,15 @@ doc ///
         S=ZZ/101[x_0..x_1,y_0,z_0,Degrees=>{2:{2,0,0},1:{0,1,0},{0,0,1}}]
 	C =res ideal vars S
 	betti C
-	tallyDegrees C	
+	tallyDegrees C
 ///
 
 doc ///
   Key
     trivialHomologicalTruncation
-    (trivialHomologicalTruncation,ChainComplex,ZZ,ZZ)    
+    (trivialHomologicalTruncation,ChainComplex,ZZ,ZZ)
   Headline
-    return the trivial truncation of a chain complex 
+    return the trivial truncation of a chain complex
   Usage
     trivialHomologicalTruncation(ChainComplex,d,e)
   Inputs
@@ -2474,18 +2474,18 @@ doc ///
   Description
      Text
        Given a chain complex
-        
+
         ... <- C_{k-1} <- C_k <- C_{k+1} <- ...
-	
+
        return the trivial truncation
-       
+
        0 <- C_d <- C_{d+1} <- ... < C_e <- 0
      Example
        E=ZZ/101[e_0,e_1,SkewCommutative=>true];F=res ideal vars E;
        C=dual res (coker transpose F.dd_3,LengthLimit=>8)[-3]
        C1=trivialHomologicalTruncation(C,-2,2)
        C2=trivialHomologicalTruncation(C1,-3,3)
-       C3=trivialHomologicalTruncation(C2,2,2)             
+       C3=trivialHomologicalTruncation(C2,2,2)
 ///
 
 -*
@@ -2494,10 +2494,10 @@ doc ///
 -----------------------------------------
 doc ///
   Key
-    nonzeroMax  
+    nonzeroMax
     (nonzeroMax,ChainComplex)
   Headline
-    computes the homological position of the last non-zero module in a ChainComplex 
+    computes the homological position of the last non-zero module in a ChainComplex
   Usage
     nonzeroMin C
     nonzeroMax C
@@ -2507,13 +2507,13 @@ doc ///
      : ZZ
   Description
      Text
-       The function @ TO  max @ applied to a chain complex returns the largest 
-       position of a defined term in a 
+       The function @ TO  max @ applied to a chain complex returns the largest
+       position of a defined term in a
        chain complex, which very well might be the zero module. The function nonzeroMax returns
-       the largest positions of a non-zero module.  
+       the largest positions of a non-zero module.
      Example
        S=ZZ/101[x,y]/ideal(x*y)
-       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1] 
+       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1]
        C'=prependZeroMap appendZeroMap C
        min C', nonzeroMin C'
        max C', nonzeroMax C'
@@ -2525,9 +2525,9 @@ doc ///
 doc ///
   Key
     nonzeroMin
-    (nonzeroMin,ChainComplex)    
+    (nonzeroMin,ChainComplex)
   Headline
-    computes the homological position of the first non-zero module in a ChainComplex 
+    computes the homological position of the first non-zero module in a ChainComplex
   Usage
     nonzeroMin C
   Inputs
@@ -2536,13 +2536,13 @@ doc ///
      : ZZ
   Description
      Text
-       The function @ TO  min @ applied to a chain complex returns the smallest 
-       position of a defined term in a 
+       The function @ TO  min @ applied to a chain complex returns the smallest
+       position of a defined term in a
        chain complex, which very well might be the zero module. The function nonzeroMin return
-       the smallest positions of a non-zero module.  
+       the smallest positions of a non-zero module.
      Example
        S=ZZ/101[x,y]/ideal(x*y)
-       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1] 
+       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1]
        isChainComplex C
        C'=prependZeroMap appendZeroMap C
        min C', nonzeroMin C'
@@ -2552,9 +2552,9 @@ doc ///
 doc ///
   Key
     appendZeroMap
-    (appendZeroMap,ChainComplex)    
+    (appendZeroMap,ChainComplex)
   Headline
-    append a zero map to chain complex 
+    append a zero map to chain complex
   Usage
     appendZeroMap C
   Inputs
@@ -2566,7 +2566,7 @@ doc ///
        Add a zero map after the last differential in a chain complex.
      Example
        S=ZZ/101[x,y]/ideal(x*y)
-       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1] 
+       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1]
        appendZeroMap C
        prependZeroMap C
 ///
@@ -2574,9 +2574,9 @@ doc ///
 doc ///
   Key
     prependZeroMap
-    (prependZeroMap,ChainComplex)    
+    (prependZeroMap,ChainComplex)
   Headline
-    prepend a zero map to chain complex 
+    prepend a zero map to chain complex
   Usage
     prependZeroMap C
   Inputs
@@ -2588,17 +2588,17 @@ doc ///
        Add a zero map before the first differential in a chain complex.
      Example
        S=ZZ/101[x,y]/ideal(x*y)
-       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1] 
+       C=chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1]
        prependZeroMap C
-       appendZeroMap C       
+       appendZeroMap C
 ///
 
 doc ///
   Key
     removeZeroTrailingTerms
-    (removeZeroTrailingTerms,ChainComplex)    
+    (removeZeroTrailingTerms,ChainComplex)
   Headline
-    remove trailing zero terms of a chain complex 
+    remove trailing zero terms of a chain complex
   Usage
     removeZeroTrailingTerms C
   Inputs
@@ -2610,14 +2610,14 @@ doc ///
        Remove trailing zero terms in a complex
      Example
        S=ZZ/101[x,y]/ideal(x*y)
-       C=prependZeroMap appendZeroMap chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1] 
+       C=prependZeroMap appendZeroMap chainComplex(matrix{{x}},matrix{{y}}**S^{ -1},matrix{{x}}**S^{ -2})[1]
        removeZeroTrailingTerms C
      Text
        If C has only one nonzero term, then the functions returns two zero maps.
      Example
        S=ZZ
        C=prependZeroMap  chainComplex( map(S^0,S^1,0))[3]
-       removeZeroTrailingTerms C      
+       removeZeroTrailingTerms C
 ///
 
 
@@ -2627,7 +2627,7 @@ doc ///
     isChainComplex
     (isChainComplex,ChainComplex)
   Headline
-    checks whether the differentials compose to zero 
+    checks whether the differentials compose to zero
   Usage
     isChainComplex C
   Inputs
@@ -2639,19 +2639,19 @@ doc ///
        checks that all differentials compose to zero.
      Example
        S=ZZ/101[x,y]
-       C=res ideal vars S, C'=chainComplex(matrix{{x}},matrix{{y}}) 
-       isChainComplex C, isChainComplex C'       
+       C=res ideal vars S, C'=chainComplex(matrix{{x}},matrix{{y}})
+       isChainComplex C, isChainComplex C'
      Text
        The buildin function @ TO dual @
        for chainComplexes over the exterior algebra
-       does not return a complex, because the dual of a left module is a right module. 
+       does not return a complex, because the dual of a left module is a right module.
      Example
         kk=ZZ/101;n=4;
 	E=kk[e_0..e_n,SkewCommutative =>true]
 	m=map(E^{0,1},,matrix{{ e_0,e_1*e_2},{e_3*e_4,e_0*e_1*e_4}})
 	fm=res coker m
 	isChainComplex fm
-	dualfm = dual fm	
+	dualfm = dual fm
 	isChainComplex dualfm
 	f2=res( coker dualfm.dd_(-5),LengthLimit=> 6)[6]
 	betti f2
@@ -2664,7 +2664,7 @@ doc ///
     minimize
     (minimize, ChainComplex)
    Headline
-    minimal quotient complex of a free ChainComplex 
+    minimal quotient complex of a free ChainComplex
    Usage
     m = minimize F
    Inputs
@@ -2675,28 +2675,28 @@ doc ///
      quasi-isomorphism F -> F', where F' is a minimal free complex
    Description
     Text
-     For the quasi-isomorphism from a minimal subcomplex use 
-     
+     For the quasi-isomorphism from a minimal subcomplex use
+
      dual minimize dual F
-    
+
      To simplify the notation consider the complex C = E[min E] that
      is shifted so that the first module is C_0.
      The algorithm:
      Set dbar = the reduction of the differential d mod the maximal ideal.
      a complement of ker dbar, and compute the idempotent rho: E -> E.
-     the map rho is not a chain complex map, but the image of 
-     (rho | d*rho): C ++ C[1] --> C is a subcomplex and 
+     the map rho is not a chain complex map, but the image of
+     (rho | d*rho): C ++ C[1] --> C is a subcomplex and
      the minimization of  C is the complex C/image(rho|d*rho).
      The script returns the ChainComplexMap from the minimization to C.
      Example
        S=ZZ/101[x,y];
        m= map(S^{0,1},S^{0,-1}, matrix{{1,x},{y,x^2}})
-       C=chainComplex{m} 
+       C=chainComplex{m}
        Cmin=target minimize C
        betti C, betti Cmin
-       m, Cmin.dd_1  
-    Text     
-     For a more interesting illustration we first make a nonminimal complex by adding 
+       m, Cmin.dd_1
+    Text
+     For a more interesting illustration we first make a nonminimal complex by adding
      trivial complexes to a minimal complex and then mixing things up
      by conjugating with general isomorphisms:
     Example
@@ -2743,9 +2743,9 @@ doc ///
     T: ChainComplex
        over the exterior algebra
     c: List
-       a (multi) degree 
+       a (multi) degree
     IJK: Sequence
-       a sequence (I,J,K) of disjoint subsets of \{0..t-1\}       
+       a sequence (I,J,K) of disjoint subsets of \{0..t-1\}
   Outputs
      : ChainComplex
        a region complex of T
@@ -2753,8 +2753,8 @@ doc ///
      Text
         We compute the region complex of T as defined in
         @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
-	section 3. Note that different from the paper I,J,K are sublists of 0...t-1 and not subsets of 1..t. 
-	In the examples below, only rT2 and rT3 are proper region complexes. 
+	section 3. Note that different from the paper I,J,K are sublists of 0...t-1 and not subsets of 1..t.
+	In the examples below, only rT2 and rT3 are proper region complexes.
      Example
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
@@ -2799,9 +2799,9 @@ doc ///
     T: ChainComplex
        over the exterior algebra
     c: List
-       a (multi) degree 
+       a (multi) degree
     I: List
-       a sublist of \{0..t-1\} , where t denotes the number of factors      
+       a sublist of \{0..t-1\} , where t denotes the number of factors
   Outputs
      : ChainComplex
        the I-strand of T through c
@@ -2810,8 +2810,8 @@ doc ///
         We compute the strand of T as defined in @
         HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
 	Theorem 0.4. If T is (part of) the Tate resolution of a sheaf $F$, then the I-strand of $T$ through $c$
-	correponds to the Tate resolution $R{\pi_J}_*(F(c))$ where $J =\{0,\ldots,t-1\} - I$ is the complement and $\pi_J: \mathbb PP \to \prod_{j \in J} \mathbb P^{n_j}$ 
-	denotes the projection. 
+	correponds to the Tate resolution $R{\pi_J}_*(F(c))$ where $J =\{0,\ldots,t-1\} - I$ is the complement and $\pi_J: \mathbb PP \to \prod_{j \in J} \mathbb P^{n_j}$
+	denotes the projection.
      Example
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
@@ -2834,7 +2834,7 @@ doc ///
     tateExtension
     firstQuadrantComplex
     lastQuadrantComplex
-    cohomologyMatrix	
+    cohomologyMatrix
 ///
 
 
@@ -2844,20 +2844,20 @@ doc ///
     firstQuadrantComplex
     (firstQuadrantComplex,ChainComplex,List)
   Headline
-    form the first quadrant complex 
+    form the first quadrant complex
   Usage
     firstQuadrantComplex(T,c)
   Inputs
     T: ChainComplex
        a (part of a) Tate resolution on a product of t projective spaces
     c: List
-       cohomological degree of the lower corner of the first complex 
+       cohomological degree of the lower corner of the first complex
   Outputs
      : ChainComplex
   Description
      Text
        Form the first quadrant complex with corner c of a (part of a) Tate resolution T as defined in
-       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @. 
+       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
      Example
         (S,E) = productOfProjectiveSpaces {1,1};
 	T1= (dual res( trim (ideal vars E)^2,LengthLimit=>8))[1];
@@ -2865,22 +2865,22 @@ doc ///
     	betti T
 	cohomologyMatrix(T,-{4,4},{3,2})
     	fqT=firstQuadrantComplex(T,-{2,1});
-    	betti fqT	
+        betti fqT
 	cohomologyMatrix(fqT,-{4,4},{3,2})
 	cohomologyMatrix(fqT,-{2,1},-{1,0})
 	lqT=lastQuadrantComplex(T,-{2,1});
-    	betti lqT	
+        betti lqT
 	cohomologyMatrix(lqT,-{4,4},{3,2})
 	cohomologyMatrix(lqT,-{3,2},-{2,1})
 	cT=cornerComplex(T,-{2,1});
-	betti cT	
+	betti cT
 	cohomologyMatrix(cT,-{4,4},{3,2})
   SeeAlso
     upperCorner
     lowerCorner
-    
+
     lastQuadrantComplex
-    cohomologyMatrix	
+    cohomologyMatrix
 ///
 
 doc ///
@@ -2895,13 +2895,13 @@ doc ///
     T: ChainComplex
        a (part of a) Tate resolution on a product of t projective spaces
     c: List
-       cohomological degree of the lower corner of the complementary first quadrant complex 
+       cohomological degree of the lower corner of the complementary first quadrant complex
   Outputs
      : ChainComplex
   Description
      Text
        Form the last quadrant complex with corner c of a (part of a) Tate resolution T as defined in
-       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @. 
+       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
      Example
         (S,E) = productOfProjectiveSpaces {1,1};
 	T1= (dual res( trim (ideal vars E)^2,LengthLimit=>8))[1];
@@ -2909,28 +2909,28 @@ doc ///
     	betti T
 	cohomologyMatrix(T,-{4,4},{3,2})
     	fqT=firstQuadrantComplex(T,-{2,1});
-    	betti fqT	
+        betti fqT
 	cohomologyMatrix(fqT,-{4,4},{3,2})
 	cohomologyMatrix(fqT,-{2,1},-{1,0})
 	lqT=lastQuadrantComplex(T,-{2,1});
-    	betti lqT	
+        betti lqT
 	cohomologyMatrix(lqT,-{4,4},{3,2})
 	cohomologyMatrix(lqT,-{3,2},-{2,1})
 	cT=cornerComplex(T,-{2,1});
-	betti cT	
+	betti cT
 	cohomologyMatrix(cT,-{4,4},{3,2})
   SeeAlso
     upperCorner
-    lowerCorner    
+    lowerCorner
     firstQuadrantComplex
-    cohomologyMatrix	
+    cohomologyMatrix
 ///
 
 doc ///
   Key
     cornerComplex
     (cornerComplex,ChainComplex,List)
-    (cornerComplex,Module,List,List)    
+    (cornerComplex,Module,List,List)
   Headline
     form the corner complex
   Usage
@@ -2940,7 +2940,7 @@ doc ///
     T: ChainComplex
        a (part of a) Tate resolution on a product of t projective spaces
     c: List
-       cohomological degree of upper corner of the  last quadrant complex which is part of the corner complex   
+       cohomological degree of upper corner of the  last quadrant complex which is part of the corner complex
     M: Module
        multi-graded module representing a sheaf F
     low:List
@@ -2953,20 +2953,20 @@ doc ///
   Description
      Text
        The call
-       
+
        cornerComplex(M,low,high)
-       
+
        forms the corner complex of the sheaf F represented by M, at a position sufficiently
        above the degree "high" so that
        all the cohomology groups of
        twists F(a) of F can be computed for low <= a <= high.
-       
+
        The call
-       
+
        cornerComplex(T,c)
-       
+
        forms the corner complex with corner c of a (part of a) Tate resolution T as defined in
-       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @. 
+       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
      Example
         (S,E) = productOfProjectiveSpaces{1,1}
 	low = {-4,-4};high = {3,2};
@@ -2978,11 +2978,11 @@ doc ///
      Example
     	cohomologyMatrix (C,low,2*high)
      Text
-        Finally, we can define T, 
+        Finally, we can define T,
 	the sufficient part of the Tate resolution:
      Example
         T=trivialHomologicalTruncation (T2,-5,6);
-	cohomologyMatrix(T,low,high)	
+	cohomologyMatrix(T,low,high)
      Text
        In the following we will produce a corner complex cT with
        corner at c =\{-2,-1\}. To do this we need a big enough part
@@ -2994,7 +2994,7 @@ doc ///
      Example
         c =  -{2,1};
 	cT=cornerComplex(T,c);
-	betti cT	
+	betti cT
 	cohomologyMatrix(cT,low,high)
      Text
         The corner complex is built from a first quadrant
@@ -3006,7 +3006,7 @@ doc ///
 	cohomologyMatrix(fqT,low,high)
 	cohomologyMatrix(lqT,low,high)
      	betti fqT
-     	betti lqT	
+        betti lqT
 	betti cT
      Text
         Here the corner map is cT.dd_2
@@ -3017,12 +3017,12 @@ doc ///
 	from lqT to fqT spread over several homological degrees.
 -----------------
      Text
-        Putting the corner in c = \{-1,-1 \} we get a different 
+        Putting the corner in c = \{-1,-1 \} we get a different
 	picture:
      Example
         c = {-1,-1}
 	cT=cornerComplex(T,c);
-	betti cT	
+	betti cT
 	cohomologyMatrix(cT,low,high)
      Text
         The corner complex is built from a first quadrant
@@ -3034,7 +3034,7 @@ doc ///
 	cohomologyMatrix(fqT,low,high)
 	cohomologyMatrix(lqT,low,high)
      	betti fqT
-     	betti lqT	
+        betti lqT
 	betti cT
      Text
         Here the corner map is cT.dd_1
@@ -3045,7 +3045,7 @@ doc ///
 	from lqT to fqT spread over several homological degrees.
   SeeAlso
     upperCorner
-    lowerCorner    
+    lowerCorner
     firstQuadrantComplex
     lastQuadrantComplex
     cohomologyMatrix
@@ -3069,10 +3069,10 @@ doc ///
     W: ChainComplex
   Description
      Text
-       Extract the terms which under the U-functor defined in 
+       Extract the terms which under the U-functor defined in
        @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
        contributed to the Beilinson complex U(T) of T, i.e. W is the smallest free subquotient complex of T
-       such that U(W) = U(T) 
+       such that U(W) = U(T)
      Example
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
@@ -3087,7 +3087,7 @@ doc ///
         cohomologyMatrix(tateExtension W2,-{2,2},{2,2})
   SeeAlso
     beilinsonWindow
-    cohomologyMatrix 
+    cohomologyMatrix
 ///
 
 doc ///
@@ -3100,19 +3100,19 @@ doc ///
     T=tateExtension W
   Inputs
     W: ChainComplex
-       terms in the Beilinson window of a Tate resolution 
+       terms in the Beilinson window of a Tate resolution
   Outputs
     T: ChainComplex
-       a corner complex of the corresponding Tate resolution 
+       a corner complex of the corresponding Tate resolution
   Description
      Text
-       Every object F in in the derived category D^d(P) 
-       of coherent sheaves on a product P=P^{n_1}x..xP^{n_t} of t projective space is of the 
-       form U(W) with W a complex with terms in the 
-       Beilinson range only. The function computes with the algorithm (not!) described in section 4 of 
+       Every object F in in the derived category D^d(P)
+       of coherent sheaves on a product P=P^{n_1}x..xP^{n_t} of t projective space is of the
+       form U(W) with W a complex with terms in the
+       Beilinson range only. The function computes with the algorithm (not!) described in section 4 of
        @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
-       computes part of a suitable choosen corner complex of the Tate resolution T(F). 
-       
+       computes part of a suitable choosen corner complex of the Tate resolution T(F).
+
      Example
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
@@ -3127,12 +3127,12 @@ doc ///
 	cohomologyMatrix(T,-5*n,4*n) -- the view including the corner
   Caveat
      Note that the Beilinson window of tateExtension of the beilinson window W is not equal but just
-     isomorphic to the original W. 
-     
+     isomorphic to the original W.
+
      The implicit bounds in the computation are only a guess and certainly not optimal. This should be improved.
-  SeeAlso 
+  SeeAlso
      cohomologyMatrix
-     beilinsonWindow     
+     beilinsonWindow
 ///
 -*
 doc ///
@@ -3150,20 +3150,20 @@ doc ///
     T=pushAboveWindow W
   Inputs
     W: ChainComplex
-       terms in the Beilinson window of a Tate resolution 
+       terms in the Beilinson window of a Tate resolution
   Outputs
     T: ChainComplex
        a non-minimal version of the quadrant complex ?!? qT_{\le 0} of the Tate resolution T=T(W) ?
   Description
      Text
-       Every object F in in the derived category D^d(P) 
-       of coherent sheaves on a product P=P^{n_1}x..xP^{n_t} of t projective space is of the 
-       form U(W) with W a complex with terms in the 
-       Beilinson range only. 
-       This function is the first step in our computation of the algorithm 
-        (not!) described in section 4 of 
+       Every object F in in the derived category D^d(P)
+       of coherent sheaves on a product P=P^{n_1}x..xP^{n_t} of t projective space is of the
+       form U(W) with W a complex with terms in the
+       Beilinson range only.
+       This function is the first step in our computation of the algorithm
+        (not!) described in section 4 of
        @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
-       that computes part of a suitable choosen corner complex of the Tate resolution T(F).        
+       that computes part of a suitable choosen corner complex of the Tate resolution T(F).
      Example
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
@@ -3182,7 +3182,7 @@ doc ///
 	cohomologyMatrix(qT,-3*n,{1,1})
 	betti puT
 	betti qT
-    	betti T	
+        betti T
 	puT.dd_3_{0}
 ///
 *-
@@ -3208,7 +3208,7 @@ doc ///
     T: ChainComplex
        a complex of free modules over E
     BundleType => Symbol
-       the possible values are SubBundle or PrunedQuotient    
+       the possible values are SubBundle or PrunedQuotient
   Outputs
     M: Module
        a module over the symmetric algebra S
@@ -3221,20 +3221,20 @@ doc ///
        The Beilinson functor is a functor from the category of free E-modules to the category of coherent sheaves
        which associates to a cyclic free E-module of generated in multidegree a the vector bundle U^a.
        -- w_E or socle degree might be better.
-       Note that the U^a for multidegrees a=\{a_1,...,a_t\} with 0 \le a_i \le n_i form a full exceptional series for 
+       Note that the U^a for multidegrees a=\{a_1,...,a_t\} with 0 \le a_i \le n_i form a full exceptional series for
        the derived category of coherent sheaves on the product
        PP = P^{n_1} \times ... \times P^{n_t} of t projective spaces, see e.g.
        @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
-        
+
        In the function we compute from a complex of free E-modules the corresponding complex of graded S-modules, whose
-       sheafifications are the corresponding sheaves. The corresponding graded S-module are choosen as quotients of  
+       sheafifications are the corresponding sheaves. The corresponding graded S-module are choosen as quotients of
        free S-modules in case of the default option BundleType=>PrunedQuotient, or as submodules of free S-modules.
        The true Beilinson functor is obtained by the sheafication of resulting the complex.
-       
-       The Beilinson monad of a coherent sheaf $\mathcal F$ is the the sheafication of 
-       beilinson( T($\mathcal F$)) of its Tate resolution T($\mathcal F$).         
+
+       The Beilinson monad of a coherent sheaf $\mathcal F$ is the the sheafication of
+       beilinson( T($\mathcal F$)) of its Tate resolution T($\mathcal F$).
      Example
-        (S,E) = productOfProjectiveSpaces {2,1}     
+        (S,E) = productOfProjectiveSpaces {2,1}
         psi=random(E^{{-1,0}}, E^{{-2,-1}})
 	phi=beilinson psi
 	beilinson(E^{{-1,0}})
@@ -3244,14 +3244,14 @@ doc ///
   SeeAlso
     BundleType
     SubBundle
-    PrunedQuotient	
+    PrunedQuotient
 ///
 
 doc ///
   Key
     beilinsonBundle
     (beilinsonBundle,ZZ,ZZ,Ring)
-    (beilinsonBundle,List,Ring)    
+    (beilinsonBundle,List,Ring)
     [beilinsonBundle,BundleType]
   Headline
     compute a basic Beilinson bundle
@@ -3266,30 +3266,30 @@ doc ///
     E: Ring
        the exterior algebra or symmetric algebra
     a: List
-       of integers \{a_0,...,a_{(r-1)} \} 
+       of integers \{a_0,...,a_{(r-1)} \}
     BundleType => Symbol
-       the possible values are SubBundle or PrunedQuotient    
+       the possible values are SubBundle or PrunedQuotient
   Outputs
     B: Module
        a module over the symmetric algebra S
   Description
      Text
-       The first version 
+       The first version
        computes a basic Beilinson bundle, i.e. the pullback of a Beilinson bundle from a single factor of a the product
-       PP = P^{n_0} \times ... \times P^{n_{(r-1)}} of r projective spaces. 
-       
+       PP = P^{n_0} \times ... \times P^{n_{(r-1)}} of r projective spaces.
+
        The second version computes the tensor product of the basic bundles beilinsonBundle(a_i,i,E) for i from 0 to r-1.
        See also
        @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
-        
+
        The vector bundle B is represented by its S-module of global sections, which is either the quotient or
         a submodule of a
        free S-modules depending on the value of the option BundleType.
-       
+
        The results are stashed in E.TateData.BeilinsonBundles, so they are not recomputed.
-       
+
      Example
-        (S,E) = productOfProjectiveSpaces {2,3}     
+        (S,E) = productOfProjectiveSpaces {2,3}
         B1=beilinsonBundle(1,0,E)
 	B2=beilinsonBundle(1,1,E)
 	B=beilinsonBundle({1,1},E); betti B
@@ -3297,7 +3297,7 @@ doc ///
   SeeAlso
     BundleType
     SubBundle
-    PrunedQuotient	
+    PrunedQuotient
 ///
 
 doc ///
@@ -3313,10 +3313,10 @@ doc ///
     e: RingElement
        an element of the exterior algebra E
     rowdeg: List
-    coldeg: List 
+    coldeg: List
         two multidegrees
     BundleType => Symbol
-        with values PrunedQuotient or SubBundle 
+        with values PrunedQuotient or SubBundle
   Outputs
       : Matrix
        a map between modules over the symmetric algebra S
@@ -3324,29 +3324,29 @@ doc ///
      Text
        Returns a map between two Beilinson generators
        (i.e. the beilinson generators beilinsonBundle(a, E)
-        of the derived category). 
+        of the derived category).
         Note:
-	 
-        (1) (S,E) is the result of productOfProjectiveSpaces
-       
-        (2) e is a homogeneous element of E giving a map from E(-coldeg) --> E(-rowdeg).
- 
 
-       
+        (1) (S,E) is the result of productOfProjectiveSpaces
+
+        (2) e is a homogeneous element of E giving a map from E(-coldeg) --> E(-rowdeg).
+
+
+
      Example
-        (S,E) = productOfProjectiveSpaces {2,1}     
+        (S,E) = productOfProjectiveSpaces {2,1}
 	gens S, gens E
         f=e_(0,0)*e_(0,1)*e_(1,0)
 	beilinsonContraction(f,{0,0},{2,1})
 	m=beilinsonContraction(e_(0,0)*e_(1,0),{0,0},{1,1})
-  Caveat 
+  Caveat
     E is positively graded, in contrast to the paper!
   SeeAlso
     beilinson
     beilinsonBundle
     BundleType
     SubBundle
-    PrunedQuotient	
+    PrunedQuotient
 ///
 
 
@@ -3355,7 +3355,7 @@ doc ///
   Key
     BundleType
   Headline
-    Option in beilinson with values PrunedQuotient or SubBundle 
+    Option in beilinson with values PrunedQuotient or SubBundle
   Description
      Text
       The Beilinson bundle U^a can be represented either by quotient or sub-bundles
@@ -3367,7 +3367,7 @@ doc ///
   Key
     SubBundle
   Headline
-    value for the option BundleType in beilinson 
+    value for the option BundleType in beilinson
   Description
      Text
       The Beilinson bundlse U^a will be represented  by subbundles.
@@ -3381,7 +3381,7 @@ doc ///
   Key
     PrunedQuotient
   Headline
-    value for the option BundleType in beilinson 
+    value for the option BundleType in beilinson
   Description
      Text
       The Beilinson bundles U^a will be represented by quotient bundles.
@@ -3405,34 +3405,34 @@ doc ///
   Usage
      cornerCohomologyTablesOfUa(n,a)
      cornerCohomologyTablesOfUa(n)
-  Inputs 
+  Inputs
     n: List
        the list \{n_1,...,n_t\} \, of the dimensions of the factors
     a: List
        the list \{a_1,...,a_t\} \, of the exterior powers
   Outputs
      : List
-       a list of four cohomology tables  
+       a list of four cohomology tables
   Description
      Text
-       Given a degree list  \{a_1,...,a_t\}\, with $0 \le a_i \le n_i$ 
+       Given a degree list  \{a_1,...,a_t\}\, with $0 \le a_i \le n_i$
        for $U^a = \Lambda^{a_1} U_1 \otimes \ldots  \otimes \,  \Lambda^{a_t} U_t$
        part of the Tate resolution T=T(U^a) gets computed. Four cohomology tables and two betti tables get returned:
-       The cohomology table  
-        
+       The cohomology table
+
        of T,
-       
-       of the corner complex of T at c=-a, 
-       
+
+       of the corner complex of T at c=-a,
+
        of the Beilinson Window of T,
-	   	   
+
        of the shifted corner complex at \{1,..,1\}, shifted by [-1],
-       
-       and the two betti table with respect to total degree of the two corner complexes above. 
+
+       and the two betti table with respect to total degree of the two corner complexes above.
 
        This illustrates the validity of Example 3.6 of our paper
        @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
-       Current implementation handles only the case of two factors.      
+       Current implementation handles only the case of two factors.
      Example
         netList cornerCohomologyTablesOfUa({1,2},{1,1})
 ///
@@ -3457,9 +3457,9 @@ doc ///
          Text
 	  Given a chain complex C, the routine returns a surjective ChainComplexMap p:F->C from a free
 	  complex. The complex F is constructed from minimal free resolutions of the terms of C
-	  by the method of iterated mapping cones. 
-	  
-	  That is, if 
+	  by the method of iterated mapping cones.
+
+	  That is, if
 	  C: 0 -> Cn ->...->Cm ->0
 	  is a chain complex, and Gi is a resolution of
 	  Ci, and [G -> F] denotes the mapping cone of a map of complexes G \to F,
@@ -3469,14 +3469,14 @@ doc ///
 	  where the map Gi -> F(i-1)
 	  is induced by lifing Gi_0 --> G(i-1)_0 to the kernel of the (i-1)-st differential of
 	  F(i-1).
-	  
+
 	  The complex F = source p is not necessarily minimal, but minimize F returns a morphism to a minimal free
-	  chain complex quasi-isomorphic to F, and 
+	  chain complex quasi-isomorphic to F, and
 	  dual minimimize dual F
 	  returns a quasi-isomorphism from a minimal free complex, so
-	  
+
 	  p*(dual minimimize dual F)
-	  
+
 	  is the quasi-isomorphism from the minimal free resolution of C.
          Example
 	  kk= ZZ/101
@@ -3579,7 +3579,7 @@ doc ///
    Description
     Text
      The function
-     productOfProjectiveSpaces 
+     productOfProjectiveSpaces
      creates two rings and store various data in their cache table,
      which tateData reads.
     Example
@@ -3608,27 +3608,27 @@ doc ///
     P: Module
      module over an exterior algebra E
     M: Module
-      module over an symmetric algebra S 
+      module over an symmetric algebra S
    Outputs
     LP:ChainComplex
      over a symmetric algebra
     RM:ChainComplex
-     over a exterior algebra 
+     over a exterior algebra
    Description
     Text
      If P is an E-module, then LP becomes a linear complex of free S-modules,
-     where (S,E) is the Koszul pair corresponding to a 
+     where (S,E) is the Koszul pair corresponding to a
      product of projective spaces.
-     Similarly, if M is an S-module, them RM becomes a linear free complex over 
-     the exterior algebra E of length bounded by the LengthLimit. 
-     
-     The complex LP is that produced from P by the 
+     Similarly, if M is an S-module, them RM becomes a linear free complex over
+     the exterior algebra E of length bounded by the LengthLimit.
+
+     The complex LP is that produced from P by the
      Bernstein-Gel'fand-Gel'fand functor called L in
      our paper
      @ HREF("http://arxiv.org/abs/","Tate Resolutions on Products of Projective Spaces") @.
-     Similarly, the complex RM produced from M is a bounded piece of the infinite complex of 
-     the Bernstein-Gel'fand-Gel'fand 
-     functor called R in loc.cit. L and R form a pair of adjoint 
+     Similarly, the complex RM produced from M is a bounded piece of the infinite complex of
+     the Bernstein-Gel'fand-Gel'fand
+     functor called R in loc.cit. L and R form a pair of adjoint
      functors.
     Example
      (S,E) = productOfProjectiveSpaces{1,2}
@@ -3639,7 +3639,7 @@ doc ///
      betti res M
      high = {3,3}
      cohomologyMatrix(M, -high, high)
-    Example 
+    Example
      M=module ideal vars S
      RM = bgg(M,LengthLimit=>3)
      betti RM
@@ -3667,7 +3667,7 @@ doc ///
     E: Ring
      exterior algebra
    Outputs
-    :List 
+    :List
      maps from U^a to U^b
    Caveat
     Mike will finish this some day
@@ -3689,11 +3689,11 @@ assert( (prune HH_(-3) L) === cokernel map((S)^{{0,1},{0,1},{0,1}},(S)^1,{{x_(1,
        {-x_(1,2)}}) );
 ///
 
-TEST ///  
+TEST ///
 (S,E) = productOfProjectiveSpaces{1,1};
 C = cornerComplex (S^1,{0,0},{3,3});
 assert (cohomRing = ZZ[h,k];
-    (sub (cohomologyMatrix (C, {0,0},{3,3}), cohomRing) === 
+    (sub (cohomologyMatrix (C, {0,0},{3,3}), cohomRing) ===
 	map(cohomRing^4,cohomRing^4,{{4, 8, 12, 16}, {3, 6, 9, 12}, {2, 4, 6, 8}, {1, 2, 3, 4}}))
 ///
 
@@ -3774,7 +3774,7 @@ TEST ///
   assert(beilinson(E^{{-1,-1}}) == U1 ** V1)
   assert(beilinson(E^{{-1,-2}}) == U1 ** V2)
   assert(beilinson(E^{{-2,0}}) == 0)
-  
+
   n = {2, 1}
   (S,E) = productOfProjectiveSpaces n
   m = map(E^1, E^0, 0)
@@ -3794,7 +3794,7 @@ TEST ///
   for d in degs do (
       assert(inBeilinsonWindow(d, E) or beilinson(E^{-d}) == 0)
       )
-/// 
+///
 
 TEST ///
   -- test of beilinson
@@ -3811,13 +3811,13 @@ TEST ///
   assert(beilinson(E^{{-1,-1}}) == U1 ** V1)
   assert(beilinson(E^{{-1,-2}}) == U1 ** V2)
   assert(beilinson(E^{{-2,1}}) == 0)
-  
+
   debug TateOnProducts -- for inBeilinsonWindow
   degs = flatten for a from -3 to 3 list for b from -3 to 3 list {a,b}
   for d in degs do (
       assert(inBeilinsonWindow(d, E) or beilinson(E^{-d}) == 0)
       )
-/// 
+///
 
 TEST ///
 
@@ -3942,18 +3942,18 @@ correspondence of positions in the cohomology Matrix and the tally"
   betti(T = res coker mE)
   TD = tallyDegrees T
   CD = cohomologyMatrix(T, -{2,2},{1,1})
-  CD = cohomologyHashTable(T, -{2,2},{1,1})  
+  CD = cohomologyHashTable(T, -{2,2},{1,1})
   assert((TD_0)#{-1,0} == CD#{{1,0},-1})
 ///
-  
-----The next two tests were commented out, along with the "corner" 
+
+----The next two tests were commented out, along with the "corner"
 --scripts
 -*
 restart
 
 *-
 TEST ///
-error"we don't know what this should be testing. Note that 'corner' 
+error"we don't know what this should be testing. Note that 'corner'
 no longer exists"
 
 debug needsPackage "TateOnProducts"
@@ -3963,7 +3963,7 @@ F=dual (res((ker transpose vars E)**E^{{ 2,3}},LengthLimit=>10))
 cohomologyMatrix(F,-2*n,2*n)
 tallyDegrees F
 
-deg = {2,1} 
+deg = {2,1}
 m = corner(F,deg)
 tally degrees source m, tally degrees target m
 Fm=(res(coker m,LengthLimit=>10))[sum deg]
@@ -3973,14 +3973,14 @@ cohomologyMatrix(Fm,deg-{5,5},deg+{1,1})
 ///
 
 TEST///
-error"we don't know what this should be testing. Note that 'corner' 
+error"we don't know what this should be testing. Note that 'corner'
 no longer exists"
 
 debug needsPackage "TateOnProducts"
 n={1,1}
 (S,E) = productOfProjectiveSpaces n
 
-time fB=dual res(coker random(E^7,E^{13:{ -1,0},11:{0,-1}}),LengthLimit=>10);	 	  
+time fB=dual res(coker random(E^7,E^{13:{ -1,0},11:{0,-1}}),LengthLimit=>10);
 cohomologyMatrix(fB,-{1,1},{5,5})
 deg={3,3}
 m= corner(fB,deg);
@@ -4015,7 +4015,7 @@ n={1,2}; (S,E) = productOfProjectiveSpaces n;
 	cohomologyMatrix(W,-{3,3},{3,3})
         time T=trivialHomologicalTruncation(tateExtension W,0,3)
 	cohomologyMatrix(T,-{3,3},{3,3})
-	cohomologyMatrix(T,-{2,3},{3,3})	
+	cohomologyMatrix(T,-{2,3},{3,3})
 low = {-3,-3};high = {3,3}
 F = T
 ///
@@ -4080,7 +4080,7 @@ restart
   degrees F2
   degrees F3
   h = homomorphism (Hom(F3,F2))_{0}
-  prune ker h  
+  prune ker h
   decompose ann prune coker h  -- so h is an isomorphism of sheaves
   tdeg = {3,3} -- for QuotientBundle
   tdeg = {2,2} -- for PrunedQuotient
@@ -4103,7 +4103,7 @@ restart
   irrelevant = intersect (last ringData S)
   for i from nonzeroMin B4 to nonzeroMax B4 do if i != 0 then assert(saturate(ann HH_i(B4), irrelevant) == 1)
   M = prune HH_0 B4
-  
+
   -- now let's start with M
   tdeg = {4,4}
   tM = prune truncate(tdeg, M);
@@ -4114,7 +4114,7 @@ restart
   cohomologyMatrix(oo, -5*n,5*n)
   BW5 = removeZeroTrailingTerms beilinsonWindow T5
   betti BW5
-  beilinson BW5 
+  beilinson BW5
 ///
 
 TEST ///
@@ -4126,7 +4126,7 @@ TEST ///
 *-
   n={2,3};
   (S,E) = productOfProjectiveSpaces n;
-  
+
   m = random(S^1, S^{4:{-3,0}}) || matrix {{S_3, S_4, S_5, S_6}}
   M = coker m
   tdeg = {6,2}
@@ -4170,7 +4170,7 @@ restart
   for x in toList({0,0}..n) do (
       assert(beilinsonBundle(x,S) == U#(x#0) ** V#(x#1))
       )
-///  
+///
 
 
 
@@ -4190,7 +4190,7 @@ restart
   V1 = beilinsonBundle({0,1},S)
   V2 = beilinsonBundle({0,2},S)
   assert(rank sheaf U1 == 3) -- is this computation correct?
-  
+
   assert(U1 ** V1 == beilinsonBundle({1,1},S))
   assert(U1 ** V2 == beilinsonBundle({1,2},S))
   assert(U2 ** V1 == beilinsonBundle({2,1},S))
@@ -4209,10 +4209,10 @@ restart
   U2 = beilinsonBundle({2,0},S)
   V1 = beilinsonBundle({0,1},S)
   assert(rank sheaf U1 == n#0) -- is this computation correct?
-  
+
   assert(U1 ** V1 == beilinsonBundle({1,1},S))
   assert(U2 ** V1 == beilinsonBundle({2,1},S))
-  
+
   m1 = numgens U1
   m2 = numgens U2
   p1 = numgens V1
@@ -4220,7 +4220,7 @@ restart
   map(E^{{-1,0}}, E^{{-1,-1}}, {{e_(1,1)}})
   isHomogeneous oo
   beilinson ooo
-  beilinson(e_(1,1), 
+  beilinson(e_(1,1),
   m = beilinson1(e_(1,1), {0,1}, {0,1}, S)
   assert((numRows m, numColumns m)  == (1, p1))
 
@@ -4251,23 +4251,23 @@ elapsedTime  beilinsonWindow(T ** E^{{1,1}}[2], 1)
   Wt = chainComplex {W.dd_2}
   Wt = chainComplex {W.dd_1}
   UF = beilinson Wt
-  
-  U0 = beilinsonBundle({0,0},S)  
+
+  U0 = beilinsonBundle({0,0},S)
   U1 = beilinsonBundle({1,0},S)
   U2 = beilinsonBundle({1,0},S)
-  V0 = beilinsonBundle({0,0},S)  
-  V1 = beilinsonBundle({0,1},S)  
+  V0 = beilinsonBundle({0,0},S)
+  V1 = beilinsonBundle({0,1},S)
   U1 ** beilinson1(e_(1,1), {0,1}, {0,1}, S) -- ok
-  beilinson1(e_(1,1), {0,1}, {1,1}, S) -- error, now ok 
-  beilinson1(e_(1,1), {0,1}, {2,1}, S) -- error, now ok 
+  beilinson1(e_(1,1), {0,1}, {1,1}, S) -- error, now ok
+  beilinson1(e_(1,1), {0,1}, {2,1}, S) -- error, now ok
   beilinson1(e_(1,1), {0,1}, {0,1}, S) -- now error, now ok
 
   beilinson1(0_E, {2,0}-{0,1}, {2,0}, S) -- how to handle this one ??
-  
+
   makeBasis({0,0},E)
   makeBasis({0,1},E)
   makeBasis({1,0},E)
-  makeBasis({1,1},E)  
+  makeBasis({1,1},E)
   makeBasis({2,0},E)
   makeBasis({2,1},E)
   tensor makeChangeBasis({0,0},E)
@@ -4278,13 +4278,13 @@ elapsedTime  beilinsonWindow(T ** E^{{1,1}}[2], 1)
   makeChangeBasis({2,1},E)
 
   makeBasis({2,2},E) -- error
-  
+
 
 restart
   debug needsPackage "TateOnProducts"
   n={2,1};
   (S,E) = productOfProjectiveSpaces n;
-    
+
   netList toList contractionData({0,0}, {1,0}, E) -- 1x3
   netList toList contractionData({1,0}, {1,0}, E) -- 3x3
   -- {0,1}, {1,0}                                       -- zero matrix of size: xx x xx
@@ -4302,7 +4302,7 @@ restart
   beilinsonContraction(e_(0,1)+e_(0,2), {0,0}, {1,0})  -- 1x3
   beilinsonContraction(13_E, {1,0}, {1,0})  -- 3x3
   beilinsonContraction(0_E, {0,1}, {1,0}) -- 1x3
-  
+
   beilinsonContraction(e_(1,0)+e_(1,1), {0,0}, {0,1})  -- 1x1
   beilinsonContraction(13_E, {0,1}, {0,1})  -- 1x1
   beilinsonContraction(0_E, {1,0}, {0,1})  -- 3x1
@@ -4321,7 +4321,7 @@ restart
   assert(numgensU({1,1},E) == 3)
   assert(numgensU({2,0},E) == 1)
   assert(numgensU({2,1},E) == 1)
-  
+
   f1 = e_(0,1)*e_(0,2)
   contract(f1,f1)
   diff(f1,f1)
@@ -4331,13 +4331,13 @@ restart
   diff(matrix{{f1}},matrix{{f1}})
   transpose matrix{{f1}}
 
-  m1 = beilinsonContraction(e_(0,1), {0,0}, {1,0})  
-  m2 = beilinsonContraction(e_(0,2), {1,0}, {2,0})  
+  m1 = beilinsonContraction(e_(0,1), {0,0}, {1,0})
+  m2 = beilinsonContraction(e_(0,2), {1,0}, {2,0})
   m12 = beilinsonContraction(e_(0,1)*e_(0,2), {0,0},{2,0})
   m12 = beilinsonContraction(e_(0,2)*e_(0,1), {0,0},{2,0})
   m1*m2
-  
-  e1 = map(E^{{0,0}}, E^{{-1,0}}, {{e_(0,1)}})  
+
+  e1 = map(E^{{0,0}}, E^{{-1,0}}, {{e_(0,1)}})
   e2 = map(E^{{-1,0}}, E^{{-2,0}}, {{e_(0,2)}})
   assert(beilinson e1 * beilinson e2 == beilinson(e1 * e2))
 ///
@@ -4354,7 +4354,7 @@ restart
   T2=T1**E^{a}[sum a];
   cohomologyMatrix(T2,-3*n,3*n)
   W=removeZeroTrailingTerms beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-  T = tateExtension W 
+  T = tateExtension W
   cohomologyMatrix(T,-3*n,3*n)
   UF = beilinson W
   UF.dd^2
@@ -4386,7 +4386,7 @@ restart
   T2=T1**E^{a}[sum a];
   cohomologyMatrix(T2,-3*n,3*n)
   W=removeZeroTrailingTerms beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-  T = tateExtension W 
+  T = tateExtension W
   cohomologyMatrix(T,-3*n,3*n)
   UF = beilinson W
   Hs = prune HH UF;
@@ -4424,12 +4424,12 @@ needsPackage "TateOnProducts"
         dual m
     	fm=res coker m
 	betti fm
-	dualfm = dual fm	
+	dualfm = dual fm
 	f2=res( coker dualfm.dd_(-1),LengthLimit=> 5)[2]
 	betti f2
 	betti dual fm
-	
-	
+
+
         kk=ZZ/101;n=2
 	E=kk[e_0..e_n,SkewCommutative =>true]
 	m=map(E^1,,matrix{{ e_0+e_1, (e_0-e_1)*e_2}})
@@ -4437,22 +4437,22 @@ needsPackage "TateOnProducts"
         dual m
 	m1 = syz transpose syz transpose m
     	fm=res (coker m, LengthLimit =>10)
-    	fm1=res (coker m, LengthLimit =>10)	
+        fm1=res (coker m, LengthLimit =>10)
 	betti fm
-	dualfm = dual fm	
+	dualfm = dual fm
 	f2=res( coker dualfm.dd_(-1),LengthLimit=> 10)[2]
 	f2.dd_0
 	betti f2
 	betti dual fm
-	
-	
----------------------- 
+
+
+----------------------
 n={1,2}
 (S,E) = productOfProjectiveSpaces n
 a={0,1}
 Ua=E^{ -a}
-W=chainComplex(map(E^0,Ua,0),map(Ua,E^0,0))[1] 
-time T=tateExtension(W) 
+W=chainComplex(map(E^0,Ua,0),map(Ua,E^0,0))[1]
+time T=tateExtension(W)
 betti (qT=firstQuadrantComplex(T,{0,0}))
 cohomologyMatrix(qT,-n,2*n),cohomologyMatrix(T,-2*n,2*n)
 -------------
@@ -4468,8 +4468,8 @@ isHomogeneous C
 
 restart
 loadPackage("TateOnProducts",Reload=>true)
-(S,E) = productOfProjectiveSpaces {1,2} 
-xx = apply(2, i->S_i) 
+(S,E) = productOfProjectiveSpaces {1,2}
+xx = apply(2, i->S_i)
 yy = select(gens S, v -> degree v =={0,1})
 ee = select(gens E, v -> degree v =={1,0})
 ff = select(gens E, v -> degree v =={0,1})
@@ -4499,7 +4499,7 @@ tar = (sT'_(-15)); s = chainComplex for i from min sT'+1 to max sT'-1 list(
 	phi = map(tar,,sT'.dd_(i+1));
 	tar = source phi;
 	phi);
-betti s    
+betti s
 betti(s[5]**E1^{{5}})
 B = beilinsonWindow (s[6]**E1^{{6}})
 betti B
@@ -4523,7 +4523,7 @@ tallyDegrees BC
 M' = HH_0 BC
 isIsomorphic(truncate({3,1},M), truncate({3,1},M'))
 isIsomorphic(truncate({2,0},M), truncate({2,0},M'))
-cohomologyMatrix(M,low,high) 
+cohomologyMatrix(M,low,high)
 cohomologyMatrix(RM,low,high)
 
 (S,E) = productOfProjectiveSpaces{1,2}
@@ -4559,5 +4559,5 @@ cohomologyMatrix (M', low, high)
 cohomologyMatrix (M, low, high)
 
 
-cohomologyMatrix(M,low,high) 
+cohomologyMatrix(M,low,high)
 cohomologyMatrix(RM,low,high)

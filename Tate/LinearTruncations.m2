@@ -1,11 +1,23 @@
+///
+restart
+uninstallPackage"LinearTruncations"
+restart
+installPackage("LinearTruncations")
+loadPackage("LinearTruncations",Reload=>true)
+viewHelp "LinearTruncations"
+peek loadedFiles
+check "LinearTruncations"
+///
+
+
 newPackage(
     "LinearTruncations",
     Version => "0.1",
     Date => "June 6, 2018",
     Authors => {
-	{ Name => "", Email => "", HomePage => "" }
-	},
-    Headline => "A new package",
+	{ Name => "Navid Nemati", Email => "Navid.Nemati@imj-prg.fr"},
+	{Name => "David Eisenbud", Email => "de@msri.org"}},
+    Headline => "find the multigraded truncations that give linear resolutions",
     DebuggingMode => true
     )
 
@@ -225,8 +237,6 @@ Description
     The output are the minimal multidegree where we get linear resolution after truncating.
 Caveat
   Note that if the ring has standard grading then the answer is just the regularity.
-SeeAlso
-  "????"
 ///
 
 doc ///
@@ -268,7 +278,7 @@ SeeAlso
 doc ///
 Key
    coarseMultigradedRegularity
-  (coarseMultigradedRegularity,Module)
+   (coarseMultigradedRegularity,Module)
 Headline
   this function gives a multidegree where we are sure that truncation at this degree has a linear resolution
 Usage
@@ -374,7 +384,7 @@ Caveat
 SeeAlso
   coarseMultigradedRegularity
 ///
-doc ///
+doc ///pp
 Key
     multigradedPolynomialRing
    (multigradedPolynomialRing,List)
@@ -487,11 +497,17 @@ cokernel | x_(0,1)^2x_(1,0) x_(0,0)^2x_(0,1)x_(1,0) x_(1,0)^3x_(1,1)^2 x_(0,1)x_
 S = multigradedPolynomialRing{2,2}	
 m = 2
 m = random(S^{3:{m,m}}, S^{{1,-1},{-1,1}});
+m = random(S^3, S^{{-1,-3},{-3,-1}});
+m = map(S^3, S^{{-1,-3},{-3,-1}}, (i,j) -> if j==0 then x_(0,i)*x_(1,i)^3 else x_(1,i)*x_(0,i)^3)
+isHomogeneous m
+
 I = minors(2,m);
+codim I
 M = S^1/I;
 betti res M
-coarseMultigradedRegularity M --{7,7}
-linearTruncations M
+d = regularity M 
+c = sum coarseMultigradedRegularity M --{7,7}
+
 
 
 ----- An example where linearTruncation gives pairs with different total degree-----
@@ -525,8 +541,8 @@ findAllLinearTruncations({d+1,c},M)--------- It seems to be a region!!-----
 doc ///
 Key
    linearTruncations
-  (linearTruncations,Module)
-  (linearTruncations,Module,List)
+   (linearTruncations,Module)
+   (linearTruncations,Module,List)
 Headline
   compute the minimal pairs when we get linear resolution after truncation
 Usage
