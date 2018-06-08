@@ -182,7 +182,7 @@ intersectionRing(NormalToricVariety,Ring,Matrix) := (X,S,M) -> (
     R := S[z_0..z_(numColumns M - 1)];
     T := ring presentation inRing;
     L := for i from 0 to numColumns M - 1 list (
-	sum (for j from 0 to numRows M - 1 list M_(j,i)*T_i)
+	sum (for j from 0 to numRows M - 1 list M_(j,i)*T_j)
 	);
     phi := map(T, R, L);
     I := preimage(phi,ideal(inRing));
@@ -709,22 +709,32 @@ doc ///
        intersectionRing
        (intersectionRing,NormalToricVariety)
        (intersectionRing,NormalToricVariety,Ring)
+       (intersectionRing,NormalToricVariety,Ring,Matrix)
+       (intersectionRing,NormalToricVariety,Matrix)
      Headline
        compute the Chow ring of a smooth toric variety
      Usage
        intersectionRing(X)
        intersectionRing(X,S)
+       intersectionRing(X,S,M)
+       intersectionRing(X,M)
      Inputs 
        X:NormalToricVariety
        S:Ring
+         a coefficient ring for the intersection ring returned
+       M:Matrix
+         must be a n by m matrix, where n is the number of rays of X, and m
+	 is the rank of the codimension 1 Chow group.
      Outputs
        :Ring
-         the Chow ring of X
+         the intersection ring of X
      Description
        Text 
-         The ring of the ideal has one generator for each ray of X, and
-         the ideal is the ideal given in the Stanley-Reisner presentation of
+         By default, the ring will have coefficients in QQ and will have one variable 
+	 for each ray of X. The ring returned is a polynomial ring modulo an ideal. 
+	 The ideal is the ideal given in the Stanley-Reisner presentation of
          the cohomology ring of X.
+       Text
          This assumes that X is smooth.  Eventually it will be
          implemented for simplicial toric varieties.
        Example
@@ -740,12 +750,31 @@ doc ///
        Text 
          Note that the degree-one part of the ring has dimension the Picard-rank, as expected.
        Text
-         Note that a coefficient ring can also be specified. By default, the coefficient ring is the rational numbers.
+         Note that a coefficient ring can also be specified by inputting a parameter S. 
+	 By default, the coefficient ring is the rational numbers.
        Example
          X = projectiveSpace 2
 	 R = intersectionRing(X,ZZ)
-	 for i from 0 to 2 do <<hilbertFunction(i,R)<<endl 
-
+	 for i from 0 to 2 do <<hilbertFunction(i,R)<<endl
+       Text
+         A nicer presentation of X can be returned by making use of the parameter M. Consider the
+	 blowup of PP2 at a point. Let H be the divisor class of a line, and let E be the 
+	 exceptional divisor. H and E generate the intersection ring, but the standard presentation
+	 is not minimal in the sense that it returns extranous variables.
+       Example
+         rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	 coneList={{0,1},{1,2},{2,3},{3,0}}
+	 X = normalToricVariety(rayList,coneList)
+	 rank chowGroup(1,X)
+       Text
+         The rank of the codimension 1 subgroup tells us the minimal number of generators.
+	 We know that E corresponds to the ray {0,-1} and H corresponds to the ray {0,1}. 
+	 We can obtain a presentation of the intersection ring in two variables H and E as follows.
+       Example
+         M = matrix{{0,0},{0,1},{0,0},{1,0}}
+	 intersectionRing(X,QQ,M)
+       Text
+         Here, E corresponds to z_0 and H corresponds to z_1.
 ///
 
 doc ///
