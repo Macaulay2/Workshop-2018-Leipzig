@@ -128,6 +128,7 @@ visualizeHypersurface (RingElement) := o-> (polyn)->(
     polynomial := toTropPoly(polyn);
     if (instance(o.Valuation,Number)) then polynomial = toTropPoly(pAdicCoeffs(o.Valuation,polyn));
     if (instance(o.Valuation,RingElement)) then polynomial = toTropPoly(polynomialCoeffs(o.Valuation,polyn));   
+    if (instance(o.Valuation,String) and o.Valuation == "constant") then polynomial = toTropPoly(sum flatten entries (coefficients polyn)_0);
     print polynomial;
     filename := temporaryFileName();
     filename << "use application 'tropical';" << endl << "visualize_in_surface(new Hypersurface<"|minmax()|">(POLYNOMIAL=>toTropicalPolynomial(\""|polynomial|"\")));" << close;
