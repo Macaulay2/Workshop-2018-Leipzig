@@ -609,3 +609,4 @@ findAllLinearTruncations({d,d+1},M)
 findAllLinearTruncations({d,d+2},M)
 c = coarseMultigradedRegularity M
 findAllLinearTruncations({d,sum c},M)
+viewHelp "LinearTruncations"
