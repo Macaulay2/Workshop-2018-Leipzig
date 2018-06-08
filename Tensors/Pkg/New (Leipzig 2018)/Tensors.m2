@@ -151,6 +151,18 @@ Tensor#{Standard,AfterPrint} = T -> (
     << toString(class(T)) | " in " | net(T#tensorSpace)
     << endl;
     )
+
+entries (Tensor) := T -> (
+    f := (coeffs, ds) -> (
+        if #ds <= 1 then coeffs
+        else (
+            ds' := drop(ds, 1);
+            apply(pack(#coeffs // ds#0, coeffs), cs -> f(cs, ds'))
+            )
+        );
+    f(T#coeff, T#tensorSpace#dims)
+    )
+
 ------------------------------------------------------------------------
 -- ALGEBRA OF TENSORS
 ------------------------------------------------------------------------
@@ -463,6 +475,13 @@ TEST ///
 
     assert(contraction(V_(0,0,0), W_(0,0,0), {0,1,2}, {0,1,2}) == makeTensor({1}, tensorSpace(QQ, {}, {})))
     assert(contraction(V_(0,0,0), W_(0,0,0), {0,1}, {1,2}) == makeTensor({1,0,0,0}, tensorSpace(QQ, {symbol X, symbol Y}, {2,2})))
+
+    -- contraction agrees with matrix product
+    MS1 = tensorSpace(QQ, symbol Z, {2,3})
+    MS2 = tensorSpace(QQ, symbol Z, {3,4})
+    M1 = makeTensor(1..6, MS1)
+    M2 = makeTensor(1..12, MS2)
+    assert(matrix entries contraction(M1, M2, {1}, {0}) == (matrix entries M1) * (matrix entries M2))
 ///
 
 end--------------------------------------------------------------
