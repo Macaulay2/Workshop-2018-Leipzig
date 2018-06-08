@@ -1,0 +1,3 @@
+I'm wondering how can I define and code a 2-term complex of coherent sheaves C:F-->G derectly (without looking at  the induced map of modules).
+I need it to compute e.g. Ext^i(E,F-->G) for another coherent sheaf E.
+Thanks
