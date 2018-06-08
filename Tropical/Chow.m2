@@ -388,6 +388,14 @@ ToricDivisor * List := (D, C) -> (
 
 NormalToricVariety _ List := (X,L) -> (toricCycle({(L,1)},X))
 
+toricCycle(ToricDivisor) := D -> (
+    
+)
+
+ToricDivisor * ToricDivisor := (D,E) -> (
+        
+)
+
 ToricDivisor * ToricCycle := (D,C) -> (
     sum for c in support C list (
         C#c * ( D * c )
