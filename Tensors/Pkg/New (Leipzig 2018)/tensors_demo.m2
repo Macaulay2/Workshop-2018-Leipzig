@@ -46,6 +46,16 @@ T1 ** T2
 T1 ^** 3
 -- ...names of new variables can be improved... we'll do it! Stay tuned.
 
+-- We can look at slices of tensors
+V = tensorSpace(QQ, symbol X, {2,3,4})
+T = makeTensor(1..24, V);
+M1 = slice(T, {,,3}); matrix entries M1
+M2 = slice(T, {0,,}); matrix entries M2
+
+-- and can do contraction of tensors, e.g. matrix product.
+M3 = contraction(M1, M2, {1}, {0})
+matrix entries M3 == (matrix entries M1) * (matrix entries M2)
+
 -------------------------------------------------------------------------------------------------
 -- EXERCISE 
 -- Consider the tensor space QQ[3x3x3]:
