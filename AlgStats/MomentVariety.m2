@@ -16,6 +16,7 @@ newPackage(
 
 -- EXPORT LIST --------------------------------------------------
 export {
+    "gaussianMoments",
     "listOfMoments",
     "momentIdeal",
     "momentIdealExponential",
@@ -25,6 +26,8 @@ export {
     "momentIdealPoisson",
     "momentIdealMultinomial",
     "momentIdealMultinomialMixture",
+    "momentMapGaussiansMixtures",
+    "momentVarietyGaussiansMixtures",
     "formalLog",
     "cumulantIdealGaussian",
     "cumulantIdealExponential",
@@ -34,13 +37,15 @@ export {
     "momentIdealToCumulants",
     "cumulantToMoments",
     "momentIdealToCumulantsMultivariate",
-    "cumulantIdealToMomentsMultivariate"
+    "cumulantIdealToMomentsMultivariate",
+    "GroundField",
+    "Mixture"
     }
 
 -- Lists all moments of the univariate Gaussian
 
-GaussianMoments = method()
-GaussianMoments (ZZ, Ring) := List => (d, R) -> (
+gaussianMoments = method()
+gaussianMoments (ZZ, Ring) := List => (d, R) -> (
   t := symbol t;
   S := R[t]/t^(d+1);
   use S;
@@ -54,15 +59,15 @@ GaussianMoments (ZZ, Ring) := List => (d, R) -> (
 
 --Exponential mixture
 --takes as input the number of mixtures, the highest degree d of moments and a ring
-momentIdealExponential = method(Options => {K => QQ})
+momentIdealExponential = method(Options => {GroundField => QQ})
 momentIdealExponential (ZZ, ZZ) := o -> (mix, d)->(
     l := local l;
     a := local a;
     m := local m;
-    R := o.K[l_1..l_mix,a_1..a_mix,m_0..m_d];
+    R := o.GroundField[l_1..l_mix,a_1..a_mix,m_0..m_d];
     I := ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list a_j*l_j^i*i!) + ideal(-1+sum for i from 1 to mix list a_i);
     I = homogenize(eliminate (toList(a_1..a_mix)|toList(l_1..l_mix) ,I),m_0);
-    sub(I, o.K[m_0..m_d])
+    sub(I, o.GroundField[m_0..m_d])
 )
 
 --------------------------------------------------------------------------------------
@@ -170,15 +175,15 @@ momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,mix,d,KK) -> (
   para = toList(a_1..a_k);
  
   -- This makes the ring with all the parameters.
-  par = join(flatten(parx),flatten(pars),flatten(para));
+  par := join(flatten(parx),flatten(pars),flatten(para));
   R := KK[par];
  
   -- This makes the generating function
   t := symbol t;
-  auxvars = toList(t_1..t_n);
+  auxvars := toList(t_1..t_n);
   auxring := R[auxvars];
   auxideal := ideal(vars(auxring));
-  S = auxring/(auxideal^(d+1));
+  S := auxring/(auxideal^(d+1));
   use S;
  
   mu := 0;
@@ -192,7 +197,7 @@ momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,mix,d,KK) -> (
     mu = promote(mu,S);
     Sigma= genericSymmetricMatrix(R,s_(i,(1,1)),n);
     Sigma = promote(Sigma,S);
-    logarithm =  vars(S)*mu + (1/2) * vars(S)*Sigma*transpose(vars(S));
+    logarithm :=  vars(S)*mu + (1/2) * vars(S)*Sigma*transpose(vars(S));
     MGF = MGF + (a_i)*exp(logarithm_(0,0));
     );
  
@@ -212,6 +217,7 @@ momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,mix,d,KK) -> (
   C = matrix(C);
   C=lift(C,R);
  
+  m := symbol m;
   momvars := toSequence reverse (apply(lexpM,e->m_e));
  
   return (matrix({(reverse((entries(transpose(C)))_0))}),momvars);
@@ -249,23 +255,23 @@ momentVarietyGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Ideal => (n,mix,d,KK) -> (
 --takes as input the number of mixtures and the highest degree of moments appearing
 --computes the homogeneous moment ideal 
 
-momentIdealPoisson = method(Options => {K => QQ})
+momentIdealPoisson = method(Options => {GroundField => QQ})
 momentIdealPoisson (ZZ, ZZ) := o -> (mix, d)-> (
     lambda := symbol lambda;
     a := symbol a;
     m := symbol m;
     t := symbol t;
-    R := o.K[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
+    R := o.GroundField[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     use R;
     series := sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
     I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
     I = homogenize(eliminate((for i from 1 to mix list a_i)|(for i from 1 to mix list lambda_i),I),m_0);
-    sub(I, o.K[m_0..m_d])
+    sub(I, o.GroundField[m_0..m_d])
 )
 
 --Gaussian Mixtures Test
 --written to eliminate a_mix
-momentIdealGaussian = method(Options => {K => QQ})
+momentIdealGaussian = method(Options => {GroundField => QQ})
 momentIdealGaussian (ZZ, ZZ) := o -> (mix, d)->(
     mn := symbol  mn;
     sd := symbol sd;
@@ -273,22 +279,22 @@ momentIdealGaussian (ZZ, ZZ) := o -> (mix, d)->(
     t :=  symbol t;
     a := symbol a;
     if mix == 1 then(
-	R := o.K[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
+	R := o.GroundField[mn_1..mn_mix,sd_1..sd_mix,m_0..m_d][t]/t^(d+1);
 	use R;
     	series:= exp(mn_1*t+(1/2)*sd_1^2*t^2);
     	I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i;
     	I =  homogenize(eliminate((for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I),m_0);
-	return sub(I, o.K[m_0..m_d])
+	return sub(I, o.GroundField[m_0..m_d])
 	)
     else( 
-	R2 := o.K[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
+	R2 := o.GroundField[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
 	use R2;
     	amix := 1 - sum for i from 1 to mix-1 list a_i;
 
     	series2 := sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
     	I2 := ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
     	I = homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I2),m_0);
-	return sub(I, o.K[m_0..m_d])
+	return sub(I, o.GroundField[m_0..m_d])
 	)
 )
 
@@ -300,34 +306,34 @@ momentIdealGaussian (ZZ, ZZ) := o -> (mix, d)->(
 --t_1..t_r are the variables of the moment generating function
 --d is the truncation order
 
-momentIdealMultinomial = method(Options => {K => QQ})
+momentIdealMultinomial = method(Options => {GroundField => QQ})
 momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
     t := symbol t;
-    S := o.K[t_1..t_k];
+    S := o.GroundField[t_1..t_k];
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
     Mons := ideal(apply(quotientExps, e->S_e));
     p := symbol p;
     m := symbol m;
-    R := o.K[p_1..p_k,apply(exps,i->m_i)][t_1..t_k];
+    R := o.GroundField[p_1..p_k,apply(exps,i->m_i)][t_1..t_k];
     Mons = sub(Mons,R);
     R = R / Mons;
     use R;
     series := (sum apply(toList(1..k), j-> p_j*exp(t_j)))^n; --moment gen fxn of the multinomial distribution
     I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + ideal( 1 - sum apply(toList(1..k), i -> p_i));
-    T := o.K[apply(exps,i->m_i)];
+    T := o.GroundField[apply(exps,i->m_i)];
     homogenize(sub((eliminate(toList(p_1..p_k),I),T)),m_(exps#0))
 )
 
 --Mixtures of Multinomial Distributions
 
 -- param es a list with the varaibles k and n
-momentIdealMultiMixture = method(Options => {K => QQ, Mixture => 1})
+momentIdealMultiMixture = method(Options => {GroundField => QQ, Mixture => 1})
 momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
 
     mix := o.Mixture;
     t := symbol t;
-    S := o.K[t_1..t_r];
+    S := o.GroundField[t_1..t_r];
 
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
@@ -336,7 +342,7 @@ momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
     p := symbol p;
     a := symbol a;
     m := symbol m;
-    R := o.K[p_(1,1)..p_(mix,r),a_1..a_mix,apply(exps,i->m_i)][t_1..t_r];
+    R := o.GroundField[p_(1,1)..p_(mix,r),a_1..a_mix,apply(exps,i->m_i)][t_1..t_r];
     Mons = sub(Mons,R);
     R = R / Mons;
     use R;
@@ -344,27 +350,28 @@ momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
     I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + 
     	ideal( apply(toList(1..mix),i-> 1 - sum apply(toList(1..r), j -> p_(i,j)))) + 
 	ideal(1 - sum apply(toList(1..mix),i -> a_i));
-    T := o.K[apply(exps,i->m_i)];
+    T := o.GroundField[apply(exps,i->m_i)];
     homogenize(sub((eliminate(toList(p_(1,1)..p_(mix,r))|toList(a_1..a_mix),I),T)),m_(exps#0))
 )
 
 --Binomial Distribution
 --n trials, truncation order d
 momentIdealBinomial = method()
-momentIdealBinomial = (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
+momentIdealBinomial (ZZ, ZZ, ZZ) := Ideal => (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
 
 
 --Moment Ideal from Moment Generating function
 --takes as input the number of mixtures, the highest degree of moments appearing, a list with the MGF and the parameters of this function, and a Ring.
 --computes the homogeneous moment ideal 
 
-momentIdealFromMGF = method(Options => {K => QQ})
+momentIdealFromMGF = method(Options => {GroundField => QQ})
 momentIdealFromMGF (ZZ, ZZ, Thing, List) := o -> (mix, d, f, param) -> (
     n := #param - 1;
     m := symbol m;
     a := symbol a;
+    t := symbol t;
     paramMix := for i to n list (param_i)_1..(param_i)_mix;
-    R := o.K[toSequence paramMix, toSequence param, a_1..a_mix, m_0..m_d];
+    R := o.GroundField[toSequence paramMix, toSequence param, a_1..a_mix, m_0..m_d];
     S := R[t]/t^(d+1);
     use S;
     paramSubs := flatten for i from 1 to mix list
@@ -373,7 +380,7 @@ momentIdealFromMGF (ZZ, ZZ, Thing, List) := o -> (mix, d, f, param) -> (
     series := sum for i from 1 to mix list a_i*sub(f,paramSubs_(i-1));
     I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
     I = homogenize(eliminate((gens R)_{0..(#(gens R)-d-2)},I),m_0);
-    sub(I, o.K[m_0..m_d])
+    sub(I, o.GroundField[m_0..m_d])
 )
 
 
@@ -398,10 +405,11 @@ cumulantIdealGaussian (ZZ,ZZ) := Ideal => (mix,d) -> (
 
 --note: l_i's are actually (l_i)^(-1)
 cumulantIdealExponential = method()
-cumulantIdealExponential = (mix,d) -> (
+cumulantIdealExponential (ZZ, ZZ) := Ideal => (mix,d) -> (
     l := symbol l;
     a := symbol a;
     k := symbol k;
+    t := symbol t;
     R:=QQ[l_1..l_mix,a_1..a_mix,k_0..k_d][t]/t^(d+1);
     use R;
     series := formalLog(sum(apply(toList(1..mix),j->sum(apply(toList(1..d),i->a_j*l_j^i*t^i)))),d);
@@ -411,7 +419,7 @@ cumulantIdealExponential = (mix,d) -> (
 )
 
 cumulantIdealPoisson = method()
-cumulantIdealPoisson = (mix,d) -> (
+cumulantIdealPoisson (ZZ, ZZ) := Ideal => (mix,d) -> (
     l := symbol l;
     a := symbol a;
     k := symbol k;
@@ -522,6 +530,7 @@ momentsToCumulants = (moments,R) -> (
 
 -- helper function to do a change of variables from moments to cumulants and vice versa
 powerSeriesTransform = (l, f, R) -> (
+    t := symbol t;
     S := R[t]/t^#l;
     use S;
     p := f(sum for i from 0 to #l-1 list t^i * l#i/i!);
@@ -534,7 +543,8 @@ formalExp = (f, d) -> (
 )
 
 -- the first 'd' coefficients of the formal power series of the log function
-formalLog = (f, d) -> (
+firmalLog = method()
+formalLog (MethodFunction, ZZ) := MethodFunction => (f, d) -> (
     sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
 )
 
@@ -617,256 +627,235 @@ idealTransformMultivariate = (I, tensorFormat, f, substVal) -> (
 
 beginDocumentation()
 
-doc ///
-  Key
-     MomentVariety
-  Headline
-     A package for computing the moments of distributions 
-  Description
-   Text
-    {\em MomentVariety} is a package that computes the moments of some distributions and finds the underlying ideals.
-
-///    
-
-doc ///
-  Key    
-    GaussianMoments
-    (GaussianMoments, ZZ, Ring)
-  Headline
-    lists all moments of the univariate Gaussian distribution
-  Usage 
-    GaussianMoments (n,R) 
-  Inputs
-    n : ZZ
-    R : Ring
-  Outputs
-    : BasicList
-  Description
-    Text
-      GaussianMoments computes and lists all the moments of the univariate Gaussian distribution.
-    Text
-      Here we show an example.
-    Example
-      R = QQ[x_0..x_3]
-      d = 2
-      GaussianMoments (d,R)
+doc ///  
+  Key 
+    MomentVariety 
+  Headline 
+    A package for computing the moments of distributions 
+  Description 
+    Text 
+      {\em MomentVariety} is a package that computes the moments of some distributions and finds the underlying ideals.
 
 ///
 
+doc /// 
+  Key 
+    gaussianMoments
+    (gaussianMoments, ZZ, Ring) 
+  Headline 
+    lists all moments of the univariate Gaussian distribution 
+  Usage
+    gaussianMoments (n,R) 
+  Inputs 
+    n : ZZ 
+    R : Ring 
+  Outputs 
+    : List
+  Description 
+    Text 
+      gaussianMoments computes and lists all the moments of the univariate Gaussian distribution.  
+    Text 
+      Here we show an example.  
+    Example 
+      R = QQ[x_0..x_3] 
+      n = 2 
+      gaussianMoments (n,R)
+
+///
+
+doc /// 
+  Key  
+    momentIdealExponential
+    (momentIdealExponential, ZZ, ZZ)
+  Headline 
+    compute the ideal corresponding to the Exponential 
+  Usage
+    momentIdealExponential (d,mix) 
+  Inputs 
+    d : ZZ 
+    mix : ZZ 
+  Outputs 
+    : Ideal 
+  Description 
+    Text 
+      given the highest degree of the moments and the number of mixtures compute the ideal of the Exponential distribution 
+    Text 
+      Here we show an example 
+        Example 
+	  d = 1
+	  mix = 2
+	  momentIdealExponential (d,mix)
+    
+///
+
+doc /// 
+  Key 
+    momentIdealGaussian 
+    (momentIdealGaussian, ZZ, ZZ) 
+  Headline
+    computes the homogeneous moment ideal of the Gaussian 
+  Usage 
+    momentIdealGaussian (mix,d) 
+  Inputs 
+    mix : ZZ 
+    d : ZZ 
+  Outputs 
+    : Ideal
+  Description 
+    Text 
+      given the number of mixtures and the highest degree of moments, compute the corresponding homogeneous ideal 
+    Text 
+      Here we show an example 
+    Example 
+      mix = 2
+      d = 1 
+      momentIdealGaussian (mix,d)
+      
+///
+
+doc /// 
+  Key 
+    momentIdealPoisson 
+    (momentIdealPoisson, ZZ, ZZ) 
+  Headline
+    compute the homogeneous moment ideal of the Poisson distribution
+  Usage 
+    momentIdealPoisson(mix,d) 
+  Inputs 
+    mix : ZZ 
+    d : ZZ 
+  Outputs 
+    : Ideal 
+  Description 
+    Text 
+      given the number of mixtures and the hightest degree of moments, compute the corresponding homogeneous moment ideal 
+    Text 
+      Here we show an example 
+    Example 
+      mix = 1
+      d = 2
+      momentIdealPoisson (mix,d)
+      
+///
+  
+doc /// 
+  Key 
+    momentMapGaussiansMixtures 
+    (momentMapGaussiansMixtures, ZZ, ZZ, ZZ, Ring) 
+  Headline 
+    computes the moments of multidimensional Gaussian mixtures 
+  Usage 
+    momentMapGaussiansMixtures (n,mix,d,KK)
+  Inputs 
+    n : ZZ 
+    mix : ZZ 
+    d : ZZ 
+    KK : Ring 
+  Outputs 
+    : Sequence
+  Description 
+    Text 
+      computes the moments of multidimensional Gaussian mixtures given 
+      n: dimension of the Gaussian,
+      d: order of the moments,
+      mix: number of mixtures 
+    Text 
+      Here we show an example 
+    Example 
+      n = 2 
+      d = 3 
+      mix = 2 
+      KK = QQ 
+      momentMapGaussiansMixtures (n,mix,d,KK)
+ 
+///
+ 
+doc /// 
+  Key 
+    momentVarietyGaussiansMixtures
+    (momentVarietyGaussiansMixtures, ZZ, ZZ, ZZ, Ring) 
+  Headline
+    computes the ideal of the moment variety for multidimensional Gaussian mixtures 
+  Usage 
+    momentVarietyGaussiansMixtures (n,mix,d,KK) 
+  Inputs 
+    n : ZZ 
+    d : ZZ 
+    mix : ZZ 
+    KK : Ring 
+  Outputs 
+    : Ideal 
+  Description 
+    Text
+      computes the ideal of the moment variety for multidimensional Gaussian mixtures 
+    Text 
+      Here we show an example 
+    Example 
+      n = 1
+      d = 3 
+      mix = 2 
+      KK = QQ 
+      momentVarietyGaussiansMixtures (n,mix,d,KK)
+ 
+///
+ 
 doc ///
   Key
-    momentIdealExponential
-    (momentIdealExponential, ZZ, ZZ, Ring)
+    momentVarietyGaussians
+    (momentVarietyGaussians, ZZ, ZZ)
   Headline
-    compute the ideal corresponding to the Exponential
+    compute the homogeneous ideal of the moment variety
   Usage
-    momentIdealExponential (d,mix)
+    momentVarietyGaussians (n,d)
   Inputs
+    n : ZZ
     d : ZZ
-    mix : ZZ
   Outputs
     : Ideal
   Description
     Text
-      given the highest degree of the moments and the number of mixtures compute the ideal of the Exponential distribution
-    Text
-      Here we show an example
-    -- Example
-    --   MISSING
-    
-///
-
-doc ///
-  Key
-    momentIdealGaussian
-    (momentIdealGaussian, ZZ, ZZ, Ring)
-  Headline
-    computes the homogeneous moment ideal of the Gaussian
-  Usage
-    I = momentIdealGaussian (mix,d, K)
-  Inputs
-    mix : ZZ
-    d : ZZ
-  Outputs
-    I : Ideal
-  Description
-    Text
-      given the number of mixtures and the highest degree of moments, compute the corresponding homogeneous ideal
+      compute the homogeneous ideal of the moment variety
     Text
       Here we show an example
     Example
-      mix = 2
-      d = 1
-      momentIdealGaussian (mix,d,K)
-      
+      n = 1
+      d = 4
+      momentVarietyGaussians (n,d)
+ 
 ///
-
+ 
 doc ///
   Key
-    momentIdealPoisson 
-    (momentIdealPoisson, ZZ, ZZ)
+    momentIdealMultinomial
+    (momentIdealMultinomial, ZZ, ZZ, ZZ)
   Headline
-    compute the homogeneous moment ideal
+    multinomial distribution
   Usage
-    I = momentIdealPoisson(mix,d,K)
+    I = momentIdealMultinomial (k, n, d)
   Inputs
-    mix : ZZ
+    k : ZZ
+    n : ZZ
     d : ZZ
-    K: Ring
-  Outputs
+  Outputs 
     I : Ideal
   Description
     Text
-      given the number of mixtures and the hightest degree of moments, compute the corresponding homogeneous moment ideal
+      Given the number of possible outcomes, the number of trials in a statistical experiment as well as the truncation order, compute the moment ideal for the multinomial distribution      
     Text
       Here we show an example
     Example
-      MISSING
-      
- ///
+      k = 2
+      n = 3
+      d = 2
+      momentIdealMultinomial (k,n,d) 
  
- doc ///
-   Key
-     momentIdealGaussianTest
-     (momentIdealGaussianTest, ZZ, ZZ, Ring)
-   Headline
-     TO BE GIVEN
-   Usage
-     I = momentIdealGaussianTest(mix,d,K)
-   Inputs
-     mix : ZZ
-     d : ZZ
-   Outputs
-     I : Ideal
-   Description
-     Text
-       TO BE GIVEN
-     Text
-       Here we show an example
-     -- Example
-     --   TO BE GIVEN
-       
- ///
- 
-  doc ///
-   Key
-     momentMapGaussiansMixtures
-     (momentMapGaussiansMixtures, ZZ, ZZ, ZZ, Ring)
-   Headline
-     computes the moments of multidimensional Gaussian mixtures
-   Usage
-     momentMapGaussiansMixtures (n,mix,d,KK)
-   Inputs
-     n : ZZ
-     mix : ZZ
-     d : ZZ
-     KK : Ring
-   Outputs
-     : Sequence -*(Matrix,Sequence)*-
-   Description
-     Text
-       computes the moments of multidimensional Gaussian mixtures given
-       n: dimension pf the Gaussian
-       d: order of the moments
-       mix: number of mixtures
-     Text
-       Here we show an example
-     Example
-       n = 2
-       d = 3
-       mix = 2
-       KK = QQ
-       momentMapGaussiansMixtures (n,k,d,KK) 
- 
- ///
- 
- doc ///
-   Key
-     momentVarietyGaussiansMixtures
-     (momentVarietyGaussiansMixtures, ZZ, ZZ, ZZ, Ring)
-   Headline
-     computes the ideal of the moment variety for multidimensional Gaussian mixtures
-   Usage
-     momentVarietyGaussiansMixtures (n,mix,d,KK)
-   Inputs
-     n : ZZ
-     d : ZZ
-     mix : ZZ
-     KK : Ring
-   Outputs
-     : Ideal
-   Description
-     Text
-       computes the ideal of the moment variety for multidimensional Gaussian mixtures
-     Text
-       Here we show an example
-     Example
-       n = 1
-       d = 3
-       mix = 2
-       KK = QQ
-       momentVarietyGaussiansMixtures (n,mix,d,KK) 
- 
- ///
- 
- doc ///
-   Key
-     momentVarietyGaussians
-     (momentVarietyGaussians, ZZ, ZZ)
-   Headline
-     compute the homogeneous ideal of the moment variety
-   Usage
-     momentVarietyGaussians (n,d)
-   Inputs
-     n : ZZ
-     d : ZZ
-   Outputs
-     : Ideal
-   Description
-     Text
-       compute the homogeneous ideal of the moment variety
-     Text
-       Here we show an example
-     Example
-       n = 1
-       d = 4
-       momentVarietyGaussians (n,d)
- 
- ///
- 
-
- doc ///
-   Key
-     momentIdealMultinomial
-     (momentIdealMultinomial, ZZ, ZZ, ZZ, Ring)
-   Headline
-     multinomial distribution
-   Usage
-     I = momentIdealMultinomial (k, n, d, K)
-   Inputs
-     k : ZZ
-     n : ZZ
-     d : ZZ
-     K : Ring
-   Outputs 
-     I : Ideal
-   Description
-     Text
-       Given the number of possible outcomes, the number of trials in a statistical experiment as well as the truncation order, compute the moment ideal for the multinomial distribution      
-     Text
-       Here we show an example
-     Example
-       k = 2
-       n = 3
-       d = 2
-       momentIdealMultinomial (k,n,d) 
- 
- ///
+///
  
 end--
 uninstallPackage "MomentVariety"
 restart
 installPackage "MomentVariety"
+
 
 
 
