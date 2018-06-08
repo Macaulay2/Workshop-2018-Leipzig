@@ -8,16 +8,43 @@
 newPackage(
     "Tensors",
     Version => "0.1",
-    Date => "5 June 2018",
-    Authors => {}, -- TODO
-    Headline => "some tensor constructions",
+    Date => "June 2018",
+    Authors => {
+	{Name => "Alessandro Oneto",
+	    Email => "alessandro.oneto@upc.edu",
+	    HomePage => "https://sites.google.com/view/alessandrooneto/home"
+	    },
+	{Name => "Emanuele Ventura",
+	    Email => "emanueleventura.sw@gmail.com, eventura@math.tamu.edu",
+	    HomePage => "https://sites.google.com/site/emanueleventurasw/"
+	    },
+	{Name => "Iman Bahmani Jafarloo",
+	    Email => "ibahmani@unito.it",
+	    HomePage => "http://calvino.polito.it/~imanbj/#home"
+	    },
+	{Name => "Nasrin Altafi",
+	    Email => "nasrinar@kth.se"
+	    },
+        {Name => "Francesco Galuppi",
+	    Email => "Francesco.Galuppi@mis.mpg.de",
+	    HomePage => "https://www.mis.mpg.de/nlalg/members/francesco-galuppi.html"
+	    },
+        {Name => "Luca Sodomaco",
+	    Email => "luca.sodomaco@unifi.it"
+	    },
+	{Name => "Markus Wageringel",
+	    Email => "markus.wageringel@uni-osnabrueck.de"
+	    }
+	}, -- TODO
+    Headline => "A package on Tensors",
     AuxiliaryFiles => false,
-    DebuggingMode => true
+    DebuggingMode => true,
+    Reload => true
     )
 
 -- EXPORT LIST --------------------------------------------------
 export {
-    -- Types
+    -- types
     "TensorSpace",
     "Tensor",
     -- methods
@@ -39,18 +66,6 @@ protect dims
 protect coeff
 protect baseRing
 protect tensorBasis
-
--- DOCUMENTATION ------------------------------------------------
-beginDocumentation()
-doc ///
-  Key
-    Tensors
-  Headline
-     some tensor constructions
-  Description
-   Text
-    {\em Tensors} is work in progress.
-///
 
 -- CODE ---------------------------------------------------------
 
@@ -91,7 +106,6 @@ tensorSpace (Ring, VisibleList, VisibleList) := (R,Xs,N) -> (
     )
 tensorSpace (Ring,Symbol,VisibleList) := (R,X,N) -> tensorSpace(R, #N:X, N)
 
--- Definition of the way a tensor space 'looks like' when printed in output
 expression (TensorSpace) := V -> (
     N := V#dims;
     if #N == 0 then (
@@ -107,7 +121,9 @@ expression (TensorSpace) := V -> (
 
 net (TensorSpace) := V -> net expression V
 
--- function to construct a TENSOR
+-- construction of a TENSOR. The attributes in input are:
+--    L = a list of coefficients
+--    V = a TensorSpace
 makeTensor = method();
 makeTensor (VisibleList,TensorSpace) := (L,V) -> (
     if (#L != #(V#tensorBasis)) then (
@@ -135,6 +151,15 @@ expression (Tensor) := T -> (
     return expression (expr)
 )
 
+net (Tensor) := T -> net expression T
+Tensor#{Standard,AfterPrint} = T -> (
+    << endl;
+    << toString(class(T)) | " in " | net(T#tensorSpace)
+    << endl;
+    )
+
+-- Basic features of Tensors
+
 --orderTensor = method()
 --orderTensor (Tensor) := T -> (
 --    return #((T#tensorSpace)#dims)
@@ -145,13 +170,7 @@ expression (Tensor) := T -> (
 --    return #(V#dims)
 --    )
 
-net (Tensor) := T -> net expression T
-Tensor#{Standard,AfterPrint} = T -> (
-    << endl;
-    << toString(class(T)) | " in " | net(T#tensorSpace)
-    << endl;
-    )
-
+-- 'enatries' returns the list of coefficients in a nested list
 entries (Tensor) := T -> (
     f := (coeffs, ds) -> (
         if #ds <= 1 then coeffs
@@ -185,7 +204,7 @@ TensorSpace _ ZZ := (V,z) -> (
     return V_s
     )
 
--- indexed tensor
+-- access to tensor indices
 Tensor _ Sequence := (T,s) -> (
     V := T#tensorSpace;
     N := V#dims;
@@ -215,6 +234,7 @@ TensorSpace ** TensorSpace := (V,W) -> (
 	}
     )
 
+-- given a tensor space, it returns the list of symbols used to name all the basis of each single space
 pickSymbol = method();
 pickSymbol (TensorSpace) := V -> (
     d := #(V#dims);
@@ -224,6 +244,7 @@ pickSymbol (TensorSpace) := V -> (
 	)
     )
 
+-- given a tensor space, it returns the factors of the tensor space
 factorsTensor = method()
 factorsTensor(TensorSpace) := V -> (
     L := pickSymbol V;
@@ -248,11 +269,13 @@ factorsTensor(TensorSpace) := V -> (
 --	    tensorSpace(V#baseRing,first(V#tensorBasis),{(V#dims)#i}))
 --	)
 
+-- identifies a tensor space to a vector space of same dimension
 mergeTensor = method()
 mergeTensor(TensorSpace) := V -> (
    return tensorSpace(V#baseRing,first pickSymbol V,{product for i in V#dims list i})
    )
 
+-- kronecker product of tensor spaces
 kronecker = method()
 kronecker(TensorSpace,TensorSpace) := (V,W) -> (
    if V#baseRing =!= W#baseRing then (
@@ -302,6 +325,7 @@ kronecker(TensorSpace,TensorSpace) := (V,W) -> (
 --	return tensorSpace(V#baseRing,symbol x, for i in 0..#(V#dims)-1 list (((V#dims)#i)*((W#dims)#i)))
 --	)
 
+-- tensor product of tensors
 Tensor ** Tensor := (T,U) -> (
     M := flatten for i in T#coeff list for j in U#coeff list i*j;
     R := T#tensorSpace ** U#tensorSpace;
@@ -314,6 +338,7 @@ Tensor ** Tensor := (T,U) -> (
 --    return makeTensor(M,R)
 --	)
 
+-- tensor power of a tensor
 Tensor ^** ZZ := (T,n) -> (
     if n == 0 then return 1_((T#tensorSpace).baseRing);
     U := T;
@@ -321,23 +346,25 @@ Tensor ^** ZZ := (T,n) -> (
     U
     )
 
---- Tensor operations
-
+-- equality between on TensorSpace
 TensorSpace == TensorSpace := (W,V) -> (
    if  W.baseRing === V.baseRing and W.dims == V.dims then true
    else false
     )
     
+-- equality between on Tensor    
 Tensor == Tensor := (T,T') -> (
     if T'#tensorSpace == T#tensorSpace and T'#coeff == T#coeff then true
     else false 
     )
 
+-- sum of tensors
 Tensor + Tensor := (T,T') -> (
      if not  T'#tensorSpace ==  T#tensorSpace then error "Tensor+Tensor not from the same TensorSpace";
      makeTensor(T#coeff + T'#coeff, T'#tensorSpace)
      )
  
+-- multiplication by a scalar
 Thing * Tensor := (r,T) -> (
     return makeTensor(sub(r,(T#tensorSpace).baseRing)*(T#coeff), T#tensorSpace)
     )
@@ -347,15 +374,12 @@ Tensor * Thing := (T,r) -> (
     )
 
 - Tensor := T -> (-1)*T
- 
- 
+
 Tensor - Tensor := (T,T') -> (
      return T + (-T')
      )
-
-
---- Group actions 
-
+ 
+-- natural group actions of the general linear groups over tensor spaces
 glAction = method()
 glAction (List,Tensor) := (G,T) -> (
     V := T#tensorSpace;
@@ -377,7 +401,7 @@ glAction (Matrix,Tensor) := (G,T) -> (
     )
 
 
---- Symmetrize 
+-- symmetrization of tensors 
 
 -- symmetrize = method()
 -- symmetrize (Tensor) := (T) -> (
@@ -399,9 +423,7 @@ IsSymmetric (Tensor) := (T) -> (
     if symmetrize(T) == T then true else false
     )
 
----- Slices and contractions 
-
-
+-- slices and contractions 
 slice = method();
 slice (Tensor, List) := (T,L) -> (
     left := apply(L, a -> if a === null then 0 else a);
@@ -448,6 +470,73 @@ contraction (Tensor,Tensor,List,List) := (T,U,K,L) -> (
      );
 contraction (Tensor,Tensor,ZZ,ZZ) := (T,U,k,l) -> contract(T,U,{k},{l})
 
+-- DOCUMENTATION ------------------------------------------------
+beginDocumentation()
+document{
+  Key => Tensors,
+  Headline => "a package on tensors",
+  
+    EM "Tensors", " is work in progress started during the ", EM "Macaulay2 Workshop", 
+    " at Max Plank Institute of Leipzig (Germany), June 4th -- 8th, 2018.",
+    
+    BR{}, BR{},
+    BOLD "Overview:",
+    
+    BR{}, BR{},
+    "The goal of this project is to provide a list of functions that might be useful for 
+    the every-day life of a researcher on tensors.",
+    
+    BR{}, BR{},
+    "In this package, we defined two new types:",
+    UL{
+    	LI {TO TensorSpace, " which is an ", TO HashTable, " containing:",
+	    UL{
+		LI {TO Ring, ": the base ring of coefficients"},
+		LI {TO List, ": the list of dimensions of the vector spaces forming the tensor space"},
+		LI {TO List, ": the basis of the tensor space"},
+		},
+	    },
+	LI {TO Tensor, "which is an ", TO HashTable, " containing:",
+	    UL{
+		LI {TO List, ": a list of coefficients"},
+		LI {TO TensorSpace, ": the ambient tensor space}"},
+		},
+	    }
+	},
+
+    BOLD "User main functions:",
+    
+    UL{
+	LI {TO tensorSpace, " -- to construct a ", TO TensorSpace},
+        LI {TO makeTensor, " -- to construct a ", TO Tensor},
+	}
+}
+
+doc ///
+Key
+    TensorSpace
+Headline
+    the type of tensor spaces
+Description
+    Text
+    	Given vector spaces $V_1,\ldots,V_s$ of dimensions $n_1,\ldots,n_s$, respectively,
+	we construct the vector space $V_1\otimes\ldots\otimes V_s$ of dimension 
+	$n_1\cdots n_s$.
+	
+	A TensorSpace is a @TO HashTable@ with attributes:
+	
+	$\bullet$ @TO baseRing@: @TO Ring@, the ring of coefficients;
+	
+	$\bullet$ @TO dims@: @TO List@, the ordered list of dimensions of the vector spaces;	
+	
+	$\bullet$ @TO tensorBasis@: @TO List@, the list of basis elements ordered lexicographically.
+    Example
+    	tensorSpace(QQ,X,{2,2,2})
+	peek oo
+SeeAlso
+    tensorSpace
+///
+
 
 -- TESTS --------------------------------------------------------
 
@@ -483,6 +572,7 @@ TEST ///
     M2 = makeTensor(1..12, MS2)
     assert(matrix entries contraction(M1, M2, {1}, {0}) == (matrix entries M1) * (matrix entries M2))
 ///
+
 
 end--------------------------------------------------------------
 
