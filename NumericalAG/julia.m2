@@ -123,7 +123,7 @@ P=polySystem {f,g}
 apply(equations P, p -> parsePolynomial p)
 out=solveJulia P;
 
-writeSys(P,"test.jl",WithImports=>true)
+writeSys(P,"test.jl",WithImports=>true)--option not working?
 
 needs "./ExampleSystems/jointsR6.m2"
 Q=polySystem jointsR6(CC_53)
@@ -136,5 +136,3 @@ apply(
     )
 #sols--too many?
 #ourSols
-
-writeSys(Q,"joints.jl",WithImports=>true)
