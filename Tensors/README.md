@@ -1,5 +1,19 @@
-# Tensors Project
+# “Tensors” Project
 
-This will serve as collaboration area to work on the project on “Tensors”. 
+This will serve as collaboration area to work on the package “Tensors”.
 
-In “ProjectGoals” there is a list of suggestions from where to start (with some references). All participants are free to edit the file and add their own suggestions.
+## Members:
+Nasrin Altafi ()
+Iman Bahmani Jafarloo ()
+Francesco Galuppi
+Alessandro Oneto (alessandro.oneto@upc.edu)
+Luca Sodomaco ()
+Emanuele Ventura ()
+Markus Wageingel ()
+
+## Future plans:
+1. Constructions (flattening, Koszul flattenings, symmetrization, visualisation, other products,…)
+2. Eigenvectors (characteristic polynomials,…)
+3. Apolarity (symmetric, partially symmetric)
+4. Ranks (exact computations, lower bounds, approximations, …)
+5. Relations with Representation Theory (relation with SchurRings package?)
