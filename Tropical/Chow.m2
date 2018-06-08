@@ -342,8 +342,6 @@ tDivisor = method()
 tDivisor(Vector,NormalToricVariety) := (u,X) -> (
     -- u is a vector in M
     -- returns the divisor of zeros and poles of chi^u
-    -- u = flatten entries u;
-    -- u := vector({-3,2});
     cs := for r in rays X list (
         u * vector(r)    
     );
@@ -386,6 +384,14 @@ ToricDivisor * List := (D, C) -> (
             continue
     );
     toricCycle(V,X)
+)
+
+NormalToricVariety _ List := (X,L) -> (toricCycle({(L,1)},X))
+
+ToricDivisor * ToricCycle := (D,C) -> (
+    sum for c in support C list (
+        C#c * ( D * c )
+    )
 )
 
 
@@ -876,11 +882,15 @@ psi = map(R,S,{R_3,R_1})
 assert(matrix inverse psi == matrix phi)
 
 D = X_3
+-- ToricDivisor * List
 assert(D*{3} == - toricCycle({({2,3},1)},X))
 assert(D*{2} == toricCycle({({2,3},1)},X))
 assert(D*{1} == toricCycle({},X))
 -- test reverse order
 assert(D*{0} == toricCycle({({3,0},1)},X))
+-- ToricDivisor * ToricCycle
+assert(D*X_{3} == - toricCycle({({2,3},1)},X))
+assert(D*(X_{2}+X_{3}) == toricCycle({},X))
 
 
 --check isTransverse
@@ -1010,6 +1020,7 @@ C = (orbits X)#1#0
 D*C
 E = X_3
 E * {3}
+E * (X_{3})
 
 u = vector({-3,2})
 cs = for r in rays X list (
@@ -1037,5 +1048,5 @@ for g in gammas do (
 uninstallPackage "Chow"
 restart
 loadPackage "Chow"
-installPackage "Chow"
+installPackage("Chow",RemakeAllDocumentation=>false,RunExamples=>false,RerunExamples=>false)
 check "Chow"
