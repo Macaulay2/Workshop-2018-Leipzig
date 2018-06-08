@@ -567,3 +567,45 @@ SeeAlso
 ///
 
 
+
+
+---------------Presentation-------------
+restart
+needsPackage "LinearTruncations"
+---------------LinearTruncations---------------------
+
+--export {
+--    "multigradedPolynomialRing",
+--    "coarseMultigradedRegularity",
+--    "isLinearComplex",
+--    "findAllLinearTruncations",        
+--    }
+--------------------------------------------------
+S = multigradedPolynomialRing({1,1,1})-----P^1xP^1xP^1
+I = ideal(S_0*S_3*S_5, S_0*S_2^2, S_2^2*S_3*S_4, S_1^2*S_4^2, S_0*S_3^2*S_4, S_0*S_1^2*S_3)
+M = S^1/I
+d = regularity M
+coarseMultigradedRegularity(M)
+isLinearComplex(res truncate(coarseMultigradedRegularity(M),M))
+c = sum coarseMultigradedRegularity(M)
+L = findAllLinearTruncations({d,c},M)
+tally for i in L list (isLinearComplex(res truncate(i,M)))
+-----------------------------------------------------
+
+S = multigradedPolynomialRing({1,1})-----P^1xP^1
+I = ideal(S_2^2*S_3, S_0^2*S_3^3, S_0^2*S_1^2*S_2, S_0^3*S_2*S_3, S_0*S_1*S_3^4, S_0^2*S_1^3*S_3^2)
+M = S^1/I
+d = regularity M
+findAllLinearTruncations({6, 6},M)
+coarseMultigradedRegularity(M)
+findAllLinearTruncations({6, 11},M)
+------------------------------------------------------
+S = multigradedPolynomialRing({2,2})--------P^2xP^2
+I = ideal (x_(0,0)*x_(0,1)^3, x_(0,0)*x_(0,1)*x_(1,0)*x_(1,1),  x_(1,0)^2*x_(0,1)*x_(1,1)^2, x_(0,0)*x_(1,0)*x_(1,1)^3, x_(0,0)*x_(0,2)^3*x_(1,1), x_(0,0)*x_(0,1)*x_(0,2)^2*x_(1,0)^2)
+M = S^1/I
+d = regularity M
+findAllLinearTruncations({d,d},M)
+findAllLinearTruncations({d,d+1},M)
+findAllLinearTruncations({d,d+2},M)
+c = coarseMultigradedRegularity M
+findAllLinearTruncations({d,sum c},M)
