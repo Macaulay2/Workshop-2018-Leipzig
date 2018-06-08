@@ -90,6 +90,98 @@ protect ChangeBases
 ----------------------------------------------
 -- from graded modules to Tate resolutions  --
 ----------------------------------------------
+
+-- Helper functions for findMatrixCorners
+extendRows = (I, r) -> (S := ring I; transpose (transpose I | matrix map(S^(numColumns I), S^r, 0)))
+extendCols = (I, c) -> (S := ring I; matrix map(S^(numRows I), S^c, 0) | I)
+extendMatrix = (I, r, c) -> extendCols(extendRows(I, r), c)
+
+shiftRight = m -> (S := ring m; m * extendMatrix(id_(S^(numColumns m - 1)), 1,1))
+shiftLeft  = m -> (S := ring m; extendMatrix(id_(S^(numRows m - 1)), 1,1) * m)
+shiftHoms  = m -> (S := ring m; m' := diff(S_0, m);  shiftLeft m' + shiftRight m')
+
+taxiCabCover = mat -> (
+    nat := shiftHoms mat;
+    oat := nat;
+    while nat != 0 do (nat = shiftHoms nat; oat = oat + nat);
+    oat
+    )
+
+-- Only usable for product of two projective spaces
+findMatrixCorners = m -> (
+    corners := {};
+    (rows, cols) := (new MutableList, new MutableList);
+    for r to numrows m - 1 do (
+	rows#r = null;
+	for c to numcols m - 1 do (
+	    if m_(r, c) != 0 then (
+		if rows#r === null then rows#r = -1;
+		if not cols#?c or cols#c === null then cols#c = infinity;
+	    	rows#r = max(c + 1, rows#r);
+	    	cols#c = min(r - 1, cols#c);
+    	    	)));
+    if cols#0 === null then cols#0 = -1;
+    for r to numrows m - 2 do (
+	if rows#(r+1) === null then rows#(r+1) = infinity;
+    	if rows#r > rows#(r+1) then rows#(r+1) = rows#r;
+    	for c from 1 to numcols m - 1 do (
+	    if cols#c === null then cols#c = -1;
+	    if cols#(c-1) > cols#c then cols#(c-1) = cols#c;
+	    ));
+    for r to numrows m - 2 do (
+    	if rows#r < rows#(r+1) then (
+	    for c from 1 to numcols m - 1 do (
+	    	if cols#(c-1) < cols#c then (
+		    if r === cols#c and rows#r === c then corners = append(corners, {r, c});
+		    ))));
+    corners
+    )
+
+-- borrowed from LinearTruncations:
+multigradedPolynomialRing = n -> (
+     x := local x;
+     xx := flatten apply(#n, i -> apply(n_i+1, j -> x_(i,j)));
+     degs := flatten apply(#n, i -> apply(n_i+1, k ->
+	     apply(#n, j -> if i == j then 1 else 0)));
+     ZZ/32003[xx, Degrees=>degs]
+     )
+
+-- Usable for products of any number of projective spaces
+findHashTableCorners = ht -> (
+    L := pairs ht;
+    t := #L_0_0_0;
+    P := multigradedPolynomialRing toList(t:0);
+    low := apply(t, i -> min (L / (ell -> ell_0_0_i - 1)));
+    gt := new MutableHashTable;
+    apply(L, ell -> if ell_1 != 0 and ell_0_1 > 0 then (
+	    gt#(ell_0_0) = true;
+	    apply(t, j -> gt#(ell_0_0 + degree P_j) = true);
+	    ));
+    I := ideal apply(L, ell -> if not gt#?(ell_0_0) then product(t, j -> P_j^(ell_0_0_j - low_j)) else 0);
+    apply(flatten entries mingens I, g -> (flatten exponents g) + low)
+    )
+
+findCorners = method()
+findCorners Matrix := List => m -> findMatrixCorners taxiCabCover m
+findCorners(Matrix, List, List) := List => (m, low, high) -> (
+    findCorners m / (ell -> {low_0 + ell_1, high_1 - ell_0})
+    )
+findCorners HashTable := List => ht -> findHashTableCorners ht
+
+
+multigradedRegularity = method()
+multigradedRegularity Module := List => M -> (
+    S := ring M;
+    n := #(degrees S)_0;
+    low := -toList(n:#(gens S) - n);
+    high := toList(n:regularity M);
+--    m := cohomologyMatrix(M, low, high);
+--    findCorners(m, low, high)
+    ht := cohomologyHashTable(M, low, high);
+    findCorners ht
+    )
+
+
 coarseMultigradedRegularity = method(Options =>
                {Strategy =>"MinimalResolution"})
 
