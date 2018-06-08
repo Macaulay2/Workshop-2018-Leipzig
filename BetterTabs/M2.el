@@ -545,7 +545,7 @@ be sent can be entered, with history."
 (defun M2-electric-tab-region (start end)
   (save-excursion
     (goto-char start)
-    (while (< (point) end)
+    (while (<= (point) end)
       (M2-electric-tab-line)
       (forward-line 1))))
 
