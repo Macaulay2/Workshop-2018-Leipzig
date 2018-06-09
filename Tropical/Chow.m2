@@ -6,7 +6,14 @@ newPackage(
      Authors => {{
 	       Name => "Diane Maclagan",
        	       Email => "D.Maclagan@warwick.ac.uk",
-	       HomePage => "http://www.warwick.ac.uk/staff/D.Maclagan"}},
+	       HomePage => "http://www.warwick.ac.uk/staff/D.Maclagan"},
+	   {  Name => "Sameera Vemulapalli",
+       	       Email => "sammerav@princeton.edu",
+	       HomePage => ""},
+	    {Name => "Corey Harris",
+       	       Email => "",
+	       HomePage => ""}
+	   },
      Headline => "Chow computations for toric varieties",
      DebuggingMode => true,
      PackageImports => {"FourierMotzkin", "Polyhedra"},
@@ -810,6 +817,14 @@ doc ///
 ---------------------------------------------------------------------------
 -- TEST
 ---------------------------------------------------------------------------
+
+--TODO
+
+--Need to add some non-smooth and noncomplete ones
+--Check intersectionRing and chowGroup give the same answer (at least numerically)
+-- for the databases (smooth Fanos, and smallAmpleToricDivisor)
+--Affine space
+--check for smooth that ToricDivisor * ToricCycle agrees with intersectionRing 
 
 --Replace X by something more interesting
 TEST ///
