@@ -128,6 +128,7 @@ visualizeHypersurface (RingElement) := o-> (polyn)->(
     polynomial := toTropPoly(polyn);
     if (instance(o.Valuation,Number)) then polynomial = toTropPoly(pAdicCoeffs(o.Valuation,polyn));
     if (instance(o.Valuation,RingElement)) then polynomial = toTropPoly(polynomialCoeffs(o.Valuation,polyn));   
+    if (instance(o.Valuation,String) and o.Valuation == "constant") then polynomial = toTropPoly(sum flatten entries (coefficients polyn)_0);
     print polynomial;
     filename := temporaryFileName();
     filename << "use application 'tropical';" << endl << "visualize_in_surface(new Hypersurface<"|minmax()|">(POLYNOMIAL=>toTropicalPolynomial(\""|polynomial|"\")));" << close;
@@ -704,15 +705,25 @@ doc ///
 	Headline
 		visualize the tropical hypersurface of the given polynomial
 	Usage
-		visualizeHypersurface(S)
+		visualizeHypersurface(polyn)
+		visualizeHypersurface(Valuation=>p,polyn)
+		visualizeHypersurface(Valuation=>t,polyn)
 	Inputs
 		polyn: RingElement
+		    polynomial
+		Valuation=>Number
+		    use p-adic coefficients with given p
+		Valuation=>RingElement
+		    use coefficients in R[t] with given t
 	Description
 	    Text
 	        This function wraps the Polymake visualization for a 
-	        tropical hypersurface given an input polynomial. The 
-	        input should be entered as a homogeneous polynomial. 
-	        The output is an image opening in a browser window.
+		tropical hypersurface given an input polynomial. The input 
+		should be entered as a homogeneous polynomial. Running 
+		this method opens an image in a new browser window. The 
+		coefficients can be intereted as p-adic coefficients or as 
+		polynomials via the option @TO Valuation@. Examples are 
+		commented out because they open a new browser window.
 	    Example
 	    	--Examples are commented because they open in browser. Uncomment to run.
     	        R=ZZ[x,y,z]

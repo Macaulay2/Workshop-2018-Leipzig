@@ -179,6 +179,25 @@ chowGroup=(i,X) -> (
 
 --Create SR ideal
 intersectionRing = method()
+
+--matrix representing a map from ring we want to ring we get
+intersectionRing(NormalToricVariety,Ring,Matrix) := (X,S,M) -> (
+    assert(numColumns M == rank chowGroup(1,X));
+    assert(numRows M == #(rays X));
+    inRing := intersectionRing(X,S);
+    z:=symbol z;
+    R := S[z_0..z_(numColumns M - 1)];
+    T := ring presentation inRing;
+    L := for i from 0 to numColumns M - 1 list (
+	sum (for j from 0 to numRows M - 1 list M_(j,i)*T_j)
+	);
+    phi := map(T, R, L);
+    I := preimage(phi,ideal(inRing));
+    R/I
+);
+
+intersectionRing(NormalToricVariety,Matrix) := (X,M) -> (intersectionRing(X,QQ,M));
+
 intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
      if (not X.cache.?intersectionRing) or (not coefficientRing(X.cache.intersectionRing) === S) then (
  	 z:=symbol z;
@@ -349,8 +368,6 @@ tDivisor = method()
 tDivisor(Vector,NormalToricVariety) := (u,X) -> (
     -- u is a vector in M
     -- returns the divisor of zeros and poles of chi^u
-    -- u = flatten entries u;
-    -- u := vector({-3,2});
     cs := for r in rays X list (
         u * vector(r)    
     );
@@ -365,12 +382,22 @@ Vector * Vector := (a,b) -> (
 ToricDivisor * List := (D, C) -> (
     -- D is a divisor on X
     -- C is a cone in the fan of X
-    if not isTransverse(D,C) then (
-        u := vector(random(ZZ^(#(first rays variety D)),ZZ^1));
-        D = D + tDivisor(u,variety D);
-    );
     assert(isCartier(D));
     X := variety D;
+    if not isTransverse(D,C) then (
+        -- u := vector(random(ZZ^(#(first rays variety D)),ZZ^1));
+        d := # rays X;
+        l := C | toList (set(0..(d-1)) - C);  -- reorder ray indices to put C first
+        Ds := l / (i -> X_i);  -- reorder divisors
+        m := transpose matrix ( l / (i -> (rays X)#i) );  -- reorder rays
+        M := inverse(m_{0,numRows m-1}) * m;  -- gaussian elim
+        eqs := for r in entries M list (
+            sum (apply(r,Ds, (e,Di) -> e*Di))
+        );
+        for i from 0 to # eqs - 1 do (
+            D = D - (entries D)#(l#i) * (eqs#i)
+        );
+    );
     local i;
     for k in keys(orbits X) do (
         if member(C,orbits(X,k)) then i = k
@@ -383,6 +410,22 @@ ToricDivisor * List := (D, C) -> (
             continue
     );
     toricCycle(V,X)
+)
+
+NormalToricVariety _ List := (X,L) -> (toricCycle({(L,1)},X))
+
+toricCycle(ToricDivisor) := D -> (
+    
+)
+
+ToricDivisor * ToricDivisor := (D,E) -> (
+        
+)
+
+ToricDivisor * ToricCycle := (D,C) -> (
+    sum for c in support C list (
+        C#c * ( D * c )
+    )
 )
 
 
@@ -589,7 +632,11 @@ doc ///
         the class of a toric cycle on a NormalToricVariety
     Description
         Text
-            A toric cycle on X is a finite formal sum of closed torus orbits corresponding to cones in the fan of X.
+          A toric cycle on X is a finite formal sum of closed torus orbits corresponding to cones in the fan of X.
+	Text
+	  Examples can be found on the toricCycle constructor page.
+    SeeAlso
+        toricCycle
 ///
 
 doc ///
@@ -607,6 +654,21 @@ doc ///
             the variety the cycle lives on
     Outputs
         :ToricCycle
+    Description
+        Text
+	  Toric cycles can be created with the constructor, and as they form an abelian group under addition,
+	  arithmetic can be done with them.
+	Example
+	  rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	  coneList={{0,1},{1,2},{2,3},{3,0}}
+	  X = normalToricVariety(rayList,coneList)
+	  cyc = toricCycle({({2,3},1),({3,0}, 4)},X)
+	  altcyc = (-2)*cyc
+	  cyc + altcyc
+	  cyc - altcyc
+	  -cyc
+    SeeAlso
+      (symbol +, ToricCycle, ToricCycle)
 ///
 
 
@@ -654,22 +716,32 @@ doc ///
        intersectionRing
        (intersectionRing,NormalToricVariety)
        (intersectionRing,NormalToricVariety,Ring)
+       (intersectionRing,NormalToricVariety,Ring,Matrix)
+       (intersectionRing,NormalToricVariety,Matrix)
      Headline
        compute the Chow ring of a smooth toric variety
      Usage
        intersectionRing(X)
        intersectionRing(X,S)
+       intersectionRing(X,S,M)
+       intersectionRing(X,M)
      Inputs 
        X:NormalToricVariety
        S:Ring
+         a coefficient ring for the intersection ring returned
+       M:Matrix
+         must be a n by m matrix, where n is the number of rays of X, and m
+	 is the rank of the codimension 1 Chow group.
      Outputs
-       :Ideal
-         which defines the relations on the Chow ring of X
+       :Ring
+         the intersection ring of X
      Description
        Text 
-         The ring of the ideal has one generator for each ray of X, and
-         the ideal is the ideal given in the Stanley-Reisner presentation of
+         By default, the ring will have coefficients in QQ and will have one variable 
+	 for each ray of X. The ring returned is a polynomial ring modulo an ideal. 
+	 The ideal is the ideal given in the Stanley-Reisner presentation of
          the cohomology ring of X.
+       Text
          This assumes that X is smooth.  Eventually it will be
          implemented for simplicial toric varieties.
        Example
@@ -685,12 +757,31 @@ doc ///
        Text 
          Note that the degree-one part of the ring has dimension the Picard-rank, as expected.
        Text
-         Note that a coefficient ring can also be specified. By default, the coefficient ring is the rational numbers.
+         Note that a coefficient ring can also be specified by inputting a parameter S. 
+	 By default, the coefficient ring is the rational numbers.
        Example
          X = projectiveSpace 2
 	 R = intersectionRing(X,ZZ)
-	 for i from 0 to 2 do <<hilbertFunction(i,R)<<endl 
-
+	 for i from 0 to 2 do <<hilbertFunction(i,R)<<endl
+       Text
+         A nicer presentation of X can be returned by making use of the parameter M. Consider the
+	 blowup of PP2 at a point. Let H be the divisor class of a line, and let E be the 
+	 exceptional divisor. H and E generate the intersection ring, but the standard presentation
+	 is not minimal in the sense that it returns extranous variables.
+       Example
+         rayList={{1,0},{0,1},{-1,-1},{0,-1}}
+	 coneList={{0,1},{1,2},{2,3},{3,0}}
+	 X = normalToricVariety(rayList,coneList)
+	 rank chowGroup(1,X)
+       Text
+         The rank of the codimension 1 subgroup tells us the minimal number of generators.
+	 We know that E corresponds to the ray {0,-1} and H corresponds to the ray {0,1}. 
+	 We can obtain a presentation of the intersection ring in two variables H and E as follows.
+       Example
+         M = matrix{{0,0},{0,1},{0,0},{1,0}}
+	 intersectionRing(X,QQ,M)
+       Text
+         Here, E corresponds to z_0 and H corresponds to z_1.
 ///
 
 doc ///
@@ -862,11 +953,15 @@ psi = map(R,S,{R_3,R_1})
 assert(matrix inverse psi == matrix phi)
 
 D = X_3
---assert(D*{3} == -1)
+-- ToricDivisor * List
+assert(D*{3} == - toricCycle({({2,3},1)},X))
 assert(D*{2} == toricCycle({({2,3},1)},X))
 assert(D*{1} == toricCycle({},X))
 -- test reverse order
 assert(D*{0} == toricCycle({({3,0},1)},X))
+-- ToricDivisor * ToricCycle
+assert(D*X_{3} == - toricCycle({({2,3},1)},X))
+assert(D*(X_{2}+X_{3}) == toricCycle({},X))
 
 
 --check isTransverse
@@ -977,6 +1072,7 @@ uninstallPackage "Chow"
 uninstallPackage "NormalToricVarieties"
 restart
 loadPackage "Chow"
+needsPackage "Chow"
 installPackage "NormalToricVarieties"
 installPackage "Chow"
 check "Chow"
@@ -993,6 +1089,9 @@ X = normalToricVariety(rayList,coneList)
 D = X_0 + 2*X_1+3*X_2+4*X_3
 C = (orbits X)#1#0
 D*C
+E = X_3
+E * {3}
+E * (X_{3})
 
 u = vector({-3,2})
 cs = for r in rays X list (
@@ -1020,7 +1119,5 @@ for g in gammas do (
 uninstallPackage "Chow"
 restart
 loadPackage "Chow"
-installPackage "Chow"
+installPackage("Chow",RemakeAllDocumentation=>false,RunExamples=>false,RerunExamples=>false)
 check "Chow"
-
-
