@@ -390,7 +390,7 @@ ToricDivisor * List := (D, C) -> (
         l := C | toList (set(0..(d-1)) - C);  -- reorder ray indices to put C first
         Ds := l / (i -> X_i);  -- reorder divisors
         m := transpose matrix ( l / (i -> (rays X)#i) );  -- reorder rays
-        M := inverse(m_{0,numRows m-1}) * m;  -- gaussian elim
+        M := inverse(m_{0..numRows m-1}) * m;  -- gaussian elim
         eqs := for r in entries M list (
             sum (apply(r,Ds, (e,Di) -> e*Di))
         );
@@ -402,7 +402,7 @@ ToricDivisor * List := (D, C) -> (
     for k in keys(orbits X) do (
         if member(C,orbits(X,k)) then i = k
     );
-    dimiplus1cones := (orbits X)#(i-1);
+    dimiplus1cones := if i > 0 then (orbits X)#(i-1) else return 0*((variety D)_{});
     V := for r from 0 to #rays(X)-1 list (
         if member(sort(C|{r}),dimiplus1cones) then
             (sort(C|{r}),D#r)
