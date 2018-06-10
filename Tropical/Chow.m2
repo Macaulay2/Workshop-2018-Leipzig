@@ -370,7 +370,7 @@ tDivisor(Vector,NormalToricVariety) := (u,X) -> (
     -- returns the divisor of zeros and poles of chi^u
     cs := for r in rays X list (
         u * vector(r)    
-    );
+    ); 
     sum apply(cs,0..(#(rays X) - 1), (c,i) -> c*X_i)
 )
 
@@ -414,12 +414,40 @@ ToricDivisor * List := (D, C) -> (
 
 NormalToricVariety _ List := (X,L) -> (toricCycle({(L,1)},X))
 
-toricCycle(ToricDivisor) := D -> (
+normalToricVariety(ToricCycle) := opts -> C -> (
+    s := support C;
+    if #s > 1 then error "Expected a cycle of a cone";
+    normalToricVariety(first s, variety C);
+)
+
+normalToricVariety(List,NormalToricVariety) := opts -> (r,X) -> (
+    if any(r, e -> class e === List) then error "Expected a list of rays"; 
+    -- get cones containing r
+    newOrbits := for o in (orbits X)#0 list (
+        if isSubset(set(r),set(o)) then o else continue
+    );
+    -- r goes to 0, so remove the indices from r
+    newOrbits = unique for o in newOrbits list (toList(set(o) - r));
     
+    M' := transpose matrix rays X;
+    M := transpose (M' % (M'_r)); -- quotient out <r>
+
+    z := map(ZZ^(numRows M),ZZ^1,0);  -- zero matrix of correct size
+    cols := for i from 0 to numColumns M - 1 list ((M)_{i});
+    M = fold(for i in cols list (if i == z then continue else i),(i,j) -> i|j);
+    Y := normalToricVariety(entries M,newOrbits);
+    Y.cache.parent = X;
+    return Y
+)
+    
+toricCycle(ToricDivisor) := D -> (
+    X := variety D;
+    coeffs := entries D;
+    sum for i when i < #coeffs list (coeffs#i * X_{i})
 )
 
 ToricDivisor * ToricDivisor := (D,E) -> (
-        
+    D * toricCycle E
 )
 
 ToricDivisor * ToricCycle := (D,C) -> (
@@ -1096,7 +1124,7 @@ E * (X_{3})
 u = vector({-3,2})
 cs = for r in rays X list (
     u * vector(r)    
-)
+    )
 sum apply(cs,0..(#(rays X) - 1), (c,i) -> c*X_i)
 
 -- X = projectiveSpace 4
@@ -1120,4 +1148,14 @@ uninstallPackage "Chow"
 restart
 loadPackage "Chow"
 installPackage("Chow",RemakeAllDocumentation=>false,RunExamples=>false,RerunExamples=>false)
+installPackage "Chow"
 check "Chow"
+
+X = projectiveSpace 4
+E = X_2
+D = X_2 + 3*X_3 - 7*X_4
+E * D
+toricCycle D
+normalToricVariety(support E, X)
+
+normalToricVariety((orbits X)#2#1,X)
