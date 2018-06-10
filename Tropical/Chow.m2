@@ -11,8 +11,8 @@ newPackage(
        	       Email => "sammerav@princeton.edu",
 	       HomePage => ""},
 	    {Name => "Corey Harris",
-       	       Email => "",
-	       HomePage => ""}
+       	       Email => "harris@mis.mpg.de",
+	       HomePage => "http://coreyharris.name"}
 	   },
      Headline => "Chow computations for toric varieties",
      DebuggingMode => true,
@@ -201,16 +201,20 @@ intersectionRing(NormalToricVariety,Matrix) := (X,M) -> (intersectionRing(X,QQ,M
 intersectionRing(NormalToricVariety,Ring) := (X,S) -> (
      if (not X.cache.?intersectionRing) or (not coefficientRing(X.cache.intersectionRing) === S) then (
  	 z:=symbol z;
-     	 R:=S[z_0..z_(#(rays X)-1)];
+       -- we construct a subtoricvariety, some ray indices won't appear
+     	 -- R:=S[z_0..z_(#(rays X)-1)];
+       rayIndices := orbits(X,dim X - 1) / first;
+       R := S[rayIndices / (i -> z_i)];
        	 I:= ideal apply(max X, sigma->(
 	       	    mono:=1_R;
-	       	    for j from 0 to #(rays X)-1 do 
-		        if not(member(j,sigma)) then mono=mono*R_j;
+	       	    for j in rayIndices do 
+		        if not(member(j,sigma)) then mono=mono*z_j;
 	       	    mono
 		    ));
      	 squaresIdeal:=ideal apply(gens R, xx->xx^2);       
      	 I=ideal flatten entries ((gens (squaresIdeal : I)) % squaresIdeal);
-     	 I=I+ ideal apply(transpose rays X, a->(
+       nonzeroRays := rayIndices / (i -> (rays X)#i);
+     	 I=I+ ideal apply(transpose nonzeroRays, a->(
 	       genJ:=0_R;
 	       for j from 0 to #a-1 do (
 		    genJ=genJ+a#j*R_j;
@@ -1156,6 +1160,7 @@ E = X_2
 D = X_2 + 3*X_3 - 7*X_4
 E * D
 toricCycle D
-normalToricVariety(support E, X)
+Y = normalToricVariety(support E, X)
+intersectionRing Y
 
 normalToricVariety((orbits X)#2#1,X)
