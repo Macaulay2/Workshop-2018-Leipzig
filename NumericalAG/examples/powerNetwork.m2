@@ -21,22 +21,31 @@ powerEquations = G -> (
     x=symbol x;
     y=symbol y;
     R=S[apply(V,i->x_i)|apply(V,i->y_i)];
-    polySystem(apply(V,i->b_{v0,i}_R*y_i_R+sum apply(remove(toList neighbors(G,i),v0),j->b_(sort {i,j})_R * (x_i_R*y_j_R-x_j_R*y_i_R)))
+    X={1}|take(gens R,{0,n-1});
+    Y={0}|take(gens R,{n,2*n-1});
+    polySystem(apply(V,i->sum apply(toList neighbors(G,i),j->b_(sort {i,j})_R * (X#i_R*Y#j_R-X#j_R*Y#i_R)))
 	         | apply(V,i->x_i_R^2+y_i_R^2-c_i_R))
 	     )
 end
 restart
 needs "powerNetwork.m2"
 
-G=graph hashTable {0=>{1,2,3,4,5,6,7,8},1=>{0,2},2=>{0,1},
-                 3=>{0,4,5},4=>{0,3,5},5=>{0,3,4},
-		 6=>{0,7,8},7=>{0,6,8},8=>{0,6,7}}
+cptRC = n -> binomial(2*(n-1),n-1)
 
-powerEquations G
 
---complete graphs
+--cut vertex implies all solutions are trivial?
+G=graph hashTable {0=>{1,2,3,6},1=>{0,2,3,6},2=>{0,1},
+                 3=>{0,1,4,5},4=>{3,5},5=>{3,4},
+		 6=>{0,1,7,8},7=>{6,8},8=>{6,7}}
+P=powerEquations G
+peek P
+(V,npaths)=monodromySolve(P,NumberOfNodes=>3)
+length V.PartialSols
+cptRC #(toList vertices G)
+
+--complete graphs: max rc
 setRandomSeed 0
-for n from 5 to 5 do (
+for n from 3 to 7 do (
     G=completeGraph n;
     P=powerEquations G;
     assert(P.NumberOfPolys==P.NumberOfVariables);
@@ -44,7 +53,67 @@ for n from 5 to 5 do (
     --sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
     --print(#sols- length V.PartialSols,2^(n-1));
     )
-length V.PartialSols
-T=track(V.SpecializedSystem,specializeSystem(normalPoint numgens coefficientRing ring P,P),points V.PartialSols)
-isReal first T
-apply(T,t->imaginaryPart t)
+
+--cycle graphs: max rc
+setRandomSeed 0
+for n from 3 to 7 do (
+    G=cycleGraph n;
+    P=powerEquations G;
+    assert(P.NumberOfPolys==P.NumberOfVariables);
+    (V,npaths)=monodromySolve(P);
+    sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
+    print(#sols- length V.PartialSols,2^(n-1));
+    )
+
+--barbell graphs: cut vertex, 0 nontrivial
+setRandomSeed 0
+for n from 3 to 3 do (
+    G=barbellGraph n;
+    v:=#(toList vertices G);
+    P=powerEquations G;
+    assert(P.NumberOfPolys==P.NumberOfVariables);
+    (V,npaths)=monodromySolve(P);
+    print(length V.PartialSols | "\n");
+    sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
+    print(#sols- length V.PartialSols,2^(v-1));
+    )
+
+--star graphs: cut vertex
+setRandomSeed 0
+for n from 3 to 4 do (
+    G=starGraph n;
+    v:=#(toList vertices G);
+    P=powerEquations G;
+    assert(P.NumberOfPolys==P.NumberOfVariables);
+    (V,npaths)=monodromySolve(P);
+    print(length V.PartialSols | "\n");
+    sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
+    print(#sols- length V.PartialSols,2^(v-1));
+    )
+
+--path graphs: cut vertex
+setRandomSeed 0
+for n from 3 to 4 do (
+    G=pathGraph n;
+    v:=#(toList vertices G);
+    P=powerEquations G;
+    assert(P.NumberOfPolys==P.NumberOfVariables);
+    (V,npaths)=monodromySolve(P);
+    print(length V.PartialSols | "\n");
+    sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
+    print(#sols- length V.PartialSols,2^(v-1));
+    )
+
+--path graphs: cut vertex
+setRandomSeed 0
+for n from 3 to 4 do (
+    G=pathGraph n;
+    v:=#(toList vertices G);
+    P=powerEquations G;
+    assert(P.NumberOfPolys==P.NumberOfVariables);
+    (V,npaths)=monodromySolve(P);
+    print(length V.PartialSols | "\n");
+    sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
+    print(#sols- length V.PartialSols,2^(v-1));
+    )
+

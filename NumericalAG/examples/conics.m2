@@ -25,17 +25,25 @@ f = sub(J_0, S');
 bs=apply(0..5,i->random CC)
 F = for i from 1 to 5 list 
 	sub(sub((1/10.0)*f, {
-	b_1 => b#0,
-	b_2 => b#1,
-	b_3 => b#2,
-	b_4 => b#3,	
-	b_5 => b#4,
-	b_6 => b#5}),S);
+	b_1 => bs#0,
+	b_2 => bs#1,
+	b_3 => bs#2,
+	b_4 => bs#3,	
+	b_5 => bs#4,
+	b_6 => bs#5}),S);
+P=polySystem F;
 
 needs "../julia.m2"
+
+--write system to .jl file
+f=openOut "conics.jl"
+importJulia({"using HomotopyContinuation","import DynamicPolynomials: PolyVar"},f)
+writeSys(P,f)
+close f
+
 importJulia({"using HomotopyContinuation","import DynamicPolynomials: PolyVar"},JuliaProcess)
-P=polySystem F;
-peek P
+
+
 
 sols=solveJulia P;
 

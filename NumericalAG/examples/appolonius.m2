@@ -23,16 +23,22 @@ I = ideal(f, g, det Jac)
 
 J = eliminate({x,y}, I)
 
+setRandomSeed 12
 F = for i from 1 to 3 list 
 	sub(J_0, {
 	b_1 => random QQ, 
 	b_2 => random QQ,
-	s => random QQ})
+	s => random QQ});
 
-netList F
+--netList F
 
 sols=solveJulia polySystem F;
+realPoints sols
 
+--netList sols
 -- real solutions?
-zer0=10.0^(-10)
-netList select(sols,s->all(s.Coordinates,x->abs imaginaryPart x < zer0))
+zer0=10.0^(-10);
+r=select(sols,s->all(s.Coordinates,x->abs imaginaryPart x < zer0));
+netList r
+#r
+
