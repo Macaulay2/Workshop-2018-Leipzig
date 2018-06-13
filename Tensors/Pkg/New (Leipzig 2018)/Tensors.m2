@@ -291,39 +291,37 @@ kronecker(TensorSpace,TensorSpace) := (V,W) -> (
    return Z
    )
 
--- flattening = method()
--- flattening (TensorSpace,List) := (V,L) -> (
---     F := factorsTensor(V);
---     L1 := {};
---     L2 := {};
---     for i in 0..<#F do (
--- 	if member(i,L) then (
--- 	    L1 = append(L1,F#i)
--- 	 ) else (
--- 	    L2 = append(L2,F#i)
--- 	    )
--- 	);
---     A := L1#0;
---     for j from 1 to #L1-1 do A = A**(L1#j);
---     B := L2#0;
---     for j from 1 to #L2-1 do B = B**(L2#j);
---     return mergeTensor(A) ** mergeTensor(B)
---     )
+-- flattening
 
--- flattening (Tensor,List) := (T,L) -> (
---     compL := for i in 1..#(T#tensorSpace.dims) list (if not member(i,L) then i)
---     )
+-- to BE FIXED INDICES
+flattening = method()
+flattening (TensorSpace,List) := (V,L) -> (
+       F := factorsTensor(V); 
+       L1 := {};
+       L2 := {};
+       for i in 0..<#F do (
+	  if member(i,L) then (
+          L1 = append(L1,F#i)
+      ) else (
+      	    L2 = append(L2,F#i)
+	    	    )
+      );
+       A := L1#0;
+       for j from 1 to #L1-1 do A = A**(L1#j);
+       B := L2#0;
+       for j from 1 to #L2-1 do B = B**(L2#j);
+       if member(0,L) then return mergeTensor(A) ** mergeTensor(B)
+       else return mergeTensor(B) ** mergeTensor(A)
+       )
 
---kronecker = method()
---kronecker(TensorSpace,TensorSpace) := (V,W) -> (
---    if V#baseRing =!= W#baseRing then (
---	return "error: base rings are different"
---    );
---    if #(V#dims) =!= #(W#dims) then (
---	return "error: the number of factors of the given tensor spaces are not equal"
---    );
---	return tensorSpace(V#baseRing,symbol x, for i in 0..#(V#dims)-1 list (((V#dims)#i)*((W#dims)#i)))
---	)
+flattening (Tensor,List) := (T,L) -> (
+R := flattening(T#tensorSpace,L);
+return makeTensor(T#coeff, R)
+)
+
+
+
+
 
 -- tensor product of tensors
 Tensor ** Tensor := (T,U) -> (
@@ -332,11 +330,16 @@ Tensor ** Tensor := (T,U) -> (
     return makeTensor(M,R)
 	)
 
---kronProduct(Tensor,Tensor) := (T,U) -> (
---    M = flatten for i in T#coeff list for j in U#coeff list i*j;
---    R = T#tensorSpace ** U#tensorSpace;
---    return makeTensor(M,R)
---	)
+
+kroneckerProduct = method()
+-- to BE FIXED INDICES
+kroneckerProduct(Tensor,Tensor) := (T,U) -> (
+    M := flatten for i in T#coeff list for j in U#coeff list i*j;   
+    R := kronecker(T#tensorSpace, U#tensorSpace);
+    return makeTensor(M,R)
+        )
+
+
 
 -- tensor power of a tensor
 Tensor ^** ZZ := (T,n) -> (
@@ -379,6 +382,7 @@ Tensor - Tensor := (T,T') -> (
      return T + (-T')
      )
  
+
 -- natural group actions of the general linear groups over tensor spaces
 glAction = method()
 glAction (List,Tensor) := (G,T) -> (
@@ -401,27 +405,50 @@ glAction (Matrix,Tensor) := (G,T) -> (
     )
 
 
--- symmetrization of tensors 
+-- Symmetrize 
 
--- symmetrize = method()
--- symmetrize (Tensor) := (T) -> (
---     V := T#tensorSpace;
---     N := apply(V#dims,i->i-1);
---     d :=  #N; 
---     L := for J in (d:0)..toSequence(N) list (
---       if toList(J) == sort(toList(J)) then J else continue);
---     P := for J in L list permutations(toList(J));
---     S := for J in P list set J;
---     return sum flatten for O in P list (
--- 	repr = O_0;
--- 	(1/(d!))*(sum for I in O list T_(toSequence I))*(sum for I in toList(set O) list V_(toSequence I))
--- 		    )
--- 		)
+symmetrize = method()
+symmetrize (Tensor) := (T) -> (
+    V := T#tensorSpace;
+    N := apply(V#dims,i->i-1);
+    d :=  #N; 
+    L := for J in (d:0)..toSequence(N) list (
+      if toList(J) == sort(toList(J)) then J else continue);
+    P := for J in L list permutations(toList(J));
+    S := for J in P list set J;
+    return sum flatten for O in P list (
+	(1/(d!))*(sum for I in O list T_(toSequence I))*(sum for I in toList(set O) list V_(toSequence I))
+		    )
+		)
 	    
+	     
 IsSymmetric = method()
 IsSymmetric (Tensor) := (T) -> (
     if symmetrize(T) == T then true else false
     )
+
+
+-- Symmetric space 
+
+-- to BE CONTINUED
+--symm (TensorSpace) = method()
+--symm (TensorSpace) := (V) -> (
+   --F:=factorsTensor V;
+   --if #(set F) != 1 then return "error: vector spaces need to have the same dimensions ";
+    --V := T#tensorSpace;
+    --N := apply(V#dims,i->i-1);
+    --d :=  #N; 
+    --L := for J in (d:0)..toSequence(N) list (
+    --if toList(J) == sort(toList(J)) then J else continue);
+    --P := for J in L list permutations(toList(J));
+    --P':= for J in P list set J  
+--)
+
+
+
+
+
+
 
 -- slices and contractions 
 slice = method();
