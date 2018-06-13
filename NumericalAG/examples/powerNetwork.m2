@@ -42,6 +42,6 @@ for n from 3 to 7 do (
     P=powerEquations G;
     assert(P.NumberOfPolys==P.NumberOfVariables);
     (V,npaths)=monodromySolve(P);
-    --sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
-    --print(#sols- length V.PartialSols,2^(n-1));
+    sols=solveSystem specializeSystem(point random(CC^1,CC^(numgens coefficientRing ring P)),P);
+    print(#sols- length V.PartialSols,2^(n-1));--if equal, monodromy worked
     )
