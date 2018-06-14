@@ -1979,6 +1979,10 @@ cohomologyMatrix(M,low,high)
 C=cornerComplex(M,c,low,high)
 cohomologyMatrix(C,2*low,2*high)
 C.dd^2
+betti C
+P=(ker C.dd_(-1))**E^{c}
+LP=bgg P
+HH LP
 ///
 
 
