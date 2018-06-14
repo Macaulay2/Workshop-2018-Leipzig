@@ -31,6 +31,7 @@ export {
     "lowerCorner",
     "upperCorner",
     "beilinsonWindow",
+    "tateResolution",
     "tateExtension",
 --    "pushAboveWindow",
     "firstQuadrantComplex",
@@ -211,7 +212,7 @@ coarseMultigradedRegularity Module := o-> M -> (
     M' := coker map(Tm',,sub(presentation M, S'));
     assert(isHomogeneous M');
     F' := res(M', FastNonminimal=>true);
-    F = allGradings(F',Tm, S));
+3    F = allGradings(F',Tm, S));
     coarseMultigradedRegularity F
     )
 *-
@@ -267,38 +268,6 @@ allGradings (ChainComplex,Module, Ring) := (fJ,F0,Sall) -> (
     )
 
 
-
-cornerComplex=method()
-cornerComplex(ChainComplex,List) := (C,c) ->
-       (d:=c-toList(#c:1);cornerComplex1(C,d))
-
-cornerComplex1=method()
-cornerComplex1(ChainComplex,List) := (C,c) -> (
-    -- addded this line to make the function  work for the zero complex
-    if C==0 then return C;
-    --
-    t:= numFactors ring C;
---    if max C -min C < #t then error " need a complex of length at least t";
-    C':= C[min C+1];
-    Cge := firstQuadrantComplex1(C'[-#t+1],c);
-    Cle := lastQuadrantComplex1(C',c);
---    <<(betti Cge, betti Cle) <<endl;
-    A:=0;B:=0;AB:=0;d:=0;
-    Ccorner:= chainComplex apply(max C- min C - #t-1,e-> (d:=e+#t; A=Cge.dd_(d);B= Cle.dd_(d); AB = cornerMap(C',c,d);
---	   print((betti A,betti AB,betti B));
-	    (A|AB)||(map(target B, source A,0)|B)));
-    return Ccorner[-min C-1])
-
-
-cornerComplex(Module, List, List) := (M,low, high) ->(
-    --high, low are lists of length = degreeLength ring M
-    (S,E) := (tateData ring M)#Rings;
-    regs := coarseMultigradedRegularity M; --regs
-    hi := apply(#regs, i->max(regs_i, high_i+1)); --hi
-    N := presentation truncate(hi, M)**S^{hi};-- betti N
-    Q := symExt(N,E); --betti Q
-    (res (coker Q,LengthLimit=>(sum hi-sum low)))**E^{hi}[sum hi]
-    )
 
 productOfProjectiveSpaces = method(Options=>
     {CoefficientField=>ZZ/32003,
@@ -525,7 +494,7 @@ cohomologyMatrix(Module, List, List) := (M, low, high) -> (
     if degreeLength M != 2 then error"this version works only with a product of two projective spaces.";
     if #low !=2 or #high !=2 then error"expected degree lists of length 2";
     if not all(#low, i-> low_i<=high_i) then error"low should be less than high";
-    C := cornerComplex(M, low, high);
+    C := tateResolution(M, low, high);
     cohomologyMatrix(C, low , high))
 
 
@@ -575,7 +544,7 @@ cohomologyHashTable(ChainComplex,List,List) := (F,low,high) -> (
 
 cohomologyHashTable(Module, List, List) := (M, low, high) -> (
     if not all(#low, i-> low_i<=high_i) then error"low should be less than high";
-    C := cornerComplex(M, low, high);
+    C := tateResolution(M, low, high);
     cohomologyHashTable(C, low , high))
 
 
@@ -647,9 +616,64 @@ truncateInE(List,Module):= (d,M) -> (
 *-
 
 
------------------
---  The corner Complex
--------------------------
+--------------------------
+--  The corner Complex  --
+--------------------------
+
+
+
+cornerComplex=method()
+cornerComplex(ChainComplex,List) := (C,c) ->
+       (d:=c-toList(#c:1);cornerComplex1(C,d))
+
+cornerComplex1=method()
+cornerComplex1(ChainComplex,List) := (C,c) -> (
+    -- addded this line to make the function  work for the zero complex
+    if C==0 then return C;
+    --
+    t:= numFactors ring C;
+--    if max C -min C < #t then error " need a complex of length at least t";
+    C':= C[min C+1];
+    Cge := firstQuadrantComplex1(C'[-#t+1],c);
+    Cle := lastQuadrantComplex1(C',c);
+--    <<(betti Cge, betti Cle) <<endl;
+    A:=0;B:=0;AB:=0;d:=0;
+    Ccorner:= chainComplex apply(max C- min C - #t-1,e-> (d:=e+#t; A=Cge.dd_(d);
+	   B= Cle.dd_(d); AB = cornerMap(C',c,d);
+--	   print((betti A,betti AB,betti B));
+	    (A|AB)||(map(target B, source A,0)|B)));
+    return Ccorner[-min C-1])
+
+-*
+cornerComplex(Module, List, List) := (M,low, high) ->(
+    --high, low are lists of length = degreeLength ring M
+    (S,E) := (tateData ring M)#Rings;
+    regs := coarseMultigradedRegularity M; --regs
+    hi := apply(#regs, i->max(regs_i, high_i+1)); --hi
+    N := presentation truncate(hi, M)**S^{hi};-- betti N
+    Q := symExt(N,E); --betti Q
+    (res (coker Q,LengthLimit=>(sum hi-sum low)))**E^{hi}[sum hi]
+    )
+*-
+
+tateResolution=method()
+tateResolution(Module, List, List) := (M,low, high) ->(
+    -- make the Tate resolution or rather a free subquotient complex of it
+    -- which covers all contributions in sheaf cohomological range between high and low
+    --high, low are lists of length = degreeLength ring M
+    (S,E) := (tateData ring M)#Rings;
+    regs := coarseMultigradedRegularity M; --regs
+    hi := apply(#regs, i->max(regs_i, high_i+1)); --hi
+    N := presentation truncate(hi, M)**S^{hi};-- betti N
+    Q := symExt(N,E); --betti Q
+    (res (coker Q,LengthLimit=>(sum hi-sum low)))**E^{hi}[sum hi]
+    )
+
+
+
+
+
+
 numFactors=method(TypicalValue=>List)
     -- given the symmetric or exterior Cox ring E of the product pf projective spaces
     -- compute the number t of factors and return the List {0,...,t-1}
@@ -1715,7 +1739,7 @@ debug needsPackage "TateOnProducts"
       )
 
 ----------------------------------------
--- Examples in the Paper                                   --
+-- Examples in the Paper              --
 ----------------------------------------
 cornerCohomologyTablesOfUa = method()
 cornerCohomologyTablesOfUa(List) := n-> (
@@ -1934,6 +1958,35 @@ isIsomorphic = (A,B) -> (
     --if both are surjective.
     isSurjection(A,B) and isSurjection(B,A))
 
+---------------------------------------------------
+-- Composed functions                            --
+---------------------------------------------------
+
+cornerComplex(Module,List,List,List) := (M,c,low,high) -> (
+    -- form the Tate resolution T of M in the range high to low
+    -- then make the corner complex of T at c
+    T := tateResolution(M,low,high);
+    T':= trivialHomologicalTruncation(T,-sum high, -sum low);
+    cornerComplex(T',c)
+    )
+
+///
+(S,E)=productOfProjectiveSpaces{2,1}
+M=beilinson(E^{-{1,1}})
+c={1,1}
+low={-3,-3},high=-low
+cohomologyMatrix(M,low,high)
+C=cornerComplex(M,c,low,high)
+cohomologyMatrix(C,2*low,2*high)
+C.dd^2
+///
+
+
+
+
+
+
+
 --------------------------
 -- Begin of the documentation
 ------------------------
@@ -1957,6 +2010,7 @@ document {
     SUBSECTION "Beilinson monads",
     UL{
 	TO beilinsonWindow,
+	TO tateResolution,
 	TO tateExtension,
 	TO beilinson,
 	TO bgg,
@@ -2970,7 +3024,6 @@ doc ///
   SeeAlso
     upperCorner
     lowerCorner
-
     lastQuadrantComplex
     cohomologyMatrix
 ///
@@ -3020,14 +3073,67 @@ doc ///
 
 doc ///
   Key
+    tateResolution    
+    (tateResolution,Module,List,List)
+  Headline
+    compute the Tate resolution 
+  Usage
+    T = tateResolution(M,low,high)
+  Inputs
+    M: Module
+       multi-graded module representing a sheaf F
+    low:List
+       a multidegree
+    high:List
+       a multidegree
+  Outputs
+    T : ChainComplex
+       a bounded free complex over the exterior algebra
+  Description
+     Text
+       The call
+
+       tateResolution(M,low,high)
+
+       forms the a free subquotient complex the Tate resolution of the sheaf F represented by M 
+       in a range that covers all generators corresponding to 
+       cohomology groups of
+       twists F(a) of F  in the range low <= a <= high,
+       see        
+       @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
+     Example
+        (S,E) = productOfProjectiveSpaces{1,1}
+	low = {-3,-3};high = {3,3};
+	T=tateResolution( S^{{1,1}},low, high);
+	cohomologyMatrix(T,low,high)
+     Text
+        The complex contains some trailing terms and superflous terms in a wider range, which can be removed
+	using trivial homological truncation.
+     Example
+	cohomologyMatrix(T,2*low,2*high)
+	betti T
+	T'=trivialHomologicalTruncation(T, -sum high,-sum low)
+	betti T'
+	cohomologyMatrix(T',2*low,2*high)
+  SeeAlso
+    upperCorner
+    lowerCorner
+    trivialHomologicalTruncation
+    cohomologyMatrix
+///
+
+
+
+doc ///
+  Key
     cornerComplex
     (cornerComplex,ChainComplex,List)
-    (cornerComplex,Module,List,List)
+    (cornerComplex,Module,List,List,List)
   Headline
     form the corner complex
   Usage
     C = cornerComplex(T,c)
-    C = cornerComplex(M,low,high)
+    C = cornerComplex(M,c,low,high)
   Inputs
     T: ChainComplex
        a (part of a) Tate resolution on a product of t projective spaces
@@ -3043,32 +3149,24 @@ doc ///
     C : ChainComplex
        The corner complex
   Description
-     Text
-       The call
-
-       cornerComplex(M,low,high)
-
-       forms the corner complex of the sheaf F represented by M, at a position sufficiently
-       above the degree "high" so that
-       all the cohomology groups of
-       twists F(a) of F can be computed for low <= a <= high.
-
+     Text       
        The call
 
        cornerComplex(T,c)
 
        forms the corner complex with corner c of a (part of a) Tate resolution T as defined in
        @  HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
+       The call
+
+       cornerComplex(M,c,low,high)
+
+       first computes the Tate resolution T of the sheaf F represented by M
+       in the range covering low to high and then takes the corner complex of T.
      Example
         (S,E) = productOfProjectiveSpaces{1,1}
 	low = {-4,-4};high = {3,2};
 	T1= (dual res( trim (ideal vars E)^2,LengthLimit=>8))[1];
 	T2=res(coker upperCorner(T1,{4,3}),LengthLimit=>13)[7];
-	C = cornerComplex(S^{{-2,-2}}, low,high)
-     Text
-        To see the corner in this case we do
-     Example
-    	cohomologyMatrix (C,low,2*high)
      Text
         Finally, we can define T,
 	the sufficient part of the Tate resolution:
@@ -3077,7 +3175,7 @@ doc ///
 	cohomologyMatrix(T,low,high)
      Text
        In the following we will produce a corner complex cT with
-       corner at c =\{-2,-1\}. To do this we need a big enough part
+       corner at $c =\{-2,-1\}.$ To do this we need a big enough part
        T of a Tate resolution so that all the strands around
        the corner are exact. This example corresponds to the
        Example of Section 4 of our paper referenced above. The Tate resolution
@@ -3103,13 +3201,13 @@ doc ///
      Text
         Here the corner map is cT.dd_2
      Example
-        betti (cT.dd_2)
+        betti (cT.dd_(-sum c-1))      
      Text
         In general the corner map is a chain complex map
 	from lqT to fqT spread over several homological degrees.
 -----------------
      Text
-        Putting the corner in c = \{-1,-1 \} we get a different
+        Putting the corner in $c = \{-1,-1 \} $ we get a different
 	picture:
      Example
         c = {-1,-1}
@@ -3135,12 +3233,26 @@ doc ///
      Text
         In general the corner map is a chain complex map
 	from lqT to fqT spread over several homological degrees.
+	
+	Next we give an example obtained from a module
+     Example
+       (S,E)=productOfProjectiveSpaces{2,1}
+       M=beilinson(E^{-{1,1}})
+       c={1,1}
+       low={-3,-3},high={4,4}
+       cohomologyMatrix(M,low,high)
+       C=cornerComplex(M,c,low,high)
+       cohomologyMatrix(C,low,high)
+       cohomologyMatrix(C,2*low,2*high)
+       betti C
+       C.dd_(-sum c +1)  
   SeeAlso
     upperCorner
     lowerCorner
     firstQuadrantComplex
     lastQuadrantComplex
     cohomologyMatrix
+    beilinson
 ///
 
 -------------------------------------------------
