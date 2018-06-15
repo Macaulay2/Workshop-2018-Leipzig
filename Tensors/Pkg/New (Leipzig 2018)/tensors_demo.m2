@@ -154,7 +154,14 @@ T1 = makeTensor(t1,V)
 T2 = makeTensor(t2,V)
 
 gT1 = glAction(G,T1);
-I = ideal (T2-gT1)#coeff
+I = ideal (T2-gT1)#coeff;
 
--- ....and now?!?!?!?!
-
+--now we try to solve the system exactly, using companion matrices:
+time bb=sub(basis(S/I),S)--it takes about 25 minutes
+L=for i in 0..24 list a_i=>0_QQ
+for j in 0..24 do (
+    compx=sub(contract(transpose bb,(bb_(0,0))*a_j%I),L);
+    for i from 1 to (numcols bb-1) do compx=compx|sub(contract(transpose bb,(bb_(0,i))*a_j%I),L);
+    fac_j=det (sub(compx,S)-a_j*sub(compx^0,S));
+    print (factor fac_j)--third power of the solution a_j
+    )
