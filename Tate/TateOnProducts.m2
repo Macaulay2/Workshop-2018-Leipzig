@@ -1,4 +1,5 @@
 ///
+
 restart
 uninstallPackage"TateOnProducts"
 restart
@@ -6,7 +7,8 @@ installPackage("TateOnProducts")--,FileName=>schreyer/Dropbox/SVDComplexes/from-
 loadPackage("TateOnProducts",Reload=>true)
 viewHelp "TateOnProducts"
 peek loadedFiles
-check "TateOnProducts"
+check "TateOnProducts" 
+
 ///
 newPackage(
     "TateOnProducts",
