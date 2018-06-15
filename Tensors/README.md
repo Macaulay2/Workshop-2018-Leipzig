@@ -7,7 +7,7 @@ This will serve as collaboration area to work on the package “Tensors”.
 - Iman Bahmani Jafarloo ()
 - Francesco Galuppi ()
 - Alessandro Oneto (alessandro.oneto@upc.edu)
-- Luca Sodomaco ()
+- Luca Sodomaco (luca.sodomaco@unifi.it)
 - Emanuele Ventura ()
 - Markus Wageingel ()
 
