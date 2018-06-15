@@ -170,7 +170,7 @@ Tensor#{Standard,AfterPrint} = T -> (
 --    return #(V#dims)
 --    )
 
--- 'enatries' returns the list of coefficients in a nested list
+-- 'entries' returns the list of coefficients in a nested list
 entries (Tensor) := T -> (
     f := (coeffs, ds) -> (
         if #ds <= 1 then coeffs
@@ -252,22 +252,6 @@ factorsTensor(TensorSpace) := V -> (
 	tensorSpace(V#baseRing,L_i,{(V#dims)#i})
 	)
     )
-
---factorsTensor = method()
---factorsTensor(TensorSpace) := V -> (
---	return for i in 0..#(V#dims)-1 list (
---	    new TensorSpace from hashTable{
---		baseRing => V#baseRing,
---		dims => (V#dims)#i,
---		tensorSpaceOrder => 1,
---		tensorSpaceDim => (V#dims)#i,
---		tensorBasis => first entries basis(apply(toList((#(V#dims)):0),j->if j==i then 1 else 0),R)
---		}
---	    )
---	)
---
---	    tensorSpace(V#baseRing,first(V#tensorBasis),{(V#dims)#i}))
---	)
 
 -- identifies a tensor space to a vector space of same dimension
 mergeTensor = method()
@@ -563,6 +547,159 @@ Description
 SeeAlso
     tensorSpace
 ///
+
+
+doc ///
+Key => {makeTensor}, 
+Headline => "Element of a tensor space",
+Usage => "makeTensor(V, L)",
+Inputs => {
+    "V" => { "a tensor space"},
+    "L" => { "a list of elements in the base ring of V" }
+    },
+Outputs => {
+    " The tensor in V whose coefficients are elements of L with respet to the basis of V"},
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = makeTensor(V, toList(1..8))"
+    }
+///
+
+doc ///
+Key => {entries}, 
+Headline => "Entries of a tensor",
+Usage => "entries T",
+Inputs => {"T" => { "a tensor"} },
+Outputs => {
+    "A nested list representing the entries of the tensor T."},
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = makeTensor(V, toList(1..8))",
+    "entries T"
+    }
+///
+
+-- IDENTITY OF TENSORS NEEDED BEFORE (ALSO ALL OPERATIONS BEFORE?)
+doc ///
+Key => {TensorSpace _ Sequence}, 
+Headline => "Extract a basis element from a tensor space",
+Usage => "V _ S ",
+Inputs => {
+    "V" => { "a tensor space"},
+    "S" => { "a sequence of nonnegative integers"}},
+Outputs => {
+    {"The basis element of V corresponding to S." } },
+"This function provides an easier to define a tensor.",
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = V_(0,0,0)",
+    "T' = makeTensor(V, {1,0,0,0,0,0,0,0})",
+    "T == T' "
+   },
+SeeAlso => makeTensor}
+/// 
+
+doc ///
+Key => {Tensor _ Sequence}, 
+Headline => "Extract a coefficient of a tensor",
+Usage => "T _ S ",
+Inputs => {
+    "T" => { "a tensor"},
+    "S" => { "a sequence of nonnegative integers"}},
+Outputs => {
+    {"The coefficient of T with respect to the basis vector corresponding to S." } },
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = makeTensor(V, toList(1..8))",
+    "coeff = T_(1,1,1)",
+    "coeff == 8"
+    },
+SeeAlso => TensorSpace _ Sequence}
+///    
+
+
+
+
+
+
+doc ///
+Key => {TensorSpace _ ZZ}, 
+Headline => "Extract a coefficient of a tensor of order one",
+Usage => "T _ S ",
+Inputs => {
+    "T" => { "a tensor"},
+    "S" => { "a nonnegative integers"}},
+Outputs => {
+    {"The coefficient of T with respect to the basis vector corresponding to S." } },
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = makeTensor(V, toList(1..8))",
+    "coeff = T_(1,1,1)",
+    "coeff == 8"
+    },
+SeeAlso => TensorSpace _ Sequence}
+///    
+
+
+
+
+
+
+
+
+
+
+
+
+
+doc ///
+Key => {entries}, 
+Headline => "Entries of a tensor",
+Usage => "entries T",
+Inputs => {"T" => { "a tensor"} },
+Outputs => {
+    "A nested list representing the entries of the tensor T."},
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = V_(0,0,1)-2*V_(1,1,1)",
+    "entries T"
+    }
+///
+
+
+
+doc ///
+Key => {entries}, 
+Headline => "Entries of a tensor",
+Usage => "entries T",
+Inputs => {"T" => { "a tensor"} },
+Outputs => {
+    "A nested list representing the entries of the tensor T."},
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = V_(0,0,1)-2*V_(1,1,1)",
+    "entries T"
+    }
+///
+
+
+doc ///
+Key => {entries}, 
+Headline => "Entries of a tensor",
+Usage => "entries T",
+Inputs => {"T" => { "a tensor"} },
+Outputs => {
+    "A nested list representing the entries of the tensor T."},
+EXAMPLE {
+    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+    "T = V_(0,0,1)-2*V_(1,1,1)",
+    "entries T"
+    }
+///
+
+
+
+
 
 
 -- TESTS --------------------------------------------------------
