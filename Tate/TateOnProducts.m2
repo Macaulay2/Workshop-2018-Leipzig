@@ -35,6 +35,7 @@ export {
     "beilinsonWindow",
     "tateResolution",
     "tateExtension",
+    "tateExtension1",    
 --    "pushAboveWindow",
     "firstQuadrantComplex",
     "lastQuadrantComplex",
@@ -633,17 +634,19 @@ cornerComplex1(ChainComplex,List) := (C,c) -> (
     -- addded this line to make the function  work for the zero complex
     if C==0 then return C;
     --
-    t:= numFactors ring C;
+    t:= numFactors ring C; -- list from 0 to the number of factors -1.
 --    if max C -min C < #t then error " need a complex of length at least t";
     C':= C[min C+1];
     Cge := firstQuadrantComplex1(C'[-#t+1],c);
     Cle := lastQuadrantComplex1(C',c);
 --    <<(betti Cge, betti Cle) <<endl;
     A:=0;B:=0;AB:=0;d:=0;
-    Ccorner:= chainComplex apply(max C- min C - #t-1,e-> (d:=e+#t; A=Cge.dd_(d);
+    Ccorner:= chainComplex apply(max C- min C - #t-1, e-> (
+	   d:=e+#t; A=Cge.dd_(d);
 	   B= Cle.dd_(d); AB = cornerMap(C',c,d);
 --	   print((betti A,betti AB,betti B));
-	    (A|AB)||(map(target B, source A,0)|B)));
+	   (A|AB)||(map(target B, source A,0)|B))
+          );
     return Ccorner[-min C-1])
 
 -*
@@ -1137,18 +1140,40 @@ m2*m1)
 
 pushAboveWindow = method()
 pushAboveWindow Module := Matrix => M -> (
-    --takes a free module, returns a map from something minimally outside the Beilinson window.
+    --takes a free E-module M, returns a map to M from a free module 
+    --minimally outside the Beilinson window.
+    if M == 0 then return M;
     E:= ring M;
     (t,v,n,varsLists,irrList) := ringData E;
-    g := gens M;
-    degList := last degrees g; -- this is degrees source g;
-    if degList == {} then return M; -- this is the zero module
+    --list the degrees of the generators of M:
+    degList := degrees source gens M;
+--    if degList == {} then return M; -- this is the zero module
     directSum apply(degList, D->if inWindow(D,n)
     then powers(v-D,irrList)**E^{ -D} else id_(E^{ -D}))
     )
-///
+
+pushAboveWindow1 = method()
+pushAboveWindow1 Module := Matrix => M -> (
+    --takes a free E-module M, returns a map to M from a free module 
+    --minimally outside the Beilinson window.
+    if M == 0 then return M;
+    E:= ring M;
+    (t,v,n,varsLists,irrList) := ringData E;
+    --list the degrees of the generators of M:
+    degList := degrees source gens M;
+--    if degList == {} then return M; -- this is the zero module
+    directSum apply(degList, D->if inWindow(D,n)
+    then powers(v-D,irrList)**E^{ -D} else id_(E^{ -D}))
+    )
+
+TEST///
+debug TateOnProducts
 (S,E) = productOfProjectiveSpaces {1,2}
-pushAboveWindow(E^{{0,0},-{ -1,0},-{1,2},-{1,3}})
+(t,v,n,varsLists,irrList) = ringData E
+M = E^{{0,0},-{ -1,0},-{1,2},-{1,3}}
+T = pushAboveWindow M
+assert(target T == M)
+assert(select(degrees source T, D ->inWindow(D,n)) == {})
 ///
 
 
@@ -1222,6 +1247,19 @@ pushAboveWindow ChainComplex := ChainComplex => C -> (
     chainComplexFromData(min C', M)
     )
 
+TEST///
+debug TateOnProducts
+        n={1,1};
+        (S,E) = productOfProjectiveSpaces n;
+	T1 = (dual res trim (ideal vars E)^2)[1];
+	a=-{2,2};
+	T2=T1**E^{a}[sum a];
+	W=beilinsonWindow T2
+	T3 = pushAboveWindow W
+    	assert(beilinsonWindow T3 == W)
+	cohomologyMatrix(T3,-5*n,2*n)
+	cohomologyMatrix(W, -2*n,2*n)
+///
 
 tateExtension=method()
 tateExtension(ChainComplex) := W -> (
@@ -1234,7 +1272,8 @@ tateExtension(ChainComplex) := W -> (
     W1 := removeZeroTrailingTerms W;
     -- W1:= W;
     TW1:=pushAboveWindow W1;
-    ma:= nonzeroMax TW1; mi:=nonzeroMin TW1;
+    ma:= nonzeroMax TW1; 
+    mi:=nonzeroMin TW1;
     --betti W1,betti TW1
 --Bbounds given for the length of the resolution have to be discussed
 --They should come out of the proof of the theorem !!
@@ -1242,26 +1281,96 @@ tateExtension(ChainComplex) := W -> (
     --betti TW1e
     --changed a sign here
     --TW1c := cornerComplex(TW1e,2*v);
-    TW1c := cornerComplex(TW1e,-2*v);
+    TW1c := cornerComplex(TW1e,-2*v); -- replace with upper quad cplx
     --betti TWc
     TW2 := dual res(coker transpose TW1c.dd_(ma+sum v),LengthLimit =>(ma+3*sum v -mi))[-ma-sum v+1];
     --betti TW2
     TW2
     )
 
+
+tateExtension1=method()
+tateExtension1(ChainComplex) := W -> (
+    -- input W : a Beilinson representative of an object in D^b(PP)
+    -- output :  an Tate extension in a bounded range
+    -- compute the TateExtension in a sloppy way: the Beilinson window of the extension is only
+    -- isomorphic, bat not equal W.
+    E := ring W;
+    (t,v,n,irrList,idealList) := ringData ring W;
+    if not inWindow W then error "expect a complex with terms only in the Beilinson window";
+    W1 := removeZeroTrailingTerms W;
+    -- W1:= W;
+    TW1:=pushAboveWindow W1;
+    ma:= nonzeroMax TW1; 
+    mi:=nonzeroMin TW1;
+    --betti W1,betti TW1
+--Bbounds given for the length of the resolution have to be discussed
+--They should come out of the proof of the theorem !!
+    TW1e := continueComplex(TW1, LengthLimit=> 3*sum v);
+    TW1c := cornerComplex(TW1e,-3*v);
+    print {	cohomologyMatrix (beilinsonWindow W1, -n,n),
+	cohomologyMatrix( TW1, -4*v, v)
+	};
+    Tp := pushAboveWindow dual TW1c;
+    trivialHomologicalTruncation(Tp, mi-2*sum v, ma)
+    )
 ///
 --beilinsonWindow tateExtension W should be equal to W.
+restart
+loadPackage "TateOnProducts"
+debug TateOnProducts
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
 	T1 = (dual res trim (ideal vars E)^2)[1];
 	a=-{2,2};T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2
-        T=tateExtension W;
-	W' = beilinsonWindow T
-	W_1
-	W'_1
-W== W'
+        T=tateExtension W
+        T1=tateExtension1 W	;
+	W
+	W' = beilinsonWindow T1
+	W == W'
 ///
+
+
+continueComplex = method(Options => options res)
+continueComplex ChainComplex := o->C ->(
+    ma := nonzeroMax C;
+    C' := res(image (C.dd_ma),LengthLimit => o.LengthLimit)[-ma];
+    ma' := nonzeroMax C';
+    D := new ChainComplex;
+    D.ring = ring C;
+    apply(toList(min C..ma'),i->(
+	    D_i = if i<= ma then C_i else C'_i));
+    apply(toList(1+min C..ma'),i->(
+	    D.dd_i = if i<=ma then C.dd_i else C'.dd_i));
+    D
+    )
+
+TEST///
+
+n={1,1};
+(S,E) = productOfProjectiveSpaces n;
+p = 2
+C = res(coker vars E,LengthLimit =>p)[2]
+C1 = continueComplex(C, LengthLimit =>2)
+(C1.dd)^2
+--problem: we should probably truncate C1 first.
+restart
+loadPackage "TateOnProducts"
+debug TateOnProducts
+n={1,1};
+(S,E) = productOfProjectiveSpaces n;
+p = 3
+C1 = res(coker vars E,LengthLimit =>p)
+C2 = res(coker C1.dd_p)[-p+1] -- the signs are incorrect!
+assert (C1.dd_p == C2.dd_p) -- this is true when p = 3, not p=2.
+C2' = res image C1.dd_p
+C2 = 
+C = joinComplexes(C1,C2)
+assert (C.dd_p == C1.dd_p and C.dd_(p+1) == C2.dd_(p+1))
+
+///
+
 ---------------------------------------
 -- Construction of Beilinson functor --
 ---------------------------------------
