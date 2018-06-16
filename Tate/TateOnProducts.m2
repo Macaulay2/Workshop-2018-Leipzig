@@ -1136,7 +1136,7 @@ m2 := matrix{toList(#D:1_(ring m1))};
 m2*m1)
 
 pushAboveWindow = method()
-pushAboveWindow Module := Matrix -> M -> (
+pushAboveWindow Module := Matrix => M -> (
     --takes a free module, returns a map from something minimally outside the Beilinson window.
     E:= ring M;
     (t,v,n,varsLists,irrList) := ringData E;
@@ -1152,7 +1152,7 @@ pushAboveWindow(E^{{0,0},-{ -1,0},-{1,2},-{1,3}})
 ///
 
 
-pushAboveWindow Matrix := Matrix ->A ->(
+pushAboveWindow Matrix := Matrix =>A ->(
     --returns a matrix with the same target but source minimally outside the Beilinson window.
     if A==0 then return A;
     mingens image (A*pushAboveWindow source A)
@@ -1183,7 +1183,7 @@ pushAboveWindow(Matrix,Matrix,Matrix) := (A,B,C) ->(
 
 )
 
-pushAboveWindow List := List -> L ->(
+pushAboveWindow List := List => L ->(
     --L = List of matrices that make a complex
     --returns list of matrices that make a complex, where 
     --syzygies of each matrix that are both outside the window and not 
@@ -1210,7 +1210,7 @@ pushAboveWindow List := List -> L ->(
    append(L',B)
     )
 
-pushAboveWindow ChainComplex := ChainComplex -> C -> (
+pushAboveWindow ChainComplex := ChainComplex => C -> (
     --makes the chain complex into a list of matrices, 
     --does pushAboveWindow to that, 
     --and makes it back into a chain complex.
