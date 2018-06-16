@@ -793,6 +793,7 @@ chainComplexData = C->(
     C':=C[minC];
     {minC, maxC, apply(toList(1..maxC-minC), i-> (C').dd_i)}
 )
+
 chainComplexFromData = method()
 chainComplexFromData List := L ->(
     --format of L is desired min, desired max, list of
@@ -806,9 +807,6 @@ chainComplexFromData(ZZ, List) := (minC,L) ->(
     C := chainComplex L;
     assert( min C ==0);
     C[-minC])
-
-
-
 
 trivialHomologicalTruncation=method()
 trivialHomologicalTruncation(ChainComplex,ZZ,ZZ) := (C,d,e) -> (
@@ -1138,12 +1136,13 @@ m2 := matrix{toList(#D:1_(ring m1))};
 m2*m1)
 
 pushAboveWindow = method()
-pushAboveWindow Module := M -> (
+pushAboveWindow Module := Matrix -> M -> (
+    --takes a free module, returns a map from something minimally outside the Beilinson window.
     E:= ring M;
     (t,v,n,varsLists,irrList) := ringData E;
     g := gens M;
-    degList := last degrees g;
-    if degList == {} then return M;
+    degList := last degrees g; -- this is degrees source g;
+    if degList == {} then return M; -- this is the zero module
     directSum apply(degList, D->if inWindow(D,n)
     then powers(v-D,irrList)**E^{ -D} else id_(E^{ -D}))
     )
@@ -1153,7 +1152,8 @@ pushAboveWindow(E^{{0,0},-{ -1,0},-{1,2},-{1,3}})
 ///
 
 
-pushAboveWindow Matrix := A ->(
+pushAboveWindow Matrix := Matrix ->A ->(
+    --returns a matrix with the same target but source minimally outside the Beilinson window.
     if A==0 then return A;
     mingens image (A*pushAboveWindow source A)
     )
@@ -1165,12 +1165,17 @@ pushAboveWindow A
 ///
 
 pushAboveWindow(Matrix,Matrix) := (A,B) ->(
+    --A is already correct, B is a matrix of syzygies.
+    --return the matrix of syzygies of A that are outside the Beilinson window
+    --and don't repeat things in the image of B
     assert(A*B == 0);
     C := pushAboveWindow syz A;
     mingens image(C % image B)
     )
 
 pushAboveWindow(Matrix,Matrix,Matrix) := (A,B,C) ->(
+    --A,B,C form a complex. return a list of 3 matrices that form a complex,
+    --A, B|pushAboveWindow(A,B),C' where C' is changed only by adding a block of zeros.
     B2 := pushAboveWindow(A,B);
     assert((B|B2)*(C||map(source B2, source C, 0))== 0);
     assert(A*(B|B2) == 0);
@@ -1178,8 +1183,11 @@ pushAboveWindow(Matrix,Matrix,Matrix) := (A,B,C) ->(
 
 )
 
-pushAboveWindow List := L ->(
+pushAboveWindow List := List -> L ->(
     --L = List of matrices that make a complex
+    --returns list of matrices that make a complex, where 
+    --syzygies of each matrix that are both outside the window and not 
+    --already in the complex have been added.
     len := #L;
     if len == 1 then return append(L,pushAboveWindow syz L_0);
     if len == 2 then return {L_0, L_1|pushAboveWindow(L_0,L_1)};
@@ -1202,7 +1210,12 @@ pushAboveWindow List := L ->(
    append(L',B)
     )
 
-pushAboveWindow ChainComplex := C -> (
+pushAboveWindow ChainComplex := ChainComplex -> C -> (
+    --makes the chain complex into a list of matrices, 
+    --does pushAboveWindow to that, 
+    --and makes it back into a chain complex.
+    --That is:  Takes a chain complex and adds all the syzygies of maps in the complex that
+    --are outside the Beilinson window.
     C':=appendZeroMap appendZeroMap prependZeroMap C;
     L := chainComplexData C';
     M := pushAboveWindow L_2;
@@ -1234,9 +1247,21 @@ tateExtension(ChainComplex) := W -> (
     TW2 := dual res(coker transpose TW1c.dd_(ma+sum v),LengthLimit =>(ma+3*sum v -mi))[-ma-sum v+1];
     --betti TW2
     TW2
-
     )
 
+///
+--beilinsonWindow tateExtension W should be equal to W.
+        n={1,1};
+        (S,E) = productOfProjectiveSpaces n;
+	T1 = (dual res trim (ideal vars E)^2)[1];
+	a=-{2,2};T2=T1**E^{a}[sum a];
+	W=beilinsonWindow T2
+        T=tateExtension W;
+	W' = beilinsonWindow T
+	W_1
+	W'_1
+W== W'
+///
 ---------------------------------------
 -- Construction of Beilinson functor --
 ---------------------------------------
