@@ -1116,14 +1116,15 @@ inWindow(ChainComplex) := W -> (
     L:=flatten apply(toList(nonzeroMin W.. nonzeroMax W),d-> degrees W_d);
     #select(L, D-> not inWindow(D,n))==0)
 
-{*aboveWindow = method()
+-*
+aboveWindow = method()
 aboveWindow(List,List) := (D,n) -> #D == #select(#D, i-> D_i>n_i)
 
 gensInWindow = method()
 gensInWindow(Module) := M ->(
     rd = ringData ring M;
     #D == #select(#D, i->(0<=D_i and D_i<=n_i)))
-*}
+*-
 ///
 n = {3,5,4}
 D = { -1,4,3}
@@ -3810,7 +3811,7 @@ doc ///
     (bgg, Module)
     [bgg,LengthLimit]
    Headline
-    make a linear free complex from an module over an exterior algebra or a symmetric algebra
+    make a linear free complex from a module over an exterior algebra or a symmetric algebra
    Usage
     LP = bgg P
     RM = bgg(M,LengthLimit=>4)
@@ -4139,9 +4140,10 @@ TEST ///
 -*
 restart
 needsPackage "TateOnProducts"
-*-
+
 error"the test below works, but we don't understand the
 correspondence of positions in the cohomology Matrix and the tally"
+*-
   n={1,2}
   (S,E) = productOfProjectiveSpaces n
   m = matrix{{x_(0,0),x_(1,0)},
@@ -4162,9 +4164,9 @@ correspondence of positions in the cohomology Matrix and the tally"
 restart
 
 *-
-TEST ///
-error"we don't know what this should be testing. Note that 'corner'
-no longer exists"
+TEST /// 
+--error"we don't know what this should be testing. Note that 'corner'
+--no longer exists"
 
 debug needsPackage "TateOnProducts"
 n={1,2}
@@ -4174,7 +4176,8 @@ cohomologyMatrix(F,-2*n,2*n)
 tallyDegrees F
 
 deg = {2,1}
-m = corner(F,deg)
+m = upperCorner(F,deg)
+betti m
 tally degrees source m, tally degrees target m
 Fm=(res(coker m,LengthLimit=>10))[sum deg]
 betti Fm
@@ -4183,8 +4186,8 @@ cohomologyMatrix(Fm,deg-{5,5},deg+{1,1})
 ///
 
 TEST///
-error"we don't know what this should be testing. Note that 'corner'
-no longer exists"
+--error"we don't know what this should be testing. Note that 'corner'
+--no longer exists"
 
 debug needsPackage "TateOnProducts"
 n={1,1}
@@ -4193,12 +4196,13 @@ n={1,1}
 time fB=dual res(coker random(E^7,E^{13:{ -1,0},11:{0,-1}}),LengthLimit=>10);
 cohomologyMatrix(fB,-{1,1},{5,5})
 deg={3,3}
-m= corner(fB,deg);
-f= res( ker  m,LengthLimit=> 4)[3]
+m= upperCorner(fB,deg);
+f= res( coker  m,LengthLimit=> 10)[6]
 tallyDegrees f
-betti m, tally degrees target m, tally degrees source m
-m1= corner(f,-1,{2,0});
-betti m1, tally degrees target m1, tally degrees source m1
+cohomologyMatrix(f,-{3,3},{5,5})
+C= cornerComplex(f,{1,1});
+cohomologyMatrix(C,-{3,3},{5,5})
+
 ///
 
 ///
@@ -4264,7 +4268,7 @@ isHomogeneous C
 
 TEST ///
 -- ZZZZ
-restart
+--restart
   needsPackage "TateOnProducts"
   n={2,1};
   (S,E) = productOfProjectiveSpaces n;
@@ -4276,7 +4280,7 @@ restart
   T2 = res(coker lowerCorner(T1, {2,2}), LengthLimit=>10)[4]
   cohomologyMatrix(T2,-3*n,3*n)
   BW2 = beilinsonWindow T2
-  cohomologyMatrix(oo, -5*n,5*n)
+  cohomologyMatrix(BW2, -5*n,5*n)
   B2 = beilinson T2
   B2 = beilinson(T2, BundleType=>QuotientBundle)
   F2 = (prune HH B2)_0
