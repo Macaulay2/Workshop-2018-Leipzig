@@ -64,6 +64,7 @@ export {
 --    "TateRingData",
     "TateData",
     "bgg",
+    "directImageComplex",
     --the following could all be part of ChainComplexExtras
     "isIsomorphic",
 --    "prependZeroMap",
@@ -269,6 +270,7 @@ allGradings (ChainComplex,Module, Ring) := (fJ,F0,Sall) -> (
 	fJall.dd_i=m);
     chainComplex apply(length fJ,i->fJall.dd_(i+1))
     )
+
 
 
 
@@ -2124,9 +2126,81 @@ HH LP
 
 
 
+projectionMapOnEs=method()
+projectionMapOnEs(Module,List) := (M,I)->(
+    S := ring M;
+    t := #degree S_0;
+    v := apply(unique degrees source vars S, d->
+	#select(degrees source vars S,e->e==d));    
+    if not all(I,i->0 <= i and i <= t-1) then error "expected a sublist of {0,..,t-1}";
+--    J := select(toList(0..t-1),j-> not member(j,I));
+    nI := apply(I,i-> v_i-1);
+    (SI,EI) := productOfProjectiveSpaces nI;
+    a:= null;
+    phi1:= matrix {flatten apply(t,i->
+	if member(i,I) then ( 
+	    l:=position(I,j->j==i);
+	    a=sum(l,j->nI_j+1);
+	    apply(v_i,k->EI_(a+k))
+	    )
+	else apply(v_i,k->0))};
+    E := (tateData S)#Rings_1;
+    map(EI,E,phi1)
+    )
 
 
+///
+restart
+loadPackage("TateOnProducts",Reload=>true)
+(S,E)=productOfProjectiveSpaces{1,2,2}
+M=S^{{-2,-2,-1}}
+I={1}
+projectionMapOnEs(M,I)
 
+///    
+
+directImageComplex=method()
+directImageComplex(Module,List) := (M,I) -> (
+    -- Input: M module representing a sheaf sF on a product of t projective space
+    --        I subset of {0,..,t-1}
+    -- Output: the complex Rpi_* sF in D^b(PP^I)
+    --        where pi: PP-> PP^I denotes the projection on the partial product
+    --        X_{i in I} PP^{n_i}
+    S := ring M;
+    t := #degree S_0;
+    J := select(toList(0..t-1),j-> not member(j,I));
+    phi := projectionMapOnEs(M,I);
+    E1 :=target phi;
+    v := apply(unique degrees source vars S, d->
+	#select(degrees source vars S,e->e==d));
+    high:= v;low:=-high;
+    T:=tateResolution(M,low,high);
+    sT:=removeZeroTrailingTerms strand(T,toList(t:0),J);
+    --print cohomologyMatrix(sT,low,high);
+    sTW := removeZeroTrailingTerms beilinsonWindow sT;
+    --print betti sTW;
+    mi := min sTW; ma:=max sTW;
+    W1 := new ChainComplex;
+    W1.ring = E1;
+    apply(toList(mi..ma),i-> W1_i = E1^(-apply(degrees sTW_i,d->d_I))); 
+    apply(toList(mi+1..ma),i->W1.dd_i = map(W1_(i-1),W1_i,phi(sTW.dd_i)));
+    beilinson W1   
+    )
+
+
+///  
+restart
+loadPackage("TateOnProducts",Reload=>true)
+debug TateOnProducts
+(S,E)=productOfProjectiveSpaces{1,2}
+M=(beilinson E^{{-1,-1}})**S^{{-1,-1}}
+I={1}
+RpiM=directImageComplex(M,I)
+betti RpiM
+prune HH_0 RpiM
+prune HH_-1 RpiM 
+prune HH_-2 RpiM
+///
 
 --------------------------
 -- Begin of the documentation
@@ -2155,6 +2229,7 @@ document {
 	TO tateExtension,
 	TO beilinson,
 	TO bgg,
+	TO directImageComplex,
         },
    SUBSECTION "Numerical Information",
    UL{
@@ -3735,6 +3810,80 @@ doc ///
     BundleType
     SubBundle
 ///
+
+---------------------------
+-- composed functions
+---------------------------
+
+doc ///
+  Key
+    directImageComplex
+    (directImageComplex,Module,List)
+  Headline
+    compute the direct image complex 
+  Usage
+    RpiM=directImageComplex(M,I)
+  Inputs
+    M: Module
+       representing a sheaf F on product of projective spaces
+    I: List
+      corresponding to the factors to which pi projects
+  Outputs
+    RpiM: ChainComplex
+       a chain complex of modules over a symmetric algebra
+  Description
+     Text
+       Let M represent a coherent sheaf F on a product P=P^{n_0}x..xP^{n_{t-1}} 
+       of t projective space. 
+       
+       Let $pi: P -> P^I= X_{i \in I} P^{n_i}$ denote the projection on 
+       to some factors. We compute a chain complex of S_I modules whose
+       sheafication is $Rpi_* F$. 
+       
+       The algorithm is based on the properties of strands,
+       and the beilinson functor on $P^I$, see       
+       @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
+       Note that the resulting complex is a ChainComplex instead of a co-ChainComplex,
+       so that for example HH_{-1} RpiM is the module representing $R^1 pi_* F$
+     Example
+       t=2
+       n={1,2}
+       (S,E)=productOfProjectiveSpaces{1,2}
+       M=(beilinson E^{{-1,-1}})**S^{{-2,-1}}
+     Text
+       We compute the direct image complex of M by projecting to 
+       the second factor P^2.
+     Example
+       I={1}
+       J=select({0,t-1},i-> not member(i,I))
+       RpiM=directImageComplex(M,I)
+       betti RpiM
+       prune HH_0 RpiM
+       prune HH_-1 RpiM 
+       prune HH_-2 RpiM
+       dim HH_-2 RpiM
+     Text
+       HH_{-2} RpiM is artinian, hence its sheafication is zero.
+       Thus the direct image complex in this case is concentrated in 
+       the single sheaf
+       $Rpi_* F = R^1pi_* F$
+     Example
+       cohomologyMatrix(M,-2*n,2*n)
+       T=tateResolution(M,-2*n,2*n);
+       cohomologyMatrix(strand(T,{0,0},J),-2*n,2*n)
+  Caveat
+     Note that the resulting complex is a ChainComplex instead of a co-ChainComplex,
+     so that for example HH_{-1} RpiM is the module representing $R^1 pi_* F$
+
+  SeeAlso
+     cohomologyMatrix
+     tateResolution
+     strand
+     beilinson
+///
+
+
+
 -*
 --------------------------------------------------------------
 -- Examples of the paper
