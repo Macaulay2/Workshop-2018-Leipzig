@@ -628,8 +628,10 @@ truncateInE(List,Module):= (d,M) -> (
 
 
 cornerComplex=method()
-cornerComplex(ChainComplex,List) := (C,c) ->
-       (d:=c-toList(#c:1);cornerComplex1(C,d))
+cornerComplex(ChainComplex,List) := (C,c) ->(
+       d:=c-toList(#c:1);
+       cornerComplex1(C,d)
+       )
 
 cornerComplex1=method()
 cornerComplex1(ChainComplex,List) := (C,c) -> (
@@ -638,8 +640,8 @@ cornerComplex1(ChainComplex,List) := (C,c) -> (
     --
     t:= numFactors ring C; -- list from 0 to the number of factors -1.
 --    if max C -min C < #t then error " need a complex of length at least t";
-    C':= C[min C+1];
-    Cge := firstQuadrantComplex1(C'[-#t+1],c);
+    C':= C[min C+1]; -- last term in C' is C'_(-1)
+    Cge := firstQuadrantComplex1(C'[-#t+1],c);    
     Cle := lastQuadrantComplex1(C',c);
 --    <<(betti Cge, betti Cle) <<endl;
     A:=0;B:=0;AB:=0;d:=0;
@@ -697,12 +699,32 @@ quadrantMap(Matrix,List,List,List) := (M,c,I,J) -> (
     J':=select(t,j-> not member(j,J));
     --sign change for c ??
     cc:=c;
-    goodColumns:=select(#degSource,k -> (#select(I,i-> degSource_k_i >= cc_i)==#I and #select(I',i->degSource_k_i < cc_i)==#I'));
-    goodRows:=select(#degTarget,k -> (#select(J,i-> degTarget_k_i >= cc_i)==#J and #select(J',i->degTarget_k_i < cc_i)==#J'));
+    goodColumns:=select(#degSource,k -> 
+	               (#select(I,i-> degSource_k_i >= cc_i)==#I and 
+		        #select(I',i->degSource_k_i < cc_i)==#I'));
+    goodRows:=select(#degTarget,k -> 
+	            (#select(J,i-> degTarget_k_i >= cc_i)==#J and 
+		     #select(J',i->degTarget_k_i < cc_i)==#J'));
+    return ((M^goodRows)_goodColumns))
+
+quadrantMap1 = method()
+quadrantMap1(Matrix,List) := (M,c) -> (
+    if M == 0 then return M;
+    --the case I = J = {}
+    --quadrantMap1(M,c) is the submatrix of M of all rows and cols
+    --with row and col degrees < c in the partial order.
+    degSource:=degrees source M;
+    degTarget:=degrees target M;
+    t:= numFactors ring M; --the list {0,...,t-1}
+--    I':=select(t,j-> not member(j,I)); I' = t
+--    J':=select(t,j-> not member(j,J)); J' = t
+    --sign change for c ??
+--    cc:=c;
+    goodColumns:=select(#degSource,k -> all(t,i->degSource_k_i < c_i));
+    goodRows:=select(#degTarget,k -> all(t,i->degTarget_k_i < c_i));
     return ((M^goodRows)_goodColumns))
 
 firstQuadrantComplex=method()
-
 firstQuadrantComplex(ChainComplex,List) := (C,c) -> (
      -- c index of the lower corner of the first quadrant
      firstQuadrantComplex1(C,c-toList(#c:1)) )
@@ -717,8 +739,36 @@ firstQuadrantComplex1(ChainComplex,List) := (C,c) -> (
     C':=C[s];
     -- I:= numFactors ring C;
     -- sign change for c (1x)
-    Cge:=chainComplex apply(max C'-1,d -> quadrantMap(C'.dd_(d+1),-c,{},{}));
+    --now replace each map in C' with the corresponding "quadrantMap"
+--    Cge:=chainComplex apply(max C'-1,d -> quadrantMap(C'.dd_(d+1),-c,{},{}));
+    Cge:=chainComplex apply(max C'-1,d -> quadrantMap1(C'.dd_(d+1),-c));
     return Cge[-s])
+///
+restart
+loadPackage "TateOnProducts"
+restart
+uninstallPackage "TateOnProducts"
+restart
+installPackage "TateOnProducts"
+        (S,E) = productOfProjectiveSpaces {1,1};
+	T1= (dual res( trim (ideal vars E)^2,LengthLimit=>8))[1];
+        T=trivialHomologicalTruncation(T2=res(coker upperCorner(T1,{4,3}),LengthLimit=>13)[7],-5,6);
+    	betti T
+	cohomologyMatrix(T,-{4,4},{3,2})
+    	fqT=firstQuadrantComplex(T,-{2,1});
+        betti fqT
+	cohomologyMatrix(fqT,-{4,4},{3,2})
+	cohomologyMatrix(fqT,-{2,1},-{1,0})
+	lqT=lastQuadrantComplex(T,-{2,1});
+        betti lqT
+	cohomologyMatrix(lqT,-{4,4},{3,2})
+	cohomologyMatrix(lqT,-{3,2},-{2,1})
+	cT=cornerComplex(T,-{2,1});
+	betti cT
+	cohomologyMatrix(cT,-{4,4},{3,2})
+viewHelp TateOnProducts
+///
+
 
 lastQuadrantComplex=method()
 lastQuadrantComplex(ChainComplex,List) := (C,c) -> (
@@ -1284,15 +1334,17 @@ tateExtension(ChainComplex) := W -> (
     --changed a sign here
     --TW1c := cornerComplex(TW1e,2*v);
     TW1c := cornerComplex(TW1e,-2*v); -- replace with upper quad cplx
+--cohomologyMatrix(TW1c, -4*v,4*v)
     --betti TWc
-    TW2 := dual res(coker transpose TW1c.dd_(ma+sum v),LengthLimit =>(ma+3*sum v -mi))[-ma-sum v+1];
+    TW2 := dual res(coker transpose TW1c.dd_(ma+sum v),
+	LengthLimit =>(ma+3*sum v -mi))[-ma-sum v+1];
+--cohomologyMatrix(TW2, -4*v,4*v)
     --betti TW2
     TW2
     )
 
-
 tateExtension1=method()
-tateExtension1(ChainComplex) := W -> (
+tateExtension1 ChainComplex := W -> (
     -- input W : a Beilinson representative of an object in D^b(PP)
     -- output :  an Tate extension in a bounded range
     -- compute the TateExtension in a sloppy way: the Beilinson window of the extension is only
@@ -1305,32 +1357,72 @@ tateExtension1(ChainComplex) := W -> (
     TW1:=pushAboveWindow W1;
     ma:= nonzeroMax TW1; 
     mi:=nonzeroMin TW1;
-    --betti W1,betti TW1
---Bbounds given for the length of the resolution have to be discussed
---They should come out of the proof of the theorem !!
-    TW1e := continueComplex(TW1, LengthLimit=> 3*sum v);
-    TW1c := cornerComplex(TW1e,-3*v);
-    print {	cohomologyMatrix (beilinsonWindow W1, -n,n),
-	cohomologyMatrix( TW1, -4*v, v)
-	};
-    Tp := pushAboveWindow dual TW1c;
-    trivialHomologicalTruncation(Tp, mi-2*sum v, ma)
+---------identical to tateExtensionOld up to here.
+-- in tateExensionOld we now do 
+    TW1e' := res(coker TW1.dd_(ma),LengthLimit=>(3*sum v))[-ma];
+-- here we'll do:
+    TW1e := continueComplex(TW1, LengthLimit=> 3*sum v)[-ma+1];
+print betti TW1e;
+print betti TW1e';
+-- But we were only going to use TW1e.dd_(ma+sum v+2), 
+-- and the LengthLimit in continueComplex is
+-- what we add on to the original map, so the following should be equivalent
+-- for our purpose
+--    TW1e := continueComplex(TW1, LengthLimit=> ma+sum v +1)[-ma];    
+    TW1c' := cornerComplex(TW1e',-2*v); -- replace with upper quad cplx    
+    TW1c := cornerComplex(TW1e,-2*v); -- replace with upper quad cplx
+--    TW1c' := cornerComplex(TW1e',-2*v); -- replace with upper quad cplx    
+print betti TW1c';
+print betti TW1c;
+assert all(min TW1c'..max TW1c', i->sort degrees TW1c_i == sort degrees TW1c'_i);
+--    TW1c.dd_(ma+sum v)
+--    f := quadrantMap1((TW1e[2]).dd_(ma+sum v), 2*v+toList(t:1));
+--    What's in tateExtensionOld is equivalent to 
+ fq' := firstQuadrantComplex(TW1e',-2*v);
+ fq := firstQuadrantComplex(TW1e,-2*v); 
+print betti fq';
+print betti fq;
+print betti TW1c;
+assert(sort degrees fq_(ma+sum v) == sort degrees TW1c_(ma+sum v)); 
+--betti fq
+    f' := TW1c.dd_(ma+sum v);
+    f := fq.dd_(ma+sum v);
+    print betti f';
+    print betti f;
+    F1 := chainComplex {transpose f}[-1];    
+    --T1:=(dual continueComplex(F1, LengthLimit => ma-mi + 3*sum v))[-ma-sum v+1]
+    T1:=(dual continueComplex(F1, LengthLimit => ma-mi + 3*sum v))[-ma-sum v];
+    TW2 := dual res(coker transpose TW1c.dd_(ma+sum v),
+	LengthLimit =>(ma+3*sum v -mi))[-ma-sum v+1];
+print betti T1;
+print betti TW2;
+    --But bounds given for the length of this resolution
+    --should come out of the proof of the theorem !!
+    TW2
     )
 ///
 --beilinsonWindow tateExtension W should be equal to W.
 restart
 loadPackage "TateOnProducts"
+--viewHelp tateExtension
 debug TateOnProducts
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
 	T1 = (dual res trim (ideal vars E)^2)[1];
-	a=-{2,2};T2=T1**E^{a}[sum a];
+	T1 = (dual res trim (ideal vars E))[1];
+	a=-{2,2};
+	T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2
-        T=tateExtension W
-        T1=tateExtension1 W	;
-	W
-	W' = beilinsonWindow T1
-	W == W'
+time    T=tateExtension W;
+time    T1=tateExtension1 W;
+
+cohomologyMatrix(T,-6*n,6*n)
+cohomologyMatrix(T1,-6*n,6*n)
+	W1 = beilinsonWindow T1
+	W' = beilinsonWindow T
+	cohomologyMatrix (W1,-n,n)
+	cohomologyMatrix (W',-n,n)
+	cohomologyMatrix (W,-n,n)	
 ///
 
 
