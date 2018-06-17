@@ -3935,7 +3935,7 @@ doc ///
        The algorithm is based on the properties of strands,
        and the beilinson functor on $P^I$, see       
        @ HREF("http://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @.
-       Note that the resulting complex is a ChainComplex instead of a co-ChainComplex,
+       Note that the resulting complex is a chain complex instead of a cochain complex,
        so that for example HH_{-1} RpiM is the module representing $R^1 pi_* F$
      Example
        t=2
@@ -3964,7 +3964,7 @@ doc ///
        T=tateResolution(M,-2*n,2*n);
        cohomologyMatrix(strand(T,{0,0},J),-2*n,2*n)
   Caveat
-     Note that the resulting complex is a ChainComplex instead of a co-ChainComplex,
+     Note that the resulting complex is a chain complex instead of a cochain complex,
      so that for example HH_{-1} RpiM is the module representing $R^1 pi_* F$
 
   SeeAlso
