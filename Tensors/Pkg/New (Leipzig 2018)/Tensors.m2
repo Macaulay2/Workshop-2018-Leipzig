@@ -171,7 +171,8 @@ Tensor#{Standard,AfterPrint} = T -> (
 --    )
 
 -- 'entries' returns the list of coefficients in a nested list
-entries (Tensor) := T -> (
+entriesTensor = method()
+entriesTensor (Tensor) := T -> (
     f := (coeffs, ds) -> (
         if #ds <= 1 then coeffs
         else (
@@ -549,7 +550,7 @@ SeeAlso
 ///
 
 
-doc ///
+document{
 Key => {makeTensor}, 
 Headline => "Element of a tensor space",
 Usage => "makeTensor(V, L)",
@@ -563,77 +564,77 @@ EXAMPLE {
     "V = tensorSpace(QQ, symbol X, {2,2,2})",
     "T = makeTensor(V, toList(1..8))"
     }
-///
+}
 
-doc ///
-Key => {entries}, 
+document{
+Key => {entriesTensor}, 
 Headline => "Entries of a tensor",
-Usage => "entries T",
+Usage => "entriesTensor(T)",
 Inputs => {"T" => { "a tensor"} },
 Outputs => {
     "A nested list representing the entries of the tensor T."},
 EXAMPLE {
     "V = tensorSpace(QQ, symbol X, {2,2,2})",
     "T = makeTensor(V, toList(1..8))",
-    "entries T"
+    "entriesTensor T"
     }
-///
+}
 
-doc ///
-Key=> {TensorSpace == TensorSpace},
-Headline => "Identity between tensor spaces",
-Usage => "V == W",
-Inputs => {
-    "V" => {"a tensor space"},
-    "W" => {"a tensor space"}
-    },
-Outputs => {
-    "true if V and W have the same base ring and the same list of dimensions"},
-EXAMPLE {
-    "X = tensorSpace(QQ, symbol x, {2,2,2})",
-    "Y = tensorSpace(ZZ, symbol y, {2,2,2})",
-    "Z = tensorSpace(QQ, symbol z, {2,2,3})",
-    "W = tensorSpace(QQ, symbol w, {2,2,2})",
-    "X == Y, X == Z, X == W"
-    }
-\\\
+--document{
+--Key=> {TensorSpace == TensorSpace},
+--Headline => "Identity between tensor spaces",
+--Usage => "V == W",
+--Inputs => {
+--    "V" => {"a tensor space"},
+--    "W" => {"a tensor space"}
+--    },
+--Outputs => {
+--    "true if V and W have the same base ring and the same list of dimensions"},
+--EXAMPLE {
+--    "X = tensorSpace(QQ, symbol x, {2,2,2})",
+--    "Y = tensorSpace(ZZ, symbol y, {2,2,2})",
+--    "Z = tensorSpace(QQ, symbol z, {2,2,3})",
+--    "W = tensorSpace(QQ, symbol w, {2,2,2})",
+--    "X == Y, X == Z, X == W"
+--    }
+--}
 
-doc ///
-Key=> {Tensor == Tensor},
-Headline => "Identity between tensors",
-Usage => "T1 == T2",
-Inputs => {
-    "T1" => {"a tensor"},
-    "T2" => {"a tensor"}
-    },
-Outputs => {
-    "true if T1 and T2 are in the same tensor space and the lists of coefficients are the same"},
-EXAMPLE {
-    "X = tensorSpace(QQ, symbol x, {2,2})",
-    "T1 = makeTensor(X,{1,2,3,4})",
-    "T2 = makeTensor(X,{1,2,3,5})",
-    "T1 == T1, T1 == T2"
-    }
-\\\
+--document{
+--Key=> {Tensor == Tensor},
+--Headline => "Identity between tensors",
+--Usage => "T1 == T2",
+--Inputs => {
+--    "T1" => {"a tensor"},
+--    "T2" => {"a tensor"}
+--    },
+--Outputs => {
+--    "true if T1 and T2 are in the same tensor space and the lists of coefficients are the same"},
+--EXAMPLE {
+--    "X = tensorSpace(QQ, symbol x, {2,2})",
+--    "T1 = makeTensor(X,{1,2,3,4})",
+--    "T2 = makeTensor(X,{1,2,3,5})",
+--    "T1 == T1, T1 == T2"
+--   }
+--}
 
-doc  ///
-Key=> {TensorSpace ** TensorSpace},
-Headline => "Product of two tensor spaces",
-Usage => "V ** W",
-Inputs => {
-    "V" => {"a tensor space"},
-    "W" => {"a tensor space"}
-    },
-Outputs => {
-    "a new tensor space V ** W, which is the tensor product between V and W, whose base ring is the same as the one of V and W"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "W = tensorSpace(QQ, symbol Y, {3,4,5,6})",
-    "Z = V ** W"    
-    }
-\\\
+--document{
+--Key=> {TensorSpace ** TensorSpace},
+--Headline => "Product of two tensor spaces",
+--Usage => "V ** W",
+--Inputs => {
+--    "V" => {"a tensor space"},
+--    "W" => {"a tensor space"}
+--    },
+--Outputs => {
+--    "a new tensor space V ** W, which is the tensor product between V and W, whose base ring is the same as the one of V and W"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "W = tensorSpace(QQ, symbol Y, {3,4,5,6})",
+--    "Z = V ** W"    
+--    }
+--}
 
-doc ///
+document{
 Key=> {pickSymbol},
 Headline => "symbol for the basis elements of a tensor space",
 Usage => "pickSymbol(V)",
@@ -647,9 +648,9 @@ EXAMPLE {
     "s = pickSymbol(V)",
     "s == symbol X"    
     }
-\\\    
+}
     
-doc ///
+document{
 Key=> {factorsTensor},
 Headline => "factors of a given tensor space",
 Usage => "factorsTensor(V)",
@@ -663,9 +664,9 @@ EXAMPLE {
     "L = factorsTensor(V)",
     "(L#0) ** (L#1) == V"
     }
-\\\
+}
 
-doc  ///
+document{
 Key=> {mergeTensor},
 Headline => "",
 Usage => "mergeTensor(V)",
@@ -678,235 +679,189 @@ EXAMPLE {
     "V = tensorSpace(QQ, symbol X, {2,2})",
     "W = mergeTensor(V)",
     }
-\\\
+}
 
-doc ///
-Key=> {Tensor + Tensor},
-Headline => "sum of tensors",
-Usage => "T1 + T2",
-Inputs => {
-    "T1" => {"a tensor"},
-    "T2" => {"a tensor"}
-    },
-Outputs => {
-    "the sum of T1 and T2 in the tensor space"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T1 = V_(0,0,0)",
-    "T2 = V_(1,1,0)",
-    "T = T1 + T2"
-    }
-\\\
+--document{
+--Key=> {Tensor + Tensor},
+--Headline => "sum of tensors",
+--Usage => "T1 + T2",
+--Inputs => {
+--    "T1" => {"a tensor"},
+--    "T2" => {"a tensor"}
+--    },
+--Outputs => {
+--    "the sum of T1 and T2 in the tensor space"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T1 = V_(0,0,0)",
+--    "T2 = V_(1,1,0)",
+--    "T = T1 + T2"
+--    }
+--}
 
-doc  ///
-Key=> {Thing * Tensor},
-Headline => "left product of a tensor by a scalar",
-Usage => "a * T",
-Inputs => {
-    "a" => {"an element of the base ring of T"},
-    "T" => {"a tensor"}
-    },
-Outputs => {
-    "left product of T by an element of the base ring of T"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,0)",
-    "T' = 2 * T"
-    }
-\\\
+--document{
+--Key=> {Thing * Tensor},
+--Headline => "left product of a tensor by a scalar",
+--Usage => "a * T",
+--Inputs => {
+--    "a" => {"an element of the base ring of T"},
+--    "T" => {"a tensor"}
+--    },
+--Outputs => {
+--    "left product of T by an element of the base ring of T"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = V_(0,0,0)",
+--    "T' = 2 * T"
+--    }
+--}
 
-doc ///
-Key=> {Tensor * Thing},
-Headline => "right product of a tensor by a scalar",
-Usage => "T * a",
-Inputs => {
-    "T" => {"a tensor"},
-    "a" => {"an element of the base ring of T"}
-    },
-Outputs => {
-    "right product of T by an element of the base ring of T"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,0)",
-    "T' = T * 2"
-    }
-\\\
+--document{
+--Key=> {Tensor * Thing},
+--Headline => "right product of a tensor by a scalar",
+--Usage => "T * a",
+--Inputs => {
+--    "T" => {"a tensor"},
+--    "a" => {"an element of the base ring of T"}
+--    },
+--Outputs => {
+--    "right product of T by an element of the base ring of T"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = V_(0,0,0)",
+--    "T' = T * 2"
+--    }
+--}
 
-doc ///
-Key=> {-Tensor},
-Headline => "the opposite of a tensor",
-Usage => "-T",
-Inputs => {
-    "T" => {"a tensor"}
-    },
-Outputs => {
-    "the opposite of T"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,0)",
-    "T' = -T"
-    }
-\\\
+--document{
+--Key=> {-Tensor},
+--Headline => "the opposite of a tensor",
+--Usage => "-T",
+--Inputs => {
+--    "T" => {"a tensor"}
+--    },
+--Outputs => {
+--    "the opposite of T"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = V_(0,0,0)",
+--    "T' = -T"
+--    }
+--}
 
-doc ///
-Key=> {Tensor-Tensor},
-Headline => "the difference of two tensors",
-Usage => "T1-T2",
-Inputs => {
-    "T1" => {"a tensor"},
-    "T2" => {"a tensor"}
-    },
-Outputs => {
-    "the difference of T1 and T2"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T1 = V_(0,0,0)",
-    "T2 = V_(0,0,1)",
-    "T = T1 - T2"
-    }
-\\\
+--document{
+--Key=> {Tensor-Tensor},
+--Headline => "the difference of two tensors",
+--Usage => "T1-T2",
+--Inputs => {
+--    "T1" => {"a tensor"},
+--    "T2" => {"a tensor"}
+--    },
+--Outputs => {
+--    "the difference of T1 and T2"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T1 = V_(0,0,0)",
+--    "T2 = V_(0,0,1)",
+--    "T = T1 - T2"
+--    }
+--}
 
--- IDENTITY OF TENSORS NEEDED BEFORE (ALSO ALL OPERATIONS BEFORE?)
-doc ///
-Key => {TensorSpace _ Sequence}, 
-Headline => "Extract a basis element from a tensor space",
-Usage => "V _ S ",
-Inputs => {
-    "V" => { "a tensor space"},
-    "S" => { "a sequence of nonnegative integers"}},
-Outputs => {
-    {"The basis element of V corresponding to S." } },
-"This function provides an easier to define a tensor.",
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,0)",
-    "T' = makeTensor(V, {1,0,0,0,0,0,0,0})",
-    "T == T' "
-   },
-SeeAlso => makeTensor}
-/// 
+--document{
+--Key => {TensorSpace _ Sequence}, 
+--Headline => "Extract a basis element from a tensor space",
+--Usage => "V _ S ",
+--Inputs => {
+--    "V" => { "a tensor space"},
+--    "S" => { "a sequence of nonnegative integers"}},
+--Outputs => {
+--    {"The basis element of V corresponding to S." } },
+--"This function provides an easier to define a tensor.",
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = V_(0,0,0)",
+--    "T' = makeTensor(V, {1,0,0,0,0,0,0,0})",
+--    "T == T' "
+--   },
+--SeeAlso => makeTensor
+--}
 
-doc ///
-Key => {Tensor _ Sequence}, 
-Headline => "Extract a coefficient of a tensor",
-Usage => "T _ S ",
-Inputs => {
-    "T" => { "a tensor"},
-    "S" => { "a sequence of nonnegative integers"}},
-Outputs => {
-    {"The coefficient of T with respect to the basis vector corresponding to S." } },
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = makeTensor(V, toList(1..8))",
-    "coeff = T_(1,1,1)",
-    "coeff == 8"
-    },
-SeeAlso => TensorSpace _ Sequence}
-///    
+--document{
+--Key => {Tensor _ Sequence}, 
+--Headline => "Extract a coefficient of a tensor",
+--Usage => "T _ S ",
+--Inputs => {
+--    "T" => { "a tensor"},
+--    "S" => { "a sequence of nonnegative integers"}},
+--Outputs => {
+--    {"The coefficient of T with respect to the basis vector corresponding to S." } },
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = makeTensor(V, toList(1..8))",
+--    "coeff = T_(1,1,1)",
+--    "coeff == 8"
+--    },
+--SeeAlso => TensorSpace _ Sequence
+--}
 
-doc ///
-Key => {TensorSpace _ ZZ}, 
-Headline => "Extract a coefficient of a tensor of order one",
-Usage => "T _ S ",
-Inputs => {
-    "T" => { "a tensor"},
-    "S" => { "a nonnegative integers"}},
-Outputs => {
-    {"The coefficient of T with respect to the basis vector corresponding to S." } },
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = makeTensor(V, toList(1..8))",
-    "coeff = T_(1,1,1)",
-    "coeff == 8"
-    },
-SeeAlso => TensorSpace _ Sequence}
-///    
+--document{
+--Key => {TensorSpace _ ZZ}, 
+--Headline => "Extract a coefficient of a tensor of order one",
+--Usage => "T _ S ",
+--Inputs => {
+--    "T" => { "a tensor"},
+--    "S" => { "a nonnegative integers"}},
+--Outputs => {
+--    {"The coefficient of T with respect to the basis vector corresponding to S." } },
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = makeTensor(V, toList(1..8))",
+--    "coeff = T_(1,1,1)",
+--    "coeff == 8"
+--    },
+--SeeAlso => TensorSpace _ Sequence
+--}
 
-doc  ///
-Key => {entries}, 
-Headline => "Entries of a tensor",
-Usage => "entries T",
-Inputs => {"T" => { "a tensor"} },
-Outputs => {
-    "A nested list representing the entries of the tensor T."},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,1)-2*V_(1,1,1)",
-    "entries T"
-    }
-///
+--document{
+--Key=> {glAction (List, Tensor)},
+--Headline => "linear action on a tensor",
+--Usage => "glAction(L,T)",
+--Inputs => {
+--    "L" => {"a list of matrices of the appropriate size over the same base ring of T"},
+--    "T" => {"a tensor"}
+--    },
+--Outputs => {
+--    "image of a tensor under the action of a list of matrices"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = V_(0,0,0)",
+--    "m1 = matrix{{1,0},{0,1}}",
+--    "m2 = matrix{{0,-1},{1,0}}",
+--    "m3 = matrix{{1,2},{-3,5}}",
+--    "L = {m1, m2, m3}",
+--   "T' = glAction(L,T)"
+--    },
+--SeeAlso => glAction (Matrix, Tensor)
+--}
 
-
-
-doc  ///
-Key => {entries}, 
-Headline => "Entries of a tensor",
-Usage => "entries T",
-Inputs => {"T" => { "a tensor"} },
-Outputs => {
-    "A nested list representing the entries of the tensor T."},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,1)-2*V_(1,1,1)",
-    "entries T"
-    }
-///
-
-
-doc ///
-Key => {entries}, 
-Headline => "Entries of a tensor",
-Usage => "entries T",
-Inputs => {"T" => { "a tensor"} },
-Outputs => {
-    "A nested list representing the entries of the tensor T."},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,1)-2*V_(1,1,1)",
-    "entries T"
-    }
-///
-
-doc ///
-Key=> {glAction (List, Tensor)},
-Headline => "linear action on a tensor",
-Usage => "glAction(L,T)",
-Inputs => {
-    "L" => {"a list of matrices of the appropriate size over the same base ring of T"},
-    "T" => {"a tensor"}
-    },
-Outputs => {
-    "image of a tensor under the action of a list of matrices"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,0)",
-    "m1 = matrix{{1,0},{0,1}}",
-    "m2 = matrix{{0,-1},{1,0}}",
-    "m3 = matrix{{1,2},{-3,5}}",
-    "L = {m1, m2, m3}",
-    "T' = glAction(L,T)"
-    },
-SeeAlso => glAction (Matrix, Tensor)
-\\\
-
-doc ///
-Key=> {glAction (Matrix, Tensor)},
-Headline => "linear action on a tensor",
-Usage => "glAction(M,T)",
-Inputs => {
-    "M" => {"a matrix of the appropriate size over the same base ring of T"},
-    "T" => {"a tensor"}
-    },
-Outputs => {
-    "image of a tensor under the action of a matrix"},
-EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = V_(0,0,0)",
-    "M = matrix{{1,2},{-3,5}}",
-    "T' = glAction(M,T)"
-    },
-SeeAlso => glAction (List, Tensor)
-\\\
+--document{
+--Key=> {glAction (Matrix, Tensor)},
+--Headline => "linear action on a tensor",
+--Usage => "glAction(M,T)",
+--Inputs => {
+--    "M" => {"a matrix of the appropriate size over the same base ring of T"},
+--    "T" => {"a tensor"}
+--    },
+--Outputs => {
+--   "image of a tensor under the action of a matrix"},
+--EXAMPLE {
+--    "V = tensorSpace(QQ, symbol X, {2,2,2})",
+--    "T = V_(0,0,0)",
+--    "M = matrix{{1,2},{-3,5}}",
+--    "T' = glAction(M,T)"
+--    },
+--SeeAlso => glAction (List, Tensor)
+--}
 
 -- TESTS --------------------------------------------------------
 
