@@ -58,6 +58,8 @@ export {
     "symmetrize",
     "slice",
     "contraction",
+    "pickSymbol",
+    "entriesTensor",
     -- symbols
     "dims", "coeff", "baseRing", "tensorBasis"
     }
@@ -562,7 +564,7 @@ Outputs => {
     " The tensor in V whose coefficients are elements of L with respet to the basis of V"},
 EXAMPLE {
     "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = makeTensor(V, toList(1..8))"
+    "T = makeTensor(toList(1..8), V)"
     }
 }
 
@@ -575,7 +577,7 @@ Outputs => {
     "A nested list representing the entries of the tensor T."},
 EXAMPLE {
     "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "T = makeTensor(V, toList(1..8))",
+    "T = makeTensor(toList(1..8),V)",
     "entriesTensor T"
     }
 }
@@ -644,9 +646,9 @@ Inputs => {
 Outputs => {
     "The symbol used to write the basis elements of V"},
 EXAMPLE {
-    "V = tensorSpace(QQ, symbol X, {2,2,2})",
-    "s = pickSymbol(V)",
-    "s == symbol X"    
+    "V = tensorSpace(QQ, symbol X, {2,2})",
+    "W = tensorSpace(QQ, symbol Y, {2,2})",
+    "pickSymbol(V**W)"   
     }
 }
     
@@ -662,7 +664,7 @@ Outputs => {
 EXAMPLE {
     "V = tensorSpace(QQ, symbol X, {2,2})",
     "L = factorsTensor(V)",
-    "(L#0) ** (L#1) == V"
+--    "(L#0) ** (L#1) == V"   -- This is not an example, should go in TESTS 
     }
 }
 
@@ -867,7 +869,7 @@ EXAMPLE {
 
 TEST ///
     V = tensorSpace(QQ,symbol X,{2,2,2})
-    W = tensorSpace(QQ,Y,{3,3,3})
+    W = tensorSpace(QQ,symbol Y,{3,3,3})
     T1 = makeTensor(1..8,V)
     T2 = makeTensor(1..8,V)
     assert(2*T1 == T1+T2)
@@ -895,7 +897,7 @@ TEST ///
     MS2 = tensorSpace(QQ, symbol Z, {3,4})
     M1 = makeTensor(1..6, MS1)
     M2 = makeTensor(1..12, MS2)
-    assert(matrix entries contraction(M1, M2, {1}, {0}) == (matrix entries M1) * (matrix entries M2))
+    assert(matrix entriesTensor contraction(M1, M2, {1}, {0}) == (matrix entriesTensor M1) * (matrix entriesTensor M2))
 ///
 
 
