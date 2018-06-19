@@ -1309,8 +1309,6 @@ debug TateOnProducts
 	W=beilinsonWindow T2
 	T3 = pushAboveWindow W
     	assert(beilinsonWindow T3 == W)
-	cohomologyMatrix(T3,-5*n,2*n)
-	cohomologyMatrix(W, -2*n,2*n)
 ///
 
 tateExtension=method()
@@ -1342,7 +1340,7 @@ tateExtension(ChainComplex) := W -> (
     --betti TW2
     TW2
     )
-
+-*
 tateExtension1=method()
 tateExtension1 ChainComplex := W -> (
     -- input W : a Beilinson representative of an object in D^b(PP)
@@ -1400,6 +1398,7 @@ print betti TW2;
     --should come out of the proof of the theorem !!
     TW2
     )
+*-
 ///
 --beilinsonWindow tateExtension W should be equal to W.
 restart
@@ -1414,7 +1413,7 @@ debug TateOnProducts
 	T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2
 time    T=tateExtension W;
-time    T1=tateExtension1 W;
+--time    T1=tateExtension1 W;
 
 cohomologyMatrix(T,-6*n,6*n)
 cohomologyMatrix(T1,-6*n,6*n)
@@ -1441,28 +1440,13 @@ continueComplex ChainComplex := o->C ->(
     )
 
 TEST///
-
+debug TateOnProducts
 n={1,1};
 (S,E) = productOfProjectiveSpaces n;
 p = 2
 C = res(coker vars E,LengthLimit =>p)[2]
 C1 = continueComplex(C, LengthLimit =>2)
-(C1.dd)^2
---problem: we should probably truncate C1 first.
-restart
-loadPackage "TateOnProducts"
-debug TateOnProducts
-n={1,1};
-(S,E) = productOfProjectiveSpaces n;
-p = 3
-C1 = res(coker vars E,LengthLimit =>p)
-C2 = res(coker C1.dd_p)[-p+1] -- the signs are incorrect!
-assert (C1.dd_p == C2.dd_p) -- this is true when p = 3, not p=2.
-C2' = res image C1.dd_p
-C2 = 
-C = joinComplexes(C1,C2)
-assert (C.dd_p == C1.dd_p and C.dd_(p+1) == C2.dd_(p+1))
-
+assert((C1.dd)^2 == 0)
 ///
 
 ---------------------------------------
@@ -5150,3 +5134,33 @@ cohomologyMatrix (M, low, high)
 
 cohomologyMatrix(M,low,high)
 cohomologyMatrix(RM,low,high)
+
+
+---------------------------------
+restart
+loadPackage "TateOnProducts"
+--Hard examples for Mike
+--I believe the time is all taken up with the resolution
+        n={1,2}; 
+        (S,E) = productOfProjectiveSpaces n;
+	T1 = (dual res trim (ideal vars E))[1];
+	a=-{2,2};
+	T2=T1**E^{a}[sum a];
+	W=beilinsonWindow T2
+time    T=tateExtension W; -- 2 sec
+
+        n={2,2};
+        (S,E) = productOfProjectiveSpaces n;
+	T1 = (dual res trim (ideal vars E))[1];
+	a=-{2,2};
+	T2=T1**E^{a}[sum a];
+	W=beilinsonWindow T2
+time    T=tateExtension W; -- 84 seconds
+
+        n={1,1,1};
+        (S,E) = productOfProjectiveSpaces n;
+	T1 = (dual res trim (ideal vars E)^2)[1];
+	a=-{2,2,3};
+	T2=T1**E^{a}[sum a];
+	W=beilinsonWindow T2
+time    T=tateExtension W; -- still computing 10 minutes later...
