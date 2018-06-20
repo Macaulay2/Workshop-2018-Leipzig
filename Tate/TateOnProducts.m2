@@ -3960,7 +3960,7 @@ doc ///
        the single sheaf
        $Rpi_* F = R^1pi_* F$
      Example
-       cohomologyMatrix(M,-2*n,2*n)
+       cohomologyMatrix(M,-3*n,3*n)
        T=tateResolution(M,-2*n,2*n);
        cohomologyMatrix(strand(T,{0,0},J),-2*n,2*n)
   Caveat
