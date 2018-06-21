@@ -2280,117 +2280,108 @@ prune HH^2 RpiM
 
 composedFunctions = method()
 composedFunctions(ZZ) := n -> (
- print " 
-    n={1,1}
-high=3*n, low=-high
-(S,E)=productOfProjectiveSpaces n
-  -- the example 4.1 from the paper
-S.?TateData
-E.?TateData
-T1=(dual res(coker gens prune (ideal vars E)^2,LengthLimit=>11))[1]
-phi=map(E,ring T1,vars E)
-T1=phi T1
-(ring T1).?TateData
+    print "n={1,1}, v=n+{1,1}
+      high=3*n, low=-high
+      (S,E)=productOfProjectiveSpaces n
+      --We build the example from Section 4 of the paper, 
+      --which corresponds to a rank 3 vector bundle on P^1xP1.
+      T1=(dual res(coker gens trim (ideal vars E)^2,LengthLimit=>11))[1]
+     
+      cohomologyMatrix(T1,low,high)
 
-cohomologyMatrix(T1,low,high)
+      c={4,4}
+      betti(uc= upperCorner(T1,c))
+      T=res(coker uc,LengthLimit=>12)[sum c]
+      betti T 
+      --T is the desired part of the Tate resolution, which is correct in the range low to high. 
+      cohomologyMatrix(T,2*low,2*high)
+      B=beilinson T
+      M=prune HH^0 B
+      prune HH^1 B
 
-c={4,4}
-betti(uc= upperCorner(T1,c))
-ring uc
-T=res(coker uc,LengthLimit=>12)[sum c]
-betti T
-ring T
-cohomologyMatrix(T,2*low,2*high)
-B=beilinson T
-M=prune HH^0 B
-prune HH^1 B
+      comM=cohomologyMatrix(M,low,high)
+      comT=cohomologyMatrix(T,low,high)
+      assert(comM===sub(comT,vars ring comM))
+      --Thus T and M have the same cohomology matrix in the desired range.
 
-comM=cohomologyMatrix(M,low,high)
-comT=cohomologyMatrix(T,low,high)
-assert(comM===sub(comT,vars ring comM))
+      C=cornerComplex(T,{0,0});
+      betti C      
+      cohomologyMatrix(C,low,high)
+      betti C.dd_0
+      P=ker C.dd_0**E^{v}
+      --The tensor product with E^{v} is necessary because we work with E instead of omega_E. 
+      LP=bgg P;
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
+      apply(coLP,h->dim h)
+      M1=HH^0 LP
+      betti M1,betti M
+      isIsomorphic(M,M1)
+      --It works also for different syzygy modules in the corner complex.
+      --It should works for all P=ker C.dd_k in the range where C.dd_k is computed 
+      --correctly. We check the case k=1 and k=-2.
+      k=1
+      P=ker C.dd_(-k)**E^{v}; betti P
+      LP=bgg P;
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
+      apply(coLP,h->dim h)
+      M1=HH^(-k) LP
+      betti M1, betti M
+      isIsomorphic(M,M1)
+      --Note that we have to take HH^{(-k)} == HH_k because of the homological position in which
+      --P sits.
+      k=-2
+      P=ker C.dd_(-k)**E^{v}; betti P
+      LP=bgg P;
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
+      apply(coLP,h->dim h)
+      M1=HH^(-k) LP
+      betti M1,betti M
+      isIsomorphic(M,M1)
+      --Next we check the functor bgg on S-modules.
+      RM=bgg M
+      betti T1
+      betti trivialHomologicalTruncation(T1,-7,-2)==betti trivialHomologicalTruncation(RM,-7,-2)
+      cohomologyMatrix(RM,low,high)
+      P=ker RM.dd_(-2)
+      betti RM
+      betti RM.dd_(-2)
+      RM.dd_(-2)==0
+      T1.dd_(-2)
+      --Frank: I do not understand why the first differential is zero
+      isIsomorphic(image(RM.dd_(-3)),image(T1.dd_(-3)))
+      --Apart from this mistake, the result is correct.
+      --Next we test reciprocity.
+      c={2,2}
+      CM=cornerComplex(T1,c)
+      cohomologyMatrix(CM,2*low,2*high)
+      P1=ker CM.dd_(-sum c)
+      LP=bgg P1
 
-
-C=cornerComplex(T,{0,0});
-betti C
-cohomologyMatrix(C,low,high)
-P=ker C.dd_0
-LP=bgg P;
-betti LP
-
-coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP)
-apply(coLP,h->dim h)
-M1=last coLP
-betti M1,betti M
--- some how wrong twist
-M1'=M1**S^{{-2,-2}}
-betti M1',betti M
-isIsomorphic(M,M1')
-
-
-P=ker C.dd_2; betti P
-LP=bgg P;
-betti LP
-
-coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP)
-apply(coLP,h->dim h)
-M1=last coLP
-betti M1,betti M
-M1'=M1**S^{{-2,-2}}
-betti M1',betti M
-isIsomorphic(M,M1')
--- we comclude: It works for various P=kerC.dd_p
-
-
-RM=bgg M
-betti T1
-betti trivialHomologicalTruncation(T1,-7,-2)==betti trivialHomologicalTruncation(RM,-7,-2)
-cohomologyMatrix(RM,low,high)
-P=ker RM.dd_(-2)
-betti RM
-RM.dd_(-2)==0 -- Frank: I do not understand why the first differential is zero
-isIsomorphic(image(RM.dd_(-3)),image(T1.dd_(-3)))
-
-
---Testing Reciprocity
-c={2,2}
-CM=cornerComplex(T1,c)
-cohomologyMatrix(CM,2*low,2*high)
-P1=ker CM.dd_(-sum c)
-LP=removeZeroTrailingTerms bgg P1
-
-coLP=apply(toList(min LP1..max LP),i->prune HH^(-i) LP)
-apply(coLP,h->dim h)
-Mc=prune truncate(c,M)
-betti (Mc'=(first coLP)**S^{-{2,2}}), betti Mc
-isIsomorphic(Mc',Mc)
-
---Testing Reciprocity
-c={3,1}
-CM=cornerComplex(T1,c)
-cohomologyMatrix(CM,2*low,2*high)
-P1=ker CM.dd_(-sum c)
-LP=removeZeroTrailingTerms bgg P1
-
-coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP)
-apply(coLP,h->dim h)
-Mc=prune truncate(c,M)
--- Frank: I do not understand why {-2,-2} is the right correction for the twist.
-betti (Mc'=(first coLP)**S^{-{2,2}}), betti Mc
-isIsomorphic(Mc',Mc)
-
---Testing Reciprocity
-c={3,2}
-CM=cornerComplex(T1,c)
-cohomologyMatrix(CM,2*low,2*high)
-P1=ker CM.dd_(-sum c)
-LP=removeZeroTrailingTerms bgg P1
-
-coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP)
-apply(coLP,h->dim h)
-Mc=prune truncate(c,M)
--- Frank: I do not understand why {-2,-2} is the right correction for the twist.
-betti (Mc'=(first coLP)**S^{-{2,2}}), betti Mc
-isIsomorphic(Mc',Mc)"
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
+      apply(coLP,h->dim h)
+      Mc=prune truncate(c,M)
+      betti (Mc'=(first coLP)**S^{-v}), betti Mc
+      isIsomorphic(Mc',Mc)
+      --The result is fine up to twist by **S^{-v}.
+      c={3,1}
+      CM=cornerComplex(T1,c)
+      cohomologyMatrix(CM,2*low,2*high)
+      P1=ker CM.dd_(-sum c)
+      LP=bgg P1
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
+      apply(coLP,h->dim h)
+      Mc=prune truncate(c,M)
+      betti (Mc'=HH^0 LP**S^{-v}), betti Mc
+      isIsomorphic(Mc',Mc) 
+      -- Now we test tateExtension:
+      W=beilinsonWindow T
+      T'=tateExtension W 
+      comT'=cohomologyMatrix(T',low,high) 
+      comT=cohomologyMatrix(T,low,high)
+      assert(sub(comT',vars ring comT)==comT)"   
 ) 
 
 
@@ -2406,9 +2397,8 @@ high=3*n, low=-high
   -- the example 4.1 from the paper
 S.?TateData
 E.?TateData
-T1=(dual res(coker gens prune (ideal vars E)^2,LengthLimit=>11))[1]
-phi=map(E,ring T1,vars E)
-T1=phi T1
+T1=(dual res(coker gens trim (ideal vars E)^2,LengthLimit=>11))[1]
+
 (ring T1).?TateData
 
 cohomologyMatrix(T1,low,high)
@@ -2591,7 +2581,7 @@ doc ///
      Text
       Prints the commands which illustrate / test various composition of functions.
      Example
-      n={1,1}
+      n={1,1}, v=n+{1,1}
       high=3*n, low=-high
       (S,E)=productOfProjectiveSpaces n
      Text
@@ -2599,23 +2589,17 @@ doc ///
       @ HREF("https://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
       which corresponds to a rank 3 vector bundle on P^1xP1.
      Example
-      T1=(dual res(coker gens prune (ideal vars E)^2,LengthLimit=>11))[1]
-     Text
-      T1 does not know its ring correctly.
-     Example
-      (ring T1).?TateData
-      phi=map(E,ring T1,vars E)
-      T1=phi T1
-      (ring T1).?TateData
-
+      T1=(dual res(coker gens trim (ideal vars E)^2,LengthLimit=>11))[1]
+     
       cohomologyMatrix(T1,low,high)
 
       c={4,4}
       betti(uc= upperCorner(T1,c))
-      ring uc
       T=res(coker uc,LengthLimit=>12)[sum c]
       betti T
-      ring T
+     Text 
+      T is the desired part of the Tate resolution, which is correct in the range low to high. 
+     Example
       cohomologyMatrix(T,2*low,2*high)
       B=beilinson T
       M=prune HH^0 B
@@ -2628,38 +2612,47 @@ doc ///
       Thus T and M have the same cohomology matrix in the desired range.
      Example
       C=cornerComplex(T,{0,0});
-      betti C
+      betti C      
       cohomologyMatrix(C,low,high)
-      P=ker C.dd_0
-      LP=bgg P;
-      betti LP
-
-      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP)
-      apply(coLP,h->dim h)
-      M1=last coLP
-      betti M1,betti M
+      betti C.dd_0
+      P=ker C.dd_0**E^{v}
      Text
-      The twist comes out wrong.
+      The tensor product with E^{\{v\}} is necessary because we work with E instead of $\omega_E$. 
      Example
-      M1'=M1**S^{{-2,-2}}
-      betti M1',betti M
-      isIsomorphic(M,M1')
-     Text
-      Apart from the twist, the the answer is correct.
-      It works also for different syzygy modules in the corner complex.
-      It should works for all P=ker C.dd_p in the range where C.dd_p is computed 
-      correctly.
-     Example
-      P=ker C.dd_2; betti P
       LP=bgg P;
       betti LP
       coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
-      M1=last coLP
+      M1=HH^0 LP
       betti M1,betti M
-      M1'=M1**S^{{-2,-2}}
-      betti M1',betti M
-      isIsomorphic(M,M1')
+      isIsomorphic(M,M1)
+     Text
+      It works also for different syzygy modules in the corner complex.
+      It should works for all P=ker C.dd_k in the range where C.dd_k is computed 
+      correctly. We check the case k=1 and k=-2.
+     Example
+      k=1
+      P=ker C.dd_(-k)**E^{v}; betti P
+      LP=bgg P;
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
+      apply(coLP,h->dim h)
+      M1=HH^(-k) LP
+      betti M1, betti M
+      isIsomorphic(M,M1)
+     Text
+      Note that we have to take HH^{(-k)} == HH_k because of the homological position in which
+      P sits.
+     Example
+      k=-2
+      P=ker C.dd_(-k)**E^{v}; betti P
+      LP=bgg P;
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
+      apply(coLP,h->dim h)
+      M1=HH^(-k) LP
+      betti M1,betti M
+      isIsomorphic(M,M1)
      Text
       Next we check the functor bgg on S-modules.
      Example
@@ -2669,7 +2662,9 @@ doc ///
       cohomologyMatrix(RM,low,high)
       P=ker RM.dd_(-2)
       betti RM
+      betti RM.dd_(-2)
       RM.dd_(-2)==0
+      T1.dd_(-2)
      Text
       Frank: I do not understand why the first differential is zero
      Example
@@ -2684,24 +2679,23 @@ doc ///
       P1=ker CM.dd_(-sum c)
       LP=bgg P1
 
-      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP)
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
       Mc=prune truncate(c,M)
-      betti (Mc'=(first coLP)**S^{-{2,2}}), betti Mc
+      betti (Mc'=(first coLP)**S^{-v}), betti Mc
       isIsomorphic(Mc',Mc)
      Text
-      Frank: I do not understand why {-2,-2} is the rigth twists. Otherwise 
-      the result is fine up to a shift of the complex LP.
+      The result is fine up to twist by **S^{\{-v\}}.
      Example
       c={3,1}
       CM=cornerComplex(T1,c)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
       LP=bgg P1
-      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP)
+      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
       Mc=prune truncate(c,M)
-      betti (Mc'=(first coLP)**S^{-{2,2}}), betti Mc
+      betti (Mc'=HH^0 LP**S^{-v}), betti Mc
       isIsomorphic(Mc',Mc)
      Text 
       Now we test tateExtension:
@@ -2712,7 +2706,7 @@ doc ///
       comT=cohomologyMatrix(T,low,high)
       assert(sub(comT',vars ring comT)==comT)   
    Caveat
-     In the end all compositions should be correct.
+      One flaw remains.
    SeeAlso
     bgg
     upperCorner
