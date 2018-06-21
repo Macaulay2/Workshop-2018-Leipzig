@@ -2125,7 +2125,7 @@ bgg Module := o -> P -> (
 	    E^(select(freeModuleDegs#(-i), k-> d ==k))));
 --define the maps
     u = L->unique degrees L;
-    scan(toList(min RM..max RM-1), k->(
+    scan(toList(min RM+1..max RM), k->(
 	    tar = RM_(k-1);
 	    sour = RM_k;
 	    utar = u tar;
@@ -2345,14 +2345,7 @@ composedFunctions(ZZ) := n -> (
       betti T1
       betti trivialHomologicalTruncation(T1,-7,-2)==betti trivialHomologicalTruncation(RM,-7,-2)
       cohomologyMatrix(RM,low,high)
-      P=ker RM.dd_(-2)
-      betti RM
-      betti RM.dd_(-2)
-      RM.dd_(-2)==0
-      T1.dd_(-2)
-      --Frank: I do not understand why the first differential is zero
-      isIsomorphic(image(RM.dd_(-3)),image(T1.dd_(-3)))
-      --Apart from this mistake, the result is correct.
+      isIsomorphic(image(RM.dd_(-2)),image(T1.dd_(-2)))
       --Next we test reciprocity.
       c={2,2}
       CM=cornerComplex(T1,c)
@@ -2660,17 +2653,8 @@ doc ///
       betti T1
       betti trivialHomologicalTruncation(T1,-7,-2)==betti trivialHomologicalTruncation(RM,-7,-2)
       cohomologyMatrix(RM,low,high)
-      P=ker RM.dd_(-2)
-      betti RM
-      betti RM.dd_(-2)
-      RM.dd_(-2)==0
-      T1.dd_(-2)
+      isIsomorphic(image(RM.dd_(-2)),image(T1.dd_(-2)))
      Text
-      Frank: I do not understand why the first differential is zero
-     Example
-      isIsomorphic(image(RM.dd_(-3)),image(T1.dd_(-3)))
-     Text
-      Apart from this mistake, the result is correct.
       Next we test reciprocity.
      Example
       c={2,2}
@@ -2705,8 +2689,6 @@ doc ///
       comT'=cohomologyMatrix(T',low,high) 
       comT=cohomologyMatrix(T,low,high)
       assert(sub(comT',vars ring comT)==comT)   
-   Caveat
-      One flaw remains.
    SeeAlso
     bgg
     upperCorner
