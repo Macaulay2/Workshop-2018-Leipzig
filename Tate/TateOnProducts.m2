@@ -2580,7 +2580,7 @@ doc ///
      Text
       We build the example from Section 4 of the paper
       @ HREF("https://arxiv.org/abs/1411.5724","Tate Resolutions on Products of Projective Spaces") @
-      which corresponds to a rank 3 vector bundle on P^1xP1.
+      which corresponds to a rank 3 vector bundle on P^1xP^1.
      Example
       T1=(dual res(coker gens trim (ideal vars E)^2,LengthLimit=>11))[1]
      
