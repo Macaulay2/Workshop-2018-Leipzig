@@ -4,7 +4,7 @@ restart
 uninstallPackage"TateOnProducts"
 restart
 installPackage("TateOnProducts")--,FileName=>schreyer/Dropbox/SVDComplexes/from-git/TateOnProducts.m2)
-loadPackage("TateOnProducts",Reload=>true)
+cloadPackage("TateOnProducts",Reload=>true)
 viewHelp "TateOnProducts"
 peek loadedFiles
 check "TateOnProducts" 
@@ -2351,23 +2351,23 @@ composedFunctions(ZZ) := n -> (
       CM=cornerComplex(T1,c)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
-      LP=bgg P1
+      LP=bgg (P1**E^{-c+v}) 
 
       coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
       Mc=prune truncate(c,M)
-      betti (Mc'=(first coLP)**S^{-v}), betti Mc
+      betti (Mc'=(first coLP)**S^{-c}), betti Mc
       isIsomorphic(Mc',Mc)
-      --The result is fine up to twist by **S^{-v}.
+      --The result is fine up to twist by **S^{-c}.
       c={3,1}
       CM=cornerComplex(T1,c)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
-      LP=bgg P1
+      LP=bgg (P1**E^{-c+v})
       coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
       Mc=prune truncate(c,M)
-      betti (Mc'=HH^0 LP**S^{-v}), betti Mc
+      betti (Mc'=HH^0 LP**S^{-c}), betti Mc
       isIsomorphic(Mc',Mc) 
       -- Now we test tateExtension:
       W=beilinsonWindow T
@@ -2661,25 +2661,25 @@ doc ///
       CM=cornerComplex(T1,c)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
-      LP=bgg P1
+      LP=bgg (P1**E^{-c+v})
 
       coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
       Mc=prune truncate(c,M)
-      betti (Mc'=(first coLP)**S^{-v}), betti Mc
+      betti (Mc'=(first coLP)**S^{-c}), betti Mc
       isIsomorphic(Mc',Mc)
      Text
-      The result is fine up to twist by **S^{\{-v\}}.
+      The result is fine up to twist by **S^{\{-c\}}.
      Example
       c={3,1}
       CM=cornerComplex(T1,c)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
-      LP=bgg P1
+      LP=bgg (P1**E^{-c+v})
       coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
       Mc=prune truncate(c,M)
-      betti (Mc'=HH^0 LP**S^{-v}), betti Mc
+      betti (Mc'=HH^0 LP**S^{-c}), betti Mc
       isIsomorphic(Mc',Mc)
      Text 
       Now we test tateExtension:
