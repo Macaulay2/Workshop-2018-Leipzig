@@ -4,7 +4,7 @@ restart
 uninstallPackage"TateOnProducts"
 restart
 installPackage("TateOnProducts")--,FileName=>schreyer/Dropbox/SVDComplexes/from-git/TateOnProducts.m2)
-cloadPackage("TateOnProducts",Reload=>true)
+loadPackage("TateOnProducts",Reload=>true)
 viewHelp "TateOnProducts"
 peek loadedFiles
 check "TateOnProducts" 
@@ -4619,23 +4619,24 @@ assert( (betti L) === new BettiTally from {(-3,{-1,-2},-3) => 6, (-5,{-2,-3},-5)
       --------------------------------------------------------------------------------------------------------
       => 3, (-4,{-1,-3},-4) => 2} );
 assert all(min L +1..max L, i-> L.dd_(i-1)*L.dd_i == 0)
-assert( (prune HH_(-3) L) === cokernel map((S)^{{0,1},{0,1},{0,1}},(S)^1,{{x_(1,0)}, {-x_(1,1)},
-       {-x_(1,2)}}) );
+--assert( (prune HH_(-3) L) === cokernel map((S)^{{0,1},{0,1},{0,1}},(S)^1,{{x_(1,0)}, {-x_(1,1)},
+--       {-x_(1,2)}}) );
 ///
 
 TEST ///
 (S,E) = productOfProjectiveSpaces{1,1};
-C = cornerComplex (S^1,{0,0},{3,3});
+C = tateResolution (S^1,{0,0},{3,3});
 assert (cohomRing = ZZ[h,k];
     (sub (cohomologyMatrix (C, {0,0},{3,3}), cohomRing) ===
-	map(cohomRing^4,cohomRing^4,{{4, 8, 12, 16}, {3, 6, 9, 12}, {2, 4, 6, 8}, {1, 2, 3, 4}}))
+	map(cohomRing^4,cohomRing^4,{{4, 8, 12, 16}, {3, 6, 9, 12}, {2, 4, 6, 8}, {1, 2, 3, 4}})
+	))
 ///
 
 TEST ///
 (S,E) = productOfProjectiveSpaces{1,2}
 M = S^{{-1,2}}
 high = {3,3}
-C = cornerComplex(M,-high,high)
+C = tateResolution(M,-high,high)
 betti C
 BW = beilinsonWindow C
 B = beilinson C
@@ -4644,14 +4645,14 @@ cohomologyMatrix(M, -high,high)
 cohomologyMatrix(BW, -high,high)
 netList apply(toList(min B..max B), i-> ann HH_(i) B)
 M' = HH_0 B
-assert(beilinsonWindow cornerComplex(M',-high,high) == BW)
+assert(beilinsonWindow tateResolution(M',-high,high) == BW)
 ///
 
 TEST ///
 (S,E) = productOfProjectiveSpaces{1,2}
 M = coker random(S^2, S^{2:{-1,-1}})
 high = {3,3}
-C = cornerComplex(M,-high,high);
+C = tateResolution(M,-high,high);
 BW = beilinsonWindow C
 betti BW
 B = beilinson C
@@ -4664,9 +4665,9 @@ M' = HH_0 B
 assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
 cohomologyMatrix(M', -high, high)
-beilinsonWindow cornerComplex(M',-high,high)
-assert(beilinsonWindow cornerComplex(M',-high,high) == BW)
-BW' = beilinsonWindow cornerComplex(M',-high,high)
+beilinsonWindow tateResolution(M',-high,high)
+
+BW' = beilinsonWindow tateResolution(M',-high,high)
 assert( all(2, i->BW_i == BW'_i))
 assert(isIsomorphic(coker BW.dd_1, coker BW'.dd_1))
 ///
@@ -4675,7 +4676,7 @@ TEST ///
 (S,E) = productOfProjectiveSpaces{1,2}
 M = coker random(S^2, S^{2:{-1,-1}})
 high = {3,3}
-C = cornerComplex(M,-high,high);
+C = tateResolution(M,-high,high);
 B = beilinson C
 M' = HH_0 B
 assert isIsomorphic(M',M)
@@ -4686,8 +4687,9 @@ TEST ///
   (S,E) = productOfProjectiveSpaces{1,2}
   M = coker random(S^2, S^{2:{-1,-1}})
   high = {3,3}
-  C = cornerComplex(M,-high,high);
+  C = tateResolution(M,-high,high);
   B = beilinson C
+  M' = HH_0 B
   assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
 ///
@@ -4962,7 +4964,7 @@ TEST///
 --loadPackage("TateOnProducts", Reload =>true)
 low = {-2,-2}; high={3,3}
 (S,E) = productOfProjectiveSpaces{1,2}
-C = cornerComplex(S^1,low,high)
+C = tateResolution(S^1,low,high)
 H = cohomologyHashTable(C, low, high)
 --cohomologyMatrix H -- not defined yet.
 cohomologyMatrix(S^1,{-3,-3},{3,3})
@@ -4992,12 +4994,11 @@ isHomogeneous C
 TEST ///
 -- ZZZZ
 --restart
-  needsPackage "TateOnProducts"
   n={2,1};
   (S,E) = productOfProjectiveSpaces n;
   T1 = (dual res trim (ideal vars E)^2 [1]);
   cohomologyMatrix(T1,-3*n,3*n)
-  beilinson removeZeroTrailingTerms beilinsonWindow T1
+  beilinson  beilinsonWindow T1
   beilinson T1
   beilinson(T1, BundleType=>QuotientBundle)
   T2 = res(coker lowerCorner(T1, {2,2}), LengthLimit=>10)[4]
@@ -5049,18 +5050,19 @@ TEST ///
   betti corner1
   T5 = ((res(coker corner1, LengthLimit => 10)) ** E^{tdeg})[sum tdeg]
   cohomologyMatrix(oo, -5*n,5*n)
-  BW5 = removeZeroTrailingTerms beilinsonWindow T5
+  BW5 =  beilinsonWindow T5
   betti BW5
   beilinson BW5
 ///
 
+
 TEST ///
 -- Keep this one?  It takes a bit of time...
   -- Take a sheaf on P^2 x P^3, e.g. the graph of a rational map
--*
+
   restart
   needsPackage "TateOnProducts"
-*-
+
   n={2,3};
   (S,E) = productOfProjectiveSpaces n;
 
@@ -5074,7 +5076,7 @@ TEST ///
   T = ((res(coker corner1, LengthLimit => 7)) ** E^{tdeg})[sum tdeg]
   cohomologyMatrix(T, -5*n,5*n)
   T1 = T ** E^{{-3,0}}[-3]
-  BW = removeZeroTrailingTerms beilinsonWindow T1
+  BW =  beilinsonWindow T1
   cohomologyMatrix(BW, -5*n, 5*n)
   assert(BW.dd^2 == 0)
   assert(isHomogeneous BW)
@@ -5084,6 +5086,7 @@ TEST ///
   assert(B.dd^2 == 0)
 
 ///
+
 
 TEST ///
 -- YYY
