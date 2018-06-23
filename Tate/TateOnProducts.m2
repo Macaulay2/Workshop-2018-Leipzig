@@ -1,5 +1,4 @@
 ///
-
 restart
 uninstallPackage"TateOnProducts"
 restart
@@ -8,7 +7,6 @@ loadPackage("TateOnProducts",Reload=>true)
 viewHelp "TateOnProducts"
 peek loadedFiles
 check "TateOnProducts" 
-
 ///
 newPackage(
     "TateOnProducts",
@@ -36,8 +34,6 @@ export {
     "beilinsonWindow",
     "tateResolution",
     "tateExtension",
-    "tateExtension1",    
---    "pushAboveWindow",
     "firstQuadrantComplex",
     "lastQuadrantComplex",
     "cornerComplex",
@@ -1340,91 +1336,9 @@ tateExtension(ChainComplex) := W -> (
     --betti TW2
     TW2
     )
+
 -*
-tateExtension1=method()
-tateExtension1 ChainComplex := W -> (
-    -- input W : a Beilinson representative of an object in D^b(PP)
-    -- output :  an Tate extension in a bounded range
-    -- compute the TateExtension in a sloppy way: the Beilinson window of the extension is only
-    -- isomorphic, bat not equal W.
-    E := ring W;
-    (t,v,n,irrList,idealList) := ringData ring W;
-    if not inWindow W then error "expect a complex with terms only in the Beilinson window";
-    W1 := removeZeroTrailingTerms W;
-    -- W1:= W;
-    TW1:=pushAboveWindow W1;
-    ma:= nonzeroMax TW1; 
-    mi:=nonzeroMin TW1;
----------identical to tateExtensionOld up to here.
--- in tateExensionOld we now do 
-    TW1e' := res(coker TW1.dd_(ma),LengthLimit=>(3*sum v))[-ma];
--- here we'll do:
-    TW1e := continueComplex(TW1, LengthLimit=> 3*sum v)[-ma+1];
-print betti TW1e;
-print betti TW1e';
--- But we were only going to use TW1e.dd_(ma+sum v+2), 
--- and the LengthLimit in continueComplex is
--- what we add on to the original map, so the following should be equivalent
--- for our purpose
---    TW1e := continueComplex(TW1, LengthLimit=> ma+sum v +1)[-ma];    
-    TW1c' := cornerComplex(TW1e',-2*v); -- replace with upper quad cplx    
-    TW1c := cornerComplex(TW1e,-2*v); -- replace with upper quad cplx
---    TW1c' := cornerComplex(TW1e',-2*v); -- replace with upper quad cplx    
-print betti TW1c';
-print betti TW1c;
-assert all(min TW1c'..max TW1c', i->sort degrees TW1c_i == sort degrees TW1c'_i);
---    TW1c.dd_(ma+sum v)
---    f := quadrantMap1((TW1e[2]).dd_(ma+sum v), 2*v+toList(t:1));
---    What's in tateExtensionOld is equivalent to 
- fq' := firstQuadrantComplex(TW1e',-2*v);
- fq := firstQuadrantComplex(TW1e,-2*v); 
-print betti fq';
-print betti fq;
-print betti TW1c;
-assert(sort degrees fq_(ma+sum v) == sort degrees TW1c_(ma+sum v)); 
---betti fq
-    f' := TW1c.dd_(ma+sum v);
-    f := fq.dd_(ma+sum v);
-    print betti f';
-    print betti f;
-    F1 := chainComplex {transpose f}[-1];    
-    --T1:=(dual continueComplex(F1, LengthLimit => ma-mi + 3*sum v))[-ma-sum v+1]
-    T1:=(dual continueComplex(F1, LengthLimit => ma-mi + 3*sum v))[-ma-sum v];
-    TW2 := dual res(coker transpose TW1c.dd_(ma+sum v),
-	LengthLimit =>(ma+3*sum v -mi))[-ma-sum v+1];
-print betti T1;
-print betti TW2;
-    --But bounds given for the length of this resolution
-    --should come out of the proof of the theorem !!
-    TW2
-    )
-*-
-///
---beilinsonWindow tateExtension W should be equal to W.
-restart
-loadPackage "TateOnProducts"
---viewHelp tateExtension
-debug TateOnProducts
-        n={1,1};
-        (S,E) = productOfProjectiveSpaces n;
-	T1 = (dual res trim (ideal vars E)^2)[1];
-	T1 = (dual res trim (ideal vars E))[1];
-	a=-{2,2};
-	T2=T1**E^{a}[sum a];
-	W=beilinsonWindow T2
-time    T=tateExtension W;
---time    T1=tateExtension1 W;
-
-cohomologyMatrix(T,-6*n,6*n)
-cohomologyMatrix(T1,-6*n,6*n)
-	W1 = beilinsonWindow T1
-	W' = beilinsonWindow T
-	cohomologyMatrix (W1,-n,n)
-	cohomologyMatrix (W',-n,n)
-	cohomologyMatrix (W,-n,n)	
-///
-
-
+--this code is not used
 continueComplex = method(Options => options res)
 continueComplex ChainComplex := o->C ->(
     ma := nonzeroMax C;
@@ -1448,7 +1362,7 @@ C = res(coker vars E,LengthLimit =>p)[2]
 C1 = continueComplex(C, LengthLimit =>2)
 assert((C1.dd)^2 == 0)
 ///
-
+*-
 ---------------------------------------
 -- Construction of Beilinson functor --
 ---------------------------------------
@@ -2162,16 +2076,29 @@ ring multMapE(M,a',a)
 ring (sour^[j])
 ///
 
-isSurjection = (A,B)->(
+isDegreeZeroSurjection := method()
+isDegreeZeroSurjection(Module,Module) := (A,B)->(
     --tests a random degree 0 map to see whether its a surjection
     H := Hom(A,B);
-    B0 := basis(0,H);
+    B0 := basis(0,H); -- this seems to be total degree 0 in case of degreeLength>1
     f := homomorphism(B0*random(source B0, (ring B0)^1));
     coker f == 0)
-isIsomorphic = (A,B) -> (
+
+isIsomorphic = method()
+isIsomorphic(Module,Module) := (A,B) -> (
     --tests random degree 0 maps A->B, B->A and returns true
     --if both are surjective.
-    isSurjection(A,B) and isSurjection(B,A))
+    if not(isHomogeneous A and isHomogeneous B) then 
+	  error"not implemented for inhomogeneous modules";
+    Ap := prune A;
+    Bp := prune B;
+    dA := set flatten degrees source gens Ap;
+    dB := set flatten degrees source gens Bp;
+    if dA =!= dB then false else    
+    isDegreeZeroSurjection(Ap,Bp) and isDegreeZeroSurjection(Bp,Ap)
+    )
+
+
 
 ---------------------------------------------------
 -- Composed functions                            --
@@ -2555,6 +2482,33 @@ document {
 	$sF$ on $X subset P^{n_1}$ and a morphism $f:X -> P^{n_2}$."
 	}
    }
+doc ///
+   Key
+    isIsomorphic
+    (isIsomorphic,Module,Module)
+   Headline
+    probabilistic test for homogeneous isomorphism
+   Usage
+    v = isIsomorphic(A,B)
+   Inputs
+    A:Module
+    B:Module
+   Outputs
+    v:Boolean
+   Description
+    Text
+     First checks that the generator degrees are the same. Then
+     computes a random degree 0 map A --> B and B --> A, 
+     and returns true iff both are surjections.
+    Example
+     S = ZZ/11[a,b]
+     M = coker random(S^{-2,0,1,2}, S^{3:-3})
+     N = coker (random(cover M, cover M)*presentation M)
+     tally apply(100, j->isIsomorphic(M,N))
+   Caveat
+    If the function returns true then the modules ARE isomorphic. But if it returns false
+    they may be isomorphic anyway.
+///
 
 
 doc ///
@@ -4610,6 +4564,15 @@ doc ///
 ------------------------------------
 -----TESTS-----
 ------------------------------------
+TEST///
+S = ZZ/32003[a,b, Degrees =>{{1,0},{0,1}}]
+M = S^{{1,0},{0,1}}
+M' = S^{{0,1},{1,0}}
+A = S^{{1,-1}}
+B = S^1
+assert(isIsomorphic(M,M') ===true)
+assert(isIsomorphic(A,B) ===false)
+///
 
 TEST///
 (S,E) = productOfProjectiveSpaces{1,2}
