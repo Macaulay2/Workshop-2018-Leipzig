@@ -4588,10 +4588,11 @@ assert( (prune HH_(-3) L) === cokernel map((S)^{{0,1},{0,1},{0,1}},(S)^1,{{x_(1,
 
 TEST ///
 (S,E) = productOfProjectiveSpaces{1,1};
-C = cornerComplex (S^1,{0,0},{3,3});
+C = cornerComplex (S^1,{0,0},{-3,-3},{3,3});
+cohomologyMatrix(C,{0,0},{1,1})
 assert (cohomRing = ZZ[h,k];
-    (sub (cohomologyMatrix (C, {0,0},{3,3}), cohomRing) ===
-	map(cohomRing^4,cohomRing^4,{{4, 8, 12, 16}, {3, 6, 9, 12}, {2, 4, 6, 8}, {1, 2, 3, 4}}))
+    (sub (cohomologyMatrix (C, {0,0},{1,1}), cohomRing) ===
+	map(cohomRing^2,cohomRing^2,{{2,4}, {1,2}})))
 ///
 
 TEST ///
@@ -4608,28 +4609,21 @@ cohomologyMatrix(BW, -high,high)
 netList apply(toList(min B..max B), i-> ann HH_(i) B)
 M' = HH_0 B
 assert(beilinsonWindow cornerComplex(M',-high,high) == BW)
+assert(beilinsonWindow tateResolution(M',-high,high) == BW)
 ///
 
 TEST ///
 (S,E) = productOfProjectiveSpaces{1,2}
 M = coker random(S^2, S^{2:{-1,-1}})
 high = {3,3}
-C = cornerComplex(M,-high,high);
+C = tateResolution(M,-high,high);
 BW = beilinsonWindow C
 betti BW
 B = beilinson C
-tallyDegrees B
-netList toList tallyDegrees B
-cohomologyMatrix(M, -high,high)
-cohomologyMatrix(BW, -high,high)
-netList apply(toList(min B..max B), i-> ann HH_(i) B)
 M' = HH_0 B
 assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
-cohomologyMatrix(M', -high, high)
-beilinsonWindow cornerComplex(M',-high,high)
-assert(beilinsonWindow cornerComplex(M',-high,high) == BW)
-BW' = beilinsonWindow cornerComplex(M',-high,high)
+BW' = beilinsonWindow tateResolution(M',-high,high)
 assert( all(2, i->BW_i == BW'_i))
 assert(isIsomorphic(coker BW.dd_1, coker BW'.dd_1))
 ///
@@ -4638,20 +4632,10 @@ TEST ///
 (S,E) = productOfProjectiveSpaces{1,2}
 M = coker random(S^2, S^{2:{-1,-1}})
 high = {3,3}
-C = cornerComplex(M,-high,high);
+C = tateResolution(M,-high,high);
 B = beilinson C
 M' = HH_0 B
 assert isIsomorphic(M',M)
---note: isomorphic, not equal!
-///
-
-TEST ///
-  (S,E) = productOfProjectiveSpaces{1,2}
-  M = coker random(S^2, S^{2:{-1,-1}})
-  high = {3,3}
-  C = cornerComplex(M,-high,high);
-  B = beilinson C
-  assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
 ///
 
@@ -4710,7 +4694,7 @@ TEST ///
   assert(beilinson(E^{{-2,1}}) == 0)
 
   debug TateOnProducts -- for inBeilinsonWindow
-  degs = flatten for a from -3 to 3 list for b from -3 to 3 list {a,b}
+--  degs = flatten for a from -3 to 3 list for b from -3 to 3 list {a,b}
   for d in degs do (
       assert(inBeilinsonWindow(d, E) or beilinson(E^{-d}) == 0)
       )
