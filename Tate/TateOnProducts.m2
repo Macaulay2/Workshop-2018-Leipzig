@@ -2207,36 +2207,46 @@ prune HH^2 RpiM
 
 composedFunctions = method()
 composedFunctions(ZZ) := n -> (
-    print "n={1,1}, v=n+{1,1}
+    print "
+      n={1,1}, v=n+{1,1}
       high=3*n, low=-high
       (S,E)=productOfProjectiveSpaces n
-      --We build the example from Section 4 of the paper, 
-      --which corresponds to a rank 3 vector bundle on P^1xP1.
-      T1=(dual res(coker gens trim (ideal vars E)^2,LengthLimit=>11))[1]
-     
-      cohomologyMatrix(T1,low,high)
-
-      c={4,4}
-      betti(uc= upperCorner(T1,c))
-      T=res(coker uc,LengthLimit=>12)[sum c]
-      betti T 
-      --T is the desired part of the Tate resolution, which is correct in the range low to high. 
+     --Text
+     -- We build the example from Section 4 of our paper
+     -- which corresponds to a rank 3 vector bundle on P^1xP^1. 
+     --Example
+      P=(image transpose gens trim (ideal vars E)^2)**E^{n}
+      betti P
+      LP=bgg P 
+      M = (HH^0 LP)**S^{-n}
+      betti res M
+      T = tateResolution(M,low,high) 
+      cohomologyMatrix(T,low,high)
+     --Text 
+     -- T is the part of the Tate resolution, which is complete in the range low to high.
+     -- (In a wider range some terms are missing or incorrekt)  
+     --Example
       cohomologyMatrix(T,2*low,2*high)
+     --Text 
+     -- Alternatively we can recover M from its Beilinson monad derived 
+     -- from T.
+     --Example 
       B=beilinson T
-      M=prune HH^0 B
+      M'=prune HH^0 B
       prune HH^1 B
-
-      comM=cohomologyMatrix(M,low,high)
-      comT=cohomologyMatrix(T,low,high)
-      assert(comM===sub(comT,vars ring comM))
-      --Thus T and M have the same cohomology matrix in the desired range.
-
+      isIsomorphic(M,M')
+     --Text
+     -- We study the corner complex of T at c={0,0} . 
+     --Example
       C=cornerComplex(T,{0,0});
       betti C      
       cohomologyMatrix(C,low,high)
       betti C.dd_0
       P=ker C.dd_0**E^{v}
-      --The tensor product with E^{v} is necessary because we work with E instead of omega_E. 
+     --Text
+     -- The tensor product with E^{v} is necessary because we work with E instead of omega_E.
+     -- M can be recovered by applying the bgg functor to P. 
+     --Example
       LP=bgg P;
       betti LP
       coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
@@ -2244,20 +2254,24 @@ composedFunctions(ZZ) := n -> (
       M1=HH^0 LP
       betti M1,betti M
       isIsomorphic(M,M1)
-      --It works also for different syzygy modules in the corner complex.
-      --It works for all P=ker C.dd_k in the range where C.dd_k is computecompletlely.
-      --We check the case k=1 and k=-2.
+     --Text
+     -- It works also for different syzygy modules in the corner complex.
+     -- It works for all P=ker C.dd_k in the range where C.dd_k is computed 
+     -- completely. We check the case k=1 and k=-2.
+     --Example
       k=1
       P=ker C.dd_(-k)**E^{v}; betti P
-      LP=bgg P;
+      LP=bgg P
       betti LP
       coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
       apply(coLP,h->dim h)
       M1=HH^(-k) LP
       betti M1, betti M
       isIsomorphic(M,M1)
-      --Note that we have to take HH^{(-k)} == HH_k because of the homological position in which
-      --P sits.
+     --Text
+     -- Note that we have to take HH^{(-k)} == HH_k because of the homological position in which
+     -- P sits.
+     --Example
       k=-2
       P=ker C.dd_(-k)**E^{v}; betti P
       LP=bgg P;
@@ -2267,64 +2281,93 @@ composedFunctions(ZZ) := n -> (
       M1=HH^(-k) LP
       betti M1,betti M
       isIsomorphic(M,M1)
-      --Next we check the functor bgg on S-modules.
+     --Text
+     -- Next we check the functor bgg on S-modules.
+     --Example
       RM=bgg M
-      betti T1
-      betti trivialHomologicalTruncation(T1,-7,-2)==betti trivialHomologicalTruncation(RM,-7,-2)
       cohomologyMatrix(RM,low,high)
-      isIsomorphic(image(RM.dd_(-2)),image(T1.dd_(-2)))
-      --Next we test reciprocity.
+      betti RM
+      uQ=firstQuadrantComplex(T,{0,0});
+      cohomologyMatrix(uQ,low,high)      
+     --Text
+     -- The additional entry h in the zero position of the cohomology matrix of uQ
+     -- indicates that we can recover
+     -- the original square of the maximal ideal of E from the differential of of the first quadrant complex uQ
+     -- in this specific case.
+     --Example
+      uQ.dd_(-1)
+     --Text
+     -- Next we test reciprocity.
+     --Example
+      T1=tateResolution(M,low,3*high);
       c={2,2}
-      CM=cornerComplex(T1,c)
-      RMc=firstQuadrantComplex(T1,c)
-      betti RMc      
-      coRMc=apply(toList(-11..-4),i-> HH^(-i) RMc==0)
-      cohomologyMatrix(CM,2*low,2*high)
+      CM=cornerComplex(T1,c);
+      RMc=firstQuadrantComplex(T1,c);
+      cohomologyMatrix(CM,low,3*high)     
+      coRMc=apply(toList(-10..-4),i-> HH^(-i) RMc==0)
       P1=ker CM.dd_(-sum c)
       LP=bgg (P1**E^{-c+v}) 
       betti LP
       coLP=apply(toList(min LP..max LP),i->dim HH^(-i) LP)
-      -- hence both Lp and RMc are azyclic
+     --Text
+     -- Hence both Lp and RMc are azyclic.
+     --Example
       Mc=prune truncate(c,M)**S^{c}
       betti (Mc'=HH^0 LP), betti Mc
       isIsomorphic(Mc',Mc)
-      -- At a different corner:
+     --Example
       c={3,1}
-      CM=cornerComplex(T1,c)
-      RMc=firstQuadrantComplex(T1,c)
-      betti RMc      
-      coRMc=apply(toList(-11..-4),i-> HH^(-i) RMc==0)
-      cohomologyMatrix(CM,2*low,2*high)
+      cohomologyMatrix(T1,low,2*high)
+      CM=cornerComplex(T1,c);
+      cohomologyMatrix(CM,low,3*high)
+      RMc=firstQuadrantComplex(T1,c);     
+      coRMc=apply(toList(-9..-4),i-> HH^(-i) RMc==0)
       P1=ker CM.dd_(-sum c)
       LP=bgg (P1**E^{-c+v}) 
       betti LP
       coLP=apply(toList(min LP..max LP),i->dim HH^(-i) LP)
-      -- hence both Lp and RMc are azyclic
+     
       Mc=prune truncate(c,M)**S^{c}
       betti (Mc'=HH^0 LP), betti Mc
       isIsomorphic(Mc',Mc)
-
-      -- Now we test tateExtension:
+     --Text
+     -- Now we test tateExtension.
+     --Example
       W=beilinsonWindow T
       T'=tateExtension W 
       comT'=cohomologyMatrix(T',low,high) 
       comT=cohomologyMatrix(T,low,high)
       assert(sub(comT',vars ring comT)==comT)
-      -- Finally we illustate how shifting the Beilinson window works:
+     --Text
+     -- Finally we illustate how shifting the Beilinson window works.
+     --Example
       cohomologyMatrix(T,low,high)
-      beilinsonWindow T
-      B =beilinson T
+      cohomologyMatrix(beilinsonWindow T,low, high)
+      B = beilinson T
       d={2,2}
       T1=T**E^{d}[sum d]
-      beilinsonWindow T1
+      cohomologyMatrix(beilinsonWindow T1,low,high)
       B1 =beilinson T1
       decompose annihilator HH^1 B1
       decompose annihilator HH^2 B1
       M1=HH^0 B1
       dim M1
       betti M1, betti M
-      isIsomorphic(M1,M**S^{-d})"   
-) 
+      isIsomorphic(M1,M**S^{-d})
+     --Text
+     -- Another shift:
+     --Example 
+      d={-1,-2}
+      T2=T**E^{d}[sum d]
+      cohomologyMatrix(beilinsonWindow T2,low,high)
+      cohomologyMatrix(T,low,high)
+      B2 =beilinson T2
+      HH^(-1) B2 == 0
+      M2=HH^0 B2
+      dim M2
+      betti M2, betti M, betti truncate(-d,M)
+      isIsomorphic(M2,truncate(-d,M)**S^{-d}")
+
 
 
 
