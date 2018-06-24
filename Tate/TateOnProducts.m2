@@ -2276,32 +2276,54 @@ composedFunctions(ZZ) := n -> (
       --Next we test reciprocity.
       c={2,2}
       CM=cornerComplex(T1,c)
+      RMc=firstQuadrantComplex(T1,c)
+      betti RMc      
+      coRMc=apply(toList(-11..-4),i-> HH^(-i) RMc==0)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
       LP=bgg (P1**E^{-c+v}) 
-
-      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
-      apply(coLP,h->dim h)
-      Mc=prune truncate(c,M)
-      betti (Mc'=(first coLP)**S^{-c}), betti Mc
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->dim HH^(-i) LP)
+      -- hence both Lp and RMc are azyclic
+      Mc=prune truncate(c,M)**S^{c}
+      betti (Mc'=HH^0 LP), betti Mc
       isIsomorphic(Mc',Mc)
-      --The result is fine up to twist by **S^{-c}.
+      -- At a different corner:
       c={3,1}
       CM=cornerComplex(T1,c)
+      RMc=firstQuadrantComplex(T1,c)
+      betti RMc      
+      coRMc=apply(toList(-11..-4),i-> HH^(-i) RMc==0)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
-      LP=bgg (P1**E^{-c+v})
-      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
-      apply(coLP,h->dim h)
-      Mc=prune truncate(c,M)
-      betti (Mc'=HH^0 LP**S^{-c}), betti Mc
-      isIsomorphic(Mc',Mc) 
+      LP=bgg (P1**E^{-c+v}) 
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->dim HH^(-i) LP)
+      -- hence both Lp and RMc are azyclic
+      Mc=prune truncate(c,M)**S^{c}
+      betti (Mc'=HH^0 LP), betti Mc
+      isIsomorphic(Mc',Mc)
+
       -- Now we test tateExtension:
       W=beilinsonWindow T
       T'=tateExtension W 
       comT'=cohomologyMatrix(T',low,high) 
       comT=cohomologyMatrix(T,low,high)
-      assert(sub(comT',vars ring comT)==comT)"   
+      assert(sub(comT',vars ring comT)==comT)
+      -- Finally we illustate how shifting the Beilinson window works:
+      cohomologyMatrix(T,low,high)
+      beilinsonWindow T
+      B =beilinson T
+      d={2,2}
+      T1=T**E^{d}[sum d]
+      beilinsonWindow T1
+      B1 =beilinson T1
+      decompose annihilator HH^1 B1
+      decompose annihilator HH^2 B1
+      M1=HH^0 B1
+      dim M1
+      betti M1, betti M
+      isIsomorphic(M1,M**S^{-d})"   
 ) 
 
 
@@ -2611,38 +2633,75 @@ doc ///
      Text
       Next we test reciprocity.
      Example
+      --Next we test reciprocity.
       c={2,2}
       CM=cornerComplex(T1,c)
+      RMc=firstQuadrantComplex(T1,c)
+      betti RMc      
+      coRMc=apply(toList(-11..-4),i-> HH^(-i) RMc==0)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
-      LP=bgg (P1**E^{-c+v})
-
-      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
-      apply(coLP,h->dim h)
-      Mc=prune truncate(c,M)
-      betti (Mc'=(first coLP)**S^{-c}), betti Mc
-      isIsomorphic(Mc',Mc)
+      LP=bgg (P1**E^{-c+v}) 
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->dim HH^(-i) LP)
      Text
-      The result is fine up to twist by **S^{\{-c\}}.
+      Hence both Lp and RMc are azyclic.
+     Example
+      Mc=prune truncate(c,M)**S^{c}
+      betti (Mc'=HH^0 LP), betti Mc
+      isIsomorphic(Mc',Mc)
      Example
       c={3,1}
       CM=cornerComplex(T1,c)
+      RMc=firstQuadrantComplex(T1,c)
+      betti RMc      
+      coRMc=apply(toList(-11..-4),i-> HH^(-i) RMc==0)
       cohomologyMatrix(CM,2*low,2*high)
       P1=ker CM.dd_(-sum c)
-      LP=bgg (P1**E^{-c+v})
-      coLP=apply(toList(min LP..max LP),i->prune HH^(-i) LP);
-      apply(coLP,h->dim h)
-      Mc=prune truncate(c,M)
-      betti (Mc'=HH^0 LP**S^{-c}), betti Mc
+      LP=bgg (P1**E^{-c+v}) 
+      betti LP
+      coLP=apply(toList(min LP..max LP),i->dim HH^(-i) LP)
+     
+      Mc=prune truncate(c,M)**S^{c}
+      betti (Mc'=HH^0 LP), betti Mc
       isIsomorphic(Mc',Mc)
-     Text 
+     Text
       Now we test tateExtension:
      Example
       W=beilinsonWindow T
       T'=tateExtension W 
       comT'=cohomologyMatrix(T',low,high) 
       comT=cohomologyMatrix(T,low,high)
-      assert(sub(comT',vars ring comT)==comT)   
+      assert(sub(comT',vars ring comT)==comT)
+     Text
+      Finally we illustate how shifting the Beilinson window works.
+     Example
+      cohomologyMatrix(T,low,high)
+      cohomologyMatrix(beilinsonWindow T,low, high)
+      B = beilinson T
+      d={2,2}
+      T1=T**E^{d}[sum d]
+      cohomologyMatrix(beilinsonWindow T1,low,high)
+      B1 =beilinson T1
+      decompose annihilator HH^1 B1
+      decompose annihilator HH^2 B1
+      M1=HH^0 B1
+      dim M1
+      betti M1, betti M
+      isIsomorphic(M1,M**S^{-d})
+     Text
+      Another shift:
+     Example 
+      d={-1,-2}
+      T2=T**E^{d}[sum d]
+      cohomologyMatrix(beilinsonWindow T2,low,high)
+      cohomologyMatrix(T,low,high)
+      B2 =beilinson T2
+      HH^(-1) B2 == 0
+      M2=HH^0 B2
+      dim M2
+      betti M2, betti M, betti truncate(-d,M)
+      isIsomorphic(M2,truncate(-d,M)**S^{-d})
    SeeAlso
     bgg
     upperCorner
