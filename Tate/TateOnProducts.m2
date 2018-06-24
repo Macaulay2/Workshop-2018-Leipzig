@@ -10,8 +10,8 @@ check "TateOnProducts"
 ///
 newPackage(
     "TateOnProducts",
-    Version => "0.3",
-    Date => "Mai 31, 2018",
+    Version => "1.0",
+    Date => "June 24, 2018",
     Headline => "Tate resolutions on products of projective spaces",
     Authors => {
 	{ Name => "Daniel Erman",        Email => "derman@math.wisc.edu",    HomePage => "http://www.math.wisc.edu/~derman/" },
