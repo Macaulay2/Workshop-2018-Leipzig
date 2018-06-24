@@ -19,7 +19,7 @@ newPackage(
 	{ Name => "Frank-Olaf Schreyer", Email => "schreyer@math.uni-sb.de", HomePage => "http://www.math.uni-sb.de/ag/schreyer/" },
 	{ Name => "Michael E. Stillman", Email => "mike@math.cornell.edu",   HomePage => "http://www.math.cornell.edu/People/Faculty/stillman.html" }
 	},
-    DebuggingMode => true
+    DebuggingMode => false
     )
 
 export {
@@ -4619,17 +4619,9 @@ C = tateResolution(M,-high,high);
 BW = beilinsonWindow C
 betti BW
 B = beilinson C
-tallyDegrees B
-netList toList tallyDegrees B
-cohomologyMatrix(M, -high,high)
-cohomologyMatrix(BW, -high,high)
-netList apply(toList(min B..max B), i-> ann HH_(i) B)
 M' = HH_0 B
 assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
-cohomologyMatrix(M', -high, high)
-beilinsonWindow tateResolution(M',-high,high)
-
 BW' = beilinsonWindow tateResolution(M',-high,high)
 assert( all(2, i->BW_i == BW'_i))
 assert(isIsomorphic(coker BW.dd_1, coker BW'.dd_1))
@@ -4643,17 +4635,6 @@ C = tateResolution(M,-high,high);
 B = beilinson C
 M' = HH_0 B
 assert isIsomorphic(M',M)
---note: isomorphic, not equal!
-///
-
-TEST ///
-  (S,E) = productOfProjectiveSpaces{1,2}
-  M = coker random(S^2, S^{2:{-1,-1}})
-  high = {3,3}
-  C = tateResolution(M,-high,high);
-  B = beilinson C
-  M' = HH_0 B
-  assert isIsomorphic(M',M)
 --note: isomorphic, not equal!
 ///
 
@@ -4717,6 +4698,7 @@ TEST ///
       assert(inBeilinsonWindow(d, E) or beilinson(E^{-d}) == 0)
       )
 ///
+
 
 TEST ///
 
@@ -4824,6 +4806,7 @@ elapsedTime   testBeilinson1 {1,1,1}
  ------------Tests that aren't necessarily tests yet:
 
 
+
 TEST ///
 -*
 restart
@@ -4840,9 +4823,8 @@ correspondence of positions in the cohomology Matrix and the tally"
          {0,x_(1,2)}}
   mE = symExt(m,E)
   betti(T = res coker mE)
-  TD = tallyDegrees T
-  CD = cohomologyMatrix(T, -{2,2},{1,1})
-  CD = cohomologyHashTable(T, -{2,2},{1,1})
+  TD = tallyDegrees T;
+  CD = cohomologyHashTable(T, -{2,2},{1,1});
   assert((TD_0)#{-1,0} == CD#{{1,0},-1})
 ///
 
@@ -4850,6 +4832,8 @@ correspondence of positions in the cohomology Matrix and the tally"
 --scripts
 -*
 restart
+
+
 
 *-
 TEST /// 
@@ -4909,29 +4893,6 @@ assert(pH == apply(pH', p -> (p_0,sub(p_1,CR))))
 ///
 
 
-TEST ///
-n={1,2}; (S,E) = productOfProjectiveSpaces n;
-	a={1,1}; U=E^{ -a};
-	W=(chainComplex {map(E^0,U,0),map(U,E^0,0)})[1]
-	tallyDegrees W
-	cohomologyMatrix(W,-{3,3},{3,3})
-        time T=trivialHomologicalTruncation(tateExtension W,0,3)
-	cohomologyMatrix(T,-{3,3},{3,3})
-	cohomologyMatrix(T,-{2,3},{3,3})
-low = {-3,-3};high = {3,3}
-F = T
-///
-
-TEST///
---
---loadPackage("TateOnProducts", Reload =>true)
-low = {-2,-2}; high={3,3}
-(S,E) = productOfProjectiveSpaces{1,2}
-C = tateResolution(S^1,low,high)
-H = cohomologyHashTable(C, low, high)
---cohomologyMatrix H -- not defined yet.
-cohomologyMatrix(S^1,{-3,-3},{3,3})
-///
 
 TEST ///
 n={4}
@@ -4939,46 +4900,47 @@ n={4}
 C=res ideal vars E
 C1=C**E^{{ +1}}[0]
 W=beilinsonWindow C1
-apply(min W+1 ..max W,k->(W.dd_k==C1.dd_k,betti W.dd_k))
-W
+scan(min W+1 ..max W,k->assert(W.dd_k==C1.dd_k))
 ///
 
 TEST ///
+debug needsPackage "TateOnProducts"
 S=ZZ[x,y]/ideal(x*y)
 C=(chainComplex(matrix{{x}},matrix{{y^2}},matrix{{x^2}}))[3]
-isHomogeneous C
--- chainComplexData is no longer exported by ChainComplexExtras
--- L=chainComplexData C
--- C'=chainComplexFromData L
--- assert(C'== C)
+L=chainComplexData C
+C'=chainComplexFromData L
+assert(C'== C)
 ///
 
 
-TEST ///
--- ZZZZ
+///
+-- Frank: I removed this test many because I do not understand it
 --restart
-  n={2,1};
+--loadPackage( "TateOnProducts", Reload=>true)
+   n={2,1};
   (S,E) = productOfProjectiveSpaces n;
   T1 = (dual res trim (ideal vars E)^2 [1]);
-  cohomologyMatrix(T1,-3*n,3*n)
-  beilinson  beilinsonWindow T1
-  beilinson T1
-  beilinson(T1, BundleType=>QuotientBundle)
-  T2 = res(coker lowerCorner(T1, {2,2}), LengthLimit=>10)[4]
-  cohomologyMatrix(T2,-3*n,3*n)
-  BW2 = beilinsonWindow T2
-  cohomologyMatrix(BW2, -5*n,5*n)
-  B2 = beilinson T2
-  B2 = beilinson(T2, BundleType=>QuotientBundle)
-  F2 = (prune HH B2)_0
+--  cohomologyMatrix(T1,-3*n,3*n)
+--  beilinson  beilinsonWindow T1
+  --beilinson T1
+--  beilinson(T1, BundleType=>QuotientBundle)
+  T2 = res(coker lowerCorner(T1, {2,2}), LengthLimit=>10)[4];
+--  cohomologyMatrix(T2,-3*n,3*n)
+--  BW2 = beilinsonWindow T2
+--  cohomologyMatrix(BW2, -5*n,5*n)
+--  B2 = beilinson T2
+  B2 = beilinson(T2, BundleType=>QuotientBundle);
+  F2 = (prune HH B2)_0;
+  
   -- now another shift
-  BW3 = beilinsonWindow ((T2 ** E^{{-2,-2}})[-4])
-  B3 = beilinson ((T2 ** E^{{-2,-2}})[-4])
+--  BW3 = beilinsonWindow ((T2 ** E^{{-2,-2}})[-4])
+--  B3 = beilinson ((T2 ** E^{{-2,-2}})[-4])
   B3 = beilinson( ((T2 ** E^{{-2,-2}})[-4]), BundleType=>QuotientBundle);
-  B3.dd^2 == 0
-  F3 = (prune HH B3)_0 ** S^{{-2,-2}}
+--  B3.dd^2 == 0
+  F3 = (prune HH B3)_0 ** S^{{-2,-2}};
   -- F2 and F3 should be the same sheaf on P^2 x P^1.
-  -*
+
+ 
   degrees F2
   degrees F3
   h = homomorphism (Hom(F3,F2))_{0}
@@ -4994,15 +4956,33 @@ TEST ///
   assert(ker h== 0)
   assert(coker h == 0) -- do h is an isomorphism of modules.
  
+
+--  degrees F2
+--  degrees F3
+--  h = homomorphism (Hom(F3,F2))_{0};
+
+  tdeg = {3,3} -- for QuotientBundle
+  F3a = prune truncate(tdeg,F3);
+  F2a = prune truncate(tdeg,F2);
+assert(numgens F3a == numgens F2a)
+--  isIsomorphic(F3a, F2a) -- this is too slow!
+
+
   -- Now shift another time
+debug TateOnProducts
   a = {3,3}
   T4 = ((T2 ** E^{a})[sum a])
   cohomologyMatrix(oo, -5*n,5*n)
+
   BW4 =  beilinsonWindow T4
   BW4.dd^2 == 0
+  BW4 = removeZeroTrailingTerms beilinsonWindow T4
+assert(  BW4.dd^2 == 0)
+
   B4 = (beilinson BW4) ** S^{a};
-  B4.dd^2 == 0
+--  B4.dd^2 == 0
   irrelevant = intersect (last ringData S)
+
   for i from nonzeroMin B4 to nonzeroMax B4 do if i != 0 then assert(saturate(ann HH_i(B4), irrelevant) == 1)
   M = prune HH_0 B4
 
@@ -5017,11 +4997,15 @@ TEST ///
   BW5 =  beilinsonWindow T5
   betti BW5
   beilinson BW5
-   *-
+ 
+  for i from nonzeroMin B4 to nonzeroMax B4 do if i != 0 then 
+           assert(saturate(ann HH_i(B4), irrelevant) == 1)
+
 ///
 
 
-TEST ///
+///
+--This was a test, but very slow, and didn't test much
 -- Keep this one?  It takes a bit of time...
   -- Take a sheaf on P^2 x P^3, e.g. the graph of a rational map
 
@@ -5032,22 +5016,24 @@ TEST ///
   (S,E) = productOfProjectiveSpaces n;
 
   m = random(S^1, S^{4:{-3,0}}) || matrix {{S_3, S_4, S_5, S_6}}
-  M = coker m
+  m = random(S^1, S^{4:{-2,0}}) || matrix {{S_3, S_4, S_5, S_6}}  
+  M = coker m;
   tdeg = {6,2}
   tM = truncate(tdeg, M);
   m1 = (presentation tM) ** S^{tdeg};
   betti m1
   corner1 = symExt(m1,E);
-  T = ((res(coker corner1, LengthLimit => 7)) ** E^{tdeg})[sum tdeg]
-  cohomologyMatrix(T, -5*n,5*n)
-  T1 = T ** E^{{-3,0}}[-3]
-  BW =  beilinsonWindow T1
-  cohomologyMatrix(BW, -5*n, 5*n)
+  T = ((res(coker corner1, LengthLimit => 4)) ** E^{tdeg})[sum tdeg]
+  betti T
+--  cohomologyMatrix(T, -5*n,5*n)
+  T1 = T ** E^{{-3,0}}[-3];
+  BW =  beilinsonWindow T1;
+--  cohomologyMatrix(BW, -5*n, 5*n)
   assert(BW.dd^2 == 0)
   assert(isHomogeneous BW)
-  betti BW
+--  betti BW
   B = beilinson BW;
-  betti B
+--  betti B
   assert(B.dd^2 == 0)
 
 ///
@@ -5070,8 +5056,8 @@ restart
 
   n = {3,4}
   (S,E) = productOfProjectiveSpaces n
-  U = for i from 0 to n#0 list beilinsonBundle({i,0},S)
-  V = for i from 0 to n#1 list beilinsonBundle({0,i},S)
+  U = for i from 0 to n#0 list beilinsonBundle({i,0},S);
+  V = for i from 0 to n#1 list beilinsonBundle({0,i},S);
   for x in toList({0,0}..n) do (
       assert(beilinsonBundle(x,S) == U#(x#0) ** V#(x#1))
       )
@@ -5083,9 +5069,9 @@ restart
 
 -- Example of beilinson
 TEST ///
-restart
+--restart
   -- XXX
-  needsPackage "TateOnProducts"
+--  needsPackage "TateOnProducts"
   n = {3,2}
   (S,E) = productOfProjectiveSpaces n
   assert(degrees beilinsonBundle({0,0},S) == {{0,0}})
@@ -5105,8 +5091,8 @@ restart
 ///
 
 TEST ///
-restart
-  needsPackage "TateOnProducts"
+--restart
+--  needsPackage "TateOnProducts"
   n = {2,1}
   (S,E) = productOfProjectiveSpaces n;
   assert(degrees beilinsonBundle({0,0},S) == {{0,0}})
@@ -5117,79 +5103,28 @@ restart
 
   assert(U1 ** V1 == beilinsonBundle({1,1},S))
   assert(U2 ** V1 == beilinsonBundle({2,1},S))
-
-  m1 = numgens U1
-  m2 = numgens U2
-  p1 = numgens V1
-
-  map(E^{{-1,0}}, E^{{-1,-1}}, {{e_(1,1)}})
-  isHomogeneous oo
-  beilinson ooo
-  beilinson(e_(1,1),
-  m = beilinson1(e_(1,1), {0,1}, {0,1}, S)
-  assert((numRows m, numColumns m)  == (1, p1))
-
-  m = beilinson1(e_(1,1), {0,1}, {1,1}, S)
-  assert((numRows m, numColumns m)  == (3, 3))
-
 ///
 
 TEST ///
+
+--restart
+  debug needsPackage "TateOnProducts"
+  n={2,1};
+  (S,E) = productOfProjectiveSpaces n;
+  assert(numgensU({0,0},E) == 1)
+  assert(numgensU({0,1},E) == 1)
+  assert(numgensU({1,0},E) == 3)
+  assert(numgensU({1,1},E) == 3)
+  assert(numgensU({2,0},E) == 1)
+  assert(numgensU({2,1},E) == 1)
+  e1 = map(E^{{0,0}}, E^{{-1,0}}, {{e_(0,1)}})
+  e2 = map(E^{{-1,0}}, E^{{-2,0}}, {{e_(0,2)}})
+  assert(beilinson e1 * beilinson e2 == beilinson(e1 * e2))
+///
+
+///
 -- XXX how much of this to keep?
-restart
-  debug needsPackage "TateOnProducts"
-  n={2,1};
-  (S,E) = productOfProjectiveSpaces n;
-
-  T1 = (dual res trim (ideal vars E)^2)[1];
-  a=-{2,2};
-  T2=T1**E^{a}[sum a];
-  W=removeZeroTrailingTerms beilinsonWindow T2,cohomologyMatrix(W,-2*n,2*n)
-  T = tateExtension W
-  cohomologyMatrix(oo,-3*n,3*n)
-elapsedTime  beilinsonWindow(T ** E^{{1,1}}[2])
-elapsedTime  beilinsonWindow(T ** E^{{1,1}}[2], 1)
-  beilinson1(W.dd_1_(0,0), {1,0}, {1,0}, S)
-  beilinson1(e_(0,1), {1,0}, {1,0}, S)
-  UF = beilinson W
-  prune HH UF
-  Wt = chainComplex {W.dd_2}
-  Wt = chainComplex {W.dd_1}
-  UF = beilinson Wt
-
-  U0 = beilinsonBundle({0,0},S)
-  U1 = beilinsonBundle({1,0},S)
-  U2 = beilinsonBundle({1,0},S)
-  V0 = beilinsonBundle({0,0},S)
-  V1 = beilinsonBundle({0,1},S)
-  U1 ** beilinson1(e_(1,1), {0,1}, {0,1}, S) -- ok
-  beilinson1(e_(1,1), {0,1}, {1,1}, S) -- error, now ok
-  beilinson1(e_(1,1), {0,1}, {2,1}, S) -- error, now ok
-  beilinson1(e_(1,1), {0,1}, {0,1}, S) -- now error, now ok
-
-  beilinson1(0_E, {2,0}-{0,1}, {2,0}, S) -- how to handle this one ??
-
-  makeBasis({0,0},E)
-  makeBasis({0,1},E)
-  makeBasis({1,0},E)
-  makeBasis({1,1},E)
-  makeBasis({2,0},E)
-  makeBasis({2,1},E)
-  tensor makeChangeBasis({0,0},E)
-  tensor makeChangeBasis({0,1},E)
-  makeChangeBasis({1,0},E)
-  makeChangeBasis({1,1},E)
-  makeChangeBasis({2,0},E)
-  makeChangeBasis({2,1},E)
-
-  makeBasis({2,2},E) -- error
-
-
-restart
-  debug needsPackage "TateOnProducts"
-  n={2,1};
-  (S,E) = productOfProjectiveSpaces n;
-
+--this doesn't have any asserts
   netList toList contractionData({0,0}, {1,0}, E) -- 1x3
   netList toList contractionData({1,0}, {1,0}, E) -- 3x3
   -- {0,1}, {1,0}                                       -- zero matrix of size: xx x xx
@@ -5220,12 +5155,6 @@ restart
   beilinsonContraction(e_(1,0), {1,0}, {1,1})  -- 3x3
   beilinsonContraction(e_(0,1), {0,1}, {1,1})  -- 1x3
 
-  assert(numgensU({0,0},E) == 1)
-  assert(numgensU({0,1},E) == 1)
-  assert(numgensU({1,0},E) == 3)
-  assert(numgensU({1,1},E) == 3)
-  assert(numgensU({2,0},E) == 1)
-  assert(numgensU({2,1},E) == 1)
 
   f1 = e_(0,1)*e_(0,2)
   contract(f1,f1)
@@ -5242,12 +5171,10 @@ restart
   m12 = beilinsonContraction(e_(0,2)*e_(0,1), {0,0},{2,0})
   m1*m2
 
-  e1 = map(E^{{0,0}}, E^{{-1,0}}, {{e_(0,1)}})
-  e2 = map(E^{{-1,0}}, E^{{-2,0}}, {{e_(0,2)}})
-  assert(beilinson e1 * beilinson e2 == beilinson(e1 * e2))
 ///
 
-TEST ///
+ ///
+ --no asserts
 -- YYYY
 restart
   needsPackage "TateOnProducts"
@@ -5280,7 +5207,8 @@ restart
 
 ///
 
-TEST ///
+ ///
+ --no asserts
 restart
   needsPackage "TateOnProducts"
   n={2,1};
