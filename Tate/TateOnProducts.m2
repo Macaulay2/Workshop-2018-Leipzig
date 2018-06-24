@@ -2245,8 +2245,8 @@ composedFunctions(ZZ) := n -> (
       betti M1,betti M
       isIsomorphic(M,M1)
       --It works also for different syzygy modules in the corner complex.
-      --It should works for all P=ker C.dd_k in the range where C.dd_k is computed 
-      --correctly. We check the case k=1 and k=-2.
+      --It works for all P=ker C.dd_k in the range where C.dd_k is computecompletlely.
+      --We check the case k=1 and k=-2.
       k=1
       P=ker C.dd_(-k)**E^{v}; betti P
       LP=bgg P;
@@ -2597,8 +2597,8 @@ doc ///
       isIsomorphic(M,M1)
      Text
       It works also for different syzygy modules in the corner complex.
-      It should works for all P=ker C.dd_k in the range where C.dd_k is computed 
-      correctly. We check the case k=1 and k=-2.
+      It works for all P=ker C.dd_k in the range where C.dd_k is computed 
+      completely. We check the case k=1 and k=-2.
      Example
       k=1
       P=ker C.dd_(-k)**E^{v}; betti P
