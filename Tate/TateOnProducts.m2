@@ -4978,6 +4978,7 @@ TEST ///
   B3.dd^2 == 0
   F3 = (prune HH B3)_0 ** S^{{-2,-2}}
   -- F2 and F3 should be the same sheaf on P^2 x P^1.
+  -*
   degrees F2
   degrees F3
   h = homomorphism (Hom(F3,F2))_{0}
@@ -4992,12 +4993,12 @@ TEST ///
   det matrix h == 1
   assert(ker h== 0)
   assert(coker h == 0) -- do h is an isomorphism of modules.
-
+ 
   -- Now shift another time
   a = {3,3}
   T4 = ((T2 ** E^{a})[sum a])
   cohomologyMatrix(oo, -5*n,5*n)
-  BW4 = removeZeroTrailingTerms beilinsonWindow T4
+  BW4 =  beilinsonWindow T4
   BW4.dd^2 == 0
   B4 = (beilinson BW4) ** S^{a};
   B4.dd^2 == 0
@@ -5016,6 +5017,7 @@ TEST ///
   BW5 =  beilinsonWindow T5
   betti BW5
   beilinson BW5
+   *-
 ///
 
 
