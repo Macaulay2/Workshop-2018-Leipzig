@@ -2205,6 +2205,7 @@ prune HH^1 RpiM
 prune HH^2 RpiM
 ///
 
+
 directImageComplex(Ideal,Module,Matrix) := (I,M,phi) -> (
     -- Input: I, the ideal of a projective scheme X in P^n,
     --        M, a module representing a coherent sheaf on X
@@ -2423,12 +2424,11 @@ composedFunctions = () -> (
 
 
 
-
 ///
 restart
 loadPackage("TateOnProducts",Reload=>true)
 debug TateOnProducts
-composedFunctions(1)
+composedFunctions()
 n={1,1}
 high=3*n, low=-high
 (S,E)=productOfProjectiveSpaces n
@@ -4373,7 +4373,7 @@ doc ///
     compute the direct image complex 
   Usage
     RpiM = directImageComplex(M,I)
-    RphiM = directImageComplex(J,N,phi)
+    RphiN = directImageComplex(J,N,phi)
   Inputs
     M: Module
        representing a sheaf F on a product of projective spaces
@@ -4390,7 +4390,7 @@ doc ///
   Outputs
     RpiM: ChainComplex
        a chain complex of modules over a symmetric algebra
-    RphiM: ChainComplex
+    RphiN: ChainComplex
        a chain complex of modules over the coordinate ring of P^m
   Description
      Text
