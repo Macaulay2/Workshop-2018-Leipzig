@@ -2206,7 +2206,7 @@ prune HH^2 RpiM
 ///
 
 composedFunctions = method()
-composedFunctions(ZZ) := n -> (
+composedFunctions ZZ := n -> (
     print "n={1,1}, v=n+{1,1}
       high=3*n, low=-high
       (S,E)=productOfProjectiveSpaces n
@@ -2327,12 +2327,11 @@ composedFunctions(ZZ) := n -> (
 ) 
 
 
-
 ///
 restart
 loadPackage("TateOnProducts",Reload=>true)
 debug TateOnProducts
-composedFunctions(1)
+composedFunctions()
 n={1,1}
 high=3*n, low=-high
 (S,E)=productOfProjectiveSpaces n
