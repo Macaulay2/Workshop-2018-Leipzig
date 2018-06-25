@@ -4480,7 +4480,8 @@ doc ///
        saturate annihilator coker transpose sR0Dual
        dual source sR0Dual       
      Text
-       We conclude that the sheaf represented by R0 is O(-4)+O(-5) on P^1. 
+       We conclude that the sheaf represented by R0 is O(5)+O(4) on P^1, which is correct
+       because N represents phi^*O(1) and phi_* O_X(H) = O(2)+O(1). 
   Caveat
      Note that the resulting complex is a chain complex instead of a cochain complex,
      so that for example HH^i RpiM = HH_{-i} RpiM.
