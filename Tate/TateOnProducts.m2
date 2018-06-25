@@ -4450,7 +4450,7 @@ doc ///
        and the morphism f: X -> P^1 onto the base.
        f is defined by ratio of the two rows of m, hence by the 3x2 matrix phi=m^t.
        
-       As a module N we take a symmetric power of the cokernel m, twisted by R^{d}.
+       As a module N we take a symmetric power of the cokernel m, twisted by R^{\{d\}}.
      Example
        kk=ZZ/101    
        R=kk[x_0..x_4]
