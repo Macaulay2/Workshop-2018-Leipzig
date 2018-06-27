@@ -281,34 +281,53 @@ kronecker(TensorSpace,TensorSpace) := (V,W) -> (
 -- flattening
 
 -- to BE FIXED INDICES
-flattening = method()
+-- flattening = method()
+-- flattening (TensorSpace,List) := (V,L) -> (
+--        F := factorsTensor(V); 
+--        L1 := {};
+--        L2 := {};
+--        for i in 0..<#F do (
+-- 	  if member(i,L) then (
+--           L1 = append(L1,F#i)
+--       ) else (
+--       	    L2 = append(L2,F#i)
+-- 	    	    )
+--       );
+--        A := L1#0;
+--        for j from 1 to #L1-1 do A = A**(L1#j);
+--        B := L2#0;
+--        for j from 1 to #L2-1 do B = B**(L2#j);
+--        if member(0,L) then return mergeTensor(A) ** mergeTensor(B)
+--        else return mergeTensor(B) ** mergeTensor(A)
+--        )
+
+-- flattening (Tensor,List) := (T,L) -> (
+-- R := flattening(T#tensorSpace,L);
+-- return makeTensor(T#coeff, R)
+-- )
+
+flattening = method();
 flattening (TensorSpace,List) := (V,L) -> (
-       F := factorsTensor(V); 
-       L1 := {};
-       L2 := {};
-       for i in 0..<#F do (
-	  if member(i,L) then (
-          L1 = append(L1,F#i)
-      ) else (
-      	    L2 = append(L2,F#i)
-	    	    )
-      );
-       A := L1#0;
-       for j from 1 to #L1-1 do A = A**(L1#j);
-       B := L2#0;
-       for j from 1 to #L2-1 do B = B**(L2#j);
-       if member(0,L) then return mergeTensor(A) ** mergeTensor(B)
-       else return mergeTensor(B) ** mergeTensor(A)
-       )
-
-flattening (Tensor,List) := (T,L) -> (
-R := flattening(T#tensorSpace,L);
-return makeTensor(T#coeff, R)
-)
-
-
-
-
+    d := V#dims;
+    X := pickSymbol(V);
+    Lc := toList(0..#d-1);
+    for i in L do Lc = delete(i,Lc);
+    N := {product for i in L list d_i, product for i in Lc list d_i};
+    I := for i in L list (
+	    (i,0)..(i,d_i)
+	);
+    Ic := for i in Lc list (
+	    (i,0)..(i,d_i)
+	    );
+    indL := toList(toSequence(for i in L list (i,0))..toSequence(for i in L list (i,d_i)));
+    indLc := toList(toSequence(for i in Lc list (i,0))..toSequence(for i in Lc list (i,d_i)));
+    Tmod := V#baseRing[for i in indL list (X_0)_i, for j in indLc list (X_0)_j];
+    new TensorSpace from hashTable{
+	baseRing => V#baseRing,
+	dims => N,
+	tensorBasis => flatten for i in indL list for j in indLc list value((X_0)_i)*value((X_0)_j)
+	}
+    )
 
 -- tensor product of tensors
 Tensor ** Tensor := (T,U) -> (
