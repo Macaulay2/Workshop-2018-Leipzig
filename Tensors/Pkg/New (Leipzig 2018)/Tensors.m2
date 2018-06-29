@@ -141,7 +141,7 @@ expression (Tensor) := T -> (
     Tspace := T#tensorSpace;
     Tcoeff := T#coeff;
     i0 := 0;
-    while ((T#coeff)_i0 == 0_(Tspace#baseRing) and i0 < product(Tspace#dims)-1) do (
+    while ((T#coeff)_i0 == 0_(Tspace#baseRing) and i0 < product(Tspace#dims, identity)-1) do (
 	    i0 = i0+1;
 	    );
     expr := expression toString(Tcoeff_i0 * (Tspace#tensorBasis)_i0);
@@ -199,7 +199,7 @@ TensorSpace _ Sequence := (V,s) -> (
     ind := s#0;
     for i in 1..<#s do ind = ind*(N#i) + s#i;
     ind = ind + 1;
-    I := ((ind-1):0) | (1:1) | ((product(N)-ind):0);
+    I := ((ind-1):0) | (1:1) | ((product(N, identity)-ind):0);
     return makeTensor(I,V)
     )
 TensorSpace _ ZZ := (V,z) -> (
@@ -228,7 +228,7 @@ TensorSpace ** TensorSpace := (V,W) -> (
     if V#baseRing =!= W#baseRing then (
 	return "error: base rings are different"
     );
-    N := V#dims | W#dims;
+    N := toSequence(V#dims) | toSequence(W#dims);
     R := if #(V#dims) == 0 then W#baseRing else if #(W#dims) == 0 then V#baseRing else ring (first V#tensorBasis) ** ring (first W#tensorBasis);
     new TensorSpace from hashTable{
 	baseRing => V#baseRing,
@@ -357,8 +357,9 @@ Tensor ^** ZZ := (T,n) -> (
 
 -- equality between on TensorSpace
 TensorSpace == TensorSpace := (W,V) -> (
-   if  W.baseRing === V.baseRing and W.dims == V.dims then true
-   else false
+    -- Why does equality for VisibleList not work?
+    if  W.baseRing === V.baseRing and toSequence(W.dims) == toSequence(V.dims) then true
+    else false
     )
     
 -- equality between on Tensor    
@@ -888,12 +889,13 @@ EXAMPLE {
 
 TEST ///
     V = tensorSpace(QQ,symbol X,{2,2,2})
-    W = tensorSpace(QQ,symbol Y,{3,3,3})
+    W = tensorSpace(QQ,symbol Y,3:3)
     T1 = makeTensor(1..8,V)
     T2 = makeTensor(1..8,V)
     assert(2*T1 == T1+T2)
     assert(T1 == T2)
     assert(class V_(1,1,1) === Tensor)
+    assert(class W_(1,1,1) === Tensor)
     assert(class T1_(0,0,1) === T1#tensorSpace#baseRing)
     V**W
 
