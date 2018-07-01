@@ -320,7 +320,9 @@ flattening (TensorSpace,List) := (V,L) -> (
 	    (i,0)..(i,d_i)
 	    );
     indL := toList(toSequence(for i in L list (i,0))..toSequence(for i in L list (i,d_i-1)));
+    indL = apply(indL, i -> if #i == 1 then i_0 else i);
     indLc := toList(toSequence(for i in Lc list (i,0))..toSequence(for i in Lc list (i,d_i-1)));
+    indLc = apply(indLc, i -> if #i == 1 then i_0 else i);
     Tmod := V#baseRing[for i in indL list (X_0)_i, for j in indLc list (X_0)_j];
     new TensorSpace from hashTable{
 	baseRing => V#baseRing,
