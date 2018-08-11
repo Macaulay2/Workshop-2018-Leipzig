@@ -484,7 +484,7 @@ runSingularCommand = (data) -> (
 	
 	-- in the future we want to make this check when we install SingularInterface package
 	if run ("Singular -q -c 'quit;'") =!= 0 then 
-		error("You need to install Singular") 
+		return("You need to install Singular for using tropicalVarietyWithVal") 
 	else (
 	ex := "Singular -q  < " | tmpName | " 2> " | tmpName | ".err";
 
