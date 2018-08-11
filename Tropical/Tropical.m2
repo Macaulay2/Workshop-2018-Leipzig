@@ -1,3 +1,5 @@
+path = prepend ("~/src/M2/Workshop-2018-Leipzig/Tropical/", path)
+--Delete the line above when the "loading the wrong version" has been fixed.
 polymakeOkay := try replace( "polymake version ", "", first lines get "!polymake --version 2>&1") >= "3.0" else false;
 
 --TODO: uncomment examples for isBalanced and stableIntersection in next release of M2
@@ -21,7 +23,7 @@ newPackage(
 	Configuration => {
 		"path" => "",
 		"fig2devpath" => "",
-		"keepfiles" => false,
+		"keepfiles" => true,
 		"cachePolyhedralOutput" => true,
 		"tropicalMax" => false
 	},
@@ -46,7 +48,8 @@ export {
   "multiplicities",
   "IsHomogeneous",
   "Symmetry",
-  "visualizeHypersurface"
+  "visualizeHypersurface",
+  "Valuation"
   }
 
 
@@ -57,18 +60,85 @@ if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not pr
 -- CODE
 ------------------------------------------------------------------------------
 
---Polymake visualization for tropical hypersurfaces
-visualizeHypersurface = method()
 
-visualizeHypersurface (String) := (S)->(
-	filename := temporaryFileName();
-	filename << "use application 'tropical';" << endl << concatenate("visualize_in_surface(new Hypersurface<Min>(POLYNOMIAL=>toTropicalPolynomial(\"",S,"\")));") << close;
-	runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
-	run runstring;
-	removeFile (filename|".err");
-	removeFile (filename|".out");
-	removeFile (filename);
+--Polymake visualization for tropical hypersurfaces
+
+--inputs: p prime, x rational number
+--outputs: p-adic valuation of x
+pAdicVal = (p,x) -> (
+    num := numerator(x);
+    denom := denominator(x);
+    temp := p;
+    if num%p===0 then (while (num%temp===0) do (temp=temp*p); return round(log(p,temp)-1));
+    if denom%p===0 then (while (denom%temp===0) do (temp=temp*p); return -round(log(p,temp)-1));
+    return 0;
 )
+
+--inputs: p prime, polyn polynomial with p-adic coefficients
+--outputs: polynomial whose coefficients are valuations of coefficients of polyn
+pAdicCoeffs := (p,polyn) -> (
+    (M,C):=coefficients polyn;
+    valuations := transpose matrix{apply(flatten entries C,i->pAdicVal(p,sub(i,QQ)))};
+    return (M,valuations);
+)
+
+--inputs: parameter specifies the coefficient ring for polyn, polyn polynomial over coefficient ring
+--outputss: polynomial whose coefficients are valuations of coefficients of polyn
+
+polynomialCoeffs := (parameter,polyn) -> (
+    (M,C):=coefficients(Variables=>delete(parameter,gens class polyn),polyn);
+    return (M,transpose matrix{apply(flatten entries C, i->min apply(exponents(polyn),sum))});
+)
+
+--inputs: var power of a monomial
+--outputs: term with power as coefficient
+expToCoeff = (var) -> (
+    temp := separate("^",toString(var));
+    if (length temp === 1) then return var else return concatenate(temp_1,temp_0);
+)
+
+--inputs: polyn macaulay 2 polynomial
+--outputs: min of linear polynomials for polymake
+toTropPoly = method(TypicalValue=>String)
+
+toTropPoly (RingElement) := (polyn) ->(
+    termList := apply(apply(terms polyn,toString),term->separate("*",term));
+    tropTerms := apply(apply(apply(termList, term->apply(term,expToCoeff)),term->between("+",term)),concatenate);
+    return "min("|concatenate(between(",",tropTerms))|")";
+)
+
+--inputs: (termList,coeffs)=coefficients polynomial
+--outputs: min of linear polynomials for polymake
+toTropPoly (Matrix,Matrix) := (termList,coeffs) ->(
+    noCoeffs := sum flatten entries termList;
+    termString := apply(apply(terms noCoeffs,toString),term->separate("*",term));
+    tropTerms := apply(apply(apply(termString, term->apply(term,expToCoeff)),term->between("+",term)),concatenate);
+    withCoeffs := for i when i<numColumns termList list toString((flatten entries coeffs)_i)|"+"|tropTerms_i;
+    return "min("|concatenate(between(",",withCoeffs))|")"; 
+)
+
+--outputs: return Min or Max depending on the state of tropcailMax
+minmax = () -> (if (Tropical#Options#Configuration#"tropicalMax") then return "Max" else return "Min";)
+
+visualizeHypersurface = method(Options=>{
+	Valuation=>null,
+	})
+
+visualizeHypersurface (RingElement) := o-> (polyn)->(
+    polynomial := toTropPoly(polyn);
+    if (instance(o.Valuation,Number)) then polynomial = toTropPoly(pAdicCoeffs(o.Valuation,polyn));
+    if (instance(o.Valuation,RingElement)) then polynomial = toTropPoly(polynomialCoeffs(o.Valuation,polyn));   
+    if (instance(o.Valuation,String) and o.Valuation == "constant") then polynomial = toTropPoly(sum flatten entries (coefficients polyn)_0);
+    print polynomial;
+    filename := temporaryFileName();
+    filename << "use application 'tropical';" << endl << "visualize_in_surface(new Hypersurface<"|minmax()|">(POLYNOMIAL=>toTropicalPolynomial(\""|polynomial|"\")));" << close;
+    runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
+    run runstring;
+    removeFile (filename|".err");
+    removeFile (filename|".out");
+    removeFile (filename);
+)    
+       
 
 --Example hypersurface
 --visualizeHypersurface("min(12+3*x0,-131+2*x0+x1,-67+2*x0+x2,-9+2*x0+x3,-131+x0+2*x1,-129+x0+x1+x2,-131+x0+x1+x3,-116+x0+2*x2,-76+x0+x2+x3,-24+x0+2*x3,-95+3*x1,-108+2*x1+x2,-92+2*x1+x3,-115+x1+2*x2,-117+x1+x2+x3,-83+x1+2*x3,-119+3*x2,-119+2*x2+x3,-82+x2+2*x3,-36+3*x3)")
@@ -159,7 +229,6 @@ tropicalPrevariety (List) := o -> L -> (
 tropicalPrevariety (List, List) := o -> (L, symmetryList) -> ( 
 	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
 	"symmetryExploit" => true,"restrict" => false,"stable" => false};
-	
 --using strategy gfan
     if (o.Strategy=="gfan") then (
     	F:= gfanTropicalIntersection(L, symmetryList, gfanopt); 
@@ -632,22 +701,41 @@ doc ///
 doc ///
 	Key	
 		visualizeHypersurface
-		(visualizeHypersurface,String)
+		(visualizeHypersurface,RingElement)
 	Headline
 		visualize the tropical hypersurface of the given polynomial
 	Usage
-		visualizeHypersurface(S)
+		visualizeHypersurface(polyn)
+		visualizeHypersurface(Valuation=>p,polyn)
+		visualizeHypersurface(Valuation=>t,polyn)
 	Inputs
-		S:String
+		polyn: RingElement
+		    polynomial
+		Valuation=>Number
+		    use p-adic coefficients with given p
+		Valuation=>RingElement
+		    use coefficients in R[t] with given t
 	Description
-		Text
-			This function wraps the Polymake visualization for a 
-			tropical hypersurface given an input polynomial. The 
-			input should be in the format "min(f_1,f_2,...,f_n)"
-			where each f_i is a linear polynomial. Image appears
-			in browser.
-		Example
-			visualizeHypersurface("min(12+3*x0,-131+2*x0+x1,-67+2*x0+x2,-9+2*x0+x3,-131+x0+2*x1,-129+x0+x1+x2,-131+x0+x1+x3,-116+x0+2*x2,-76+x0+x2+x3,-24+x0+2*x3,-95+3*x1,-108+2*x1+x2,-92+2*x1+x3,-115+x1+2*x2,-117+x1+x2+x3,-83+x1+2*x3,-119+3*x2,-119+2*x2+x3,-82+x2+2*x3,-36+3*x3)")
+	    Text
+	        This function wraps the Polymake visualization for a 
+		tropical hypersurface given an input polynomial. The input 
+		should be entered as a homogeneous polynomial. Running 
+		this method opens an image in a new browser window. The 
+		coefficients can be intereted as p-adic coefficients or as 
+		polynomials via the option @TO Valuation@. Examples are 
+		commented out because they open a new browser window.
+	    Example
+	    	--Examples are commented because they open in browser. Uncomment to run.
+    	        R=ZZ[x,y,z]
+		f=2*x*y+x*z+y*z+z^2
+		--visualizeHypersurface(Valuation=>2,f)
+		
+		f=2*x^2+x*y+2*y^2+x*z+y*z+2*z^2
+		--visualizeHypersurface(f)
+		
+		R=ZZ[w,x,y,z]
+		f=8*x^2+8*y^2+8*z^2+8*w^2+2*x*y+2*x*z+2*y*z+2*x*w+2*y*w+2*z*w
+		--visualizeHypersurface(f)
 ///
 			
 
@@ -758,8 +846,8 @@ doc///
 			tropicalPrevariety L
 			QQ[x_0,x_1]
 			tropicalPrevariety({x_0+x_1+1}, {{1,0}})
-			QQ[x,y]
-			tropicalPrevariety({x+y+1,x+y},Strategy => "gfan")
+			QQ[x_0,x_1]
+			tropicalPrevariety({x_0+x_1+1,x_0+x_1},Strategy => "gfan")
 ///
 
 
@@ -1005,14 +1093,22 @@ doc///
     
     Description
 		Text
-			If the option is used, the specified symmetries are used in the calculation of the tropical variety. For an ideal I of a polynomial ring R = KK[x_0 .. x_N], each symmetry is a permutation encoded in a list \{s_0, s_1, ..., s_N\} of numbers from 0 to N which records that swapping the variable x_j with the variable x_{s_j} in R leaves the ideal I fixed. Exploiting symmetries reduces the number of computations needed. The length of each symmetry equals the number of generators of R, otherwise an error is raised.
+			If the option is used, the specified
+			symmetries are used in the calculation of the
+			tropical variety. For an ideal I of a
+			polynomial ring R = KK[x_0 .. x_N], each
+			symmetry is a permutation encoded in a list
+			\{s_0, s_1, ..., s_N\} of numbers from 0 to N
+			which records that swapping the variable x_j
+			with the variable x_{s_j} in R leaves the
+			ideal I fixed. Exploiting symmetries reduces
+			the number of computations needed. The length
+			of each symmetry equals the number of
+			generators of R, otherwise an error is raised.
 		Example
 		          QQ[x_0,x_1,x_2];
 			  I=ideal(x_0+x_1+x_2+1);
-			  T=tropicalVariety (I,Symmetry=>{
-				                          {1,0,2}, --Swapping x_0 with x_1 leaves I fixed
-							  {2,1,0} --Swapping x_0 with x_2 leaves I fixed
-							  })
+			  T=tropicalVariety (I,Symmetry=>{{1,0,2}, {2,1,0} })
 ///
 
 

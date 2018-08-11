@@ -1,6 +1,7 @@
 --TODO: gfan errors printed on screen in:
 -- QQ[x,y,z,w]; I=ideal(x-y,w+y-x); gfanTropicalStartingCone I; tropicalVariety I; tropicalVariety ideal(x);
 
+path = prepend ("~/src/M2/Workshop-2018-Leipzig/Tropical/", path)
 
 -- -*- coding: utf-8 -*-
 
@@ -1378,7 +1379,6 @@ gfanStableIntersection (Fan,List,Fan,List) := opts -> (F,m1,G,m2) -> (
      out := runGfanCommand("gfan _fancommonrefinement --stable", opts, "");
      if (#select("empty",out#0)==1) then return "error: this fan is empty";
      if (length(out#0)==0) then return "error: this fan is empty";
-<<out<<endl;     
      out = gfanParsePolyhedralFan out;
      if gfanKeepFiles then (
 	  F#"GfanFileName" = fileF;
@@ -3670,7 +3670,7 @@ doc ///
 		(gfanRender, List)
 		(gfanRender, String, List)
 	Headline
-		render an image of a Grobener fan
+		render an image of a Groebner fan
 	Usage
 		gfanRender(L)
 	Inputs
@@ -4386,7 +4386,28 @@ doc ///
 ///
 
 
-
+doc///
+    Key
+	gfanStableIntersection
+    Headline
+	computes the stable intersection of two balanced fans
+    Usage
+    	gfanStableIntersection(Fan,List,Fan,List)
+    Inputs
+	F:Fan
+	m1:List
+	G:Fan
+	m2:List
+    Outputs
+	H:Fan
+    Description
+	Text
+	    This function computes the stable intersection of two
+	    balanced fans.  The input is two fans, and two lists of
+	    multiplicities that makes the fan balanced.  The function
+	    does not check whether this fan is in fact balanced.
+	
+///	    
 
 
 
