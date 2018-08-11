@@ -44,6 +44,7 @@ export {
   "Prime",
   "stableIntersection",
   "tropicalVariety",
+  "tropicalVarietyWithVal",
   "isTropicalBasis",
   "multiplicities",
   "IsHomogeneous",
@@ -304,7 +305,6 @@ findMultiplicity=(M,I)->(
 
 --input: the ideal of the variety and the fan computed by gfanbruteforce
 --output: list with the multiplicities to add to the tropicalCycle 
-
 findMultiplicities=(I,T)->(
 	ConesOfVariety:=computeCones( rays T,maxCones T, linSpace T);
       --creates a list with matrices that correspond to the maximal cones
@@ -410,6 +410,95 @@ tropicalVariety (Ideal) := o -> (I) ->(
 	T=U;
 	);
 	if (Tropical#Options#Configuration#"tropicalMax" == true) then return  T  else return minmaxSwitch T
+)
+
+tropicalVarietyWithVal = method(
+    TypicalValue => TropicalCycle,  
+    Options => {
+	IsHomogeneous => true,
+	Valuation => false
+    }
+)
+
+--EXPERIMENTAL: Tropicalization with adic valuation and puisseux valuation.
+-- In development. Merge with tropicalVariety method when done.
+tropicalVarietyWithVal (Ideal) := o -> (I) ->(
+    local T;
+    local F;
+    R := ring I;
+    
+--Adic valuation 
+    if (instance(o.Valuation, ZZ)) then (
+	if (not isPrime(o.Valuation)) then
+	    error("The 'p' in the p-adic valuation has to be prime");
+       
+	if (not isHomogeneous(I)) then (
+	    error("Support for non-homogeneous ideals not implemented yet"); 
+	    --homogenize here
+	);
+	 
+	inputToSingular := "LIB \"gfanlib.so\"; \n" | 
+			  "ring R = 0, (" | replace("[{}]", "", toString gens R) | "), dp; \n" |
+			  "ideal I = " | replace("ideal", "", toString I ) | ";  \n" |
+		          "fan TI = tropicalVariety (I, number( " | o.Valuation | ")); \n" |
+	       	          "write(\":w <<FILENAME>>\",TI);\n" | 
+			  "quit;";
+			
+	output := runSingularCommand(inputToSingular);
+	return output;
+	--Implement processing of output. Perhaps the following code is useful
+
+	-- since Singular returns a file in the same format, can we use this method to read it?
+	-- this would be a polyhedral fan with miltiplicities for the max cones 
+	--F = gfanParsePolyhedralFan output;  
+	--return F;		
+	--if (instance(F,String)) then
+	--    return F; 
+	
+	----T=tropicalCycle(F_0,F_1); -- TODO replace with the correct constructor to get: 
+	--T = TropicalCycleFromPolyhedralComplex (PolyhedralComplexFromFan F);	
+     );	
+	
+--- Puiseux valuation  
+      if (instance(o.Valuation, R)) then (
+	     return "We have not implemented Puiseux valuation yet";
+	-- we need the correct method name from fan 
+	--- make sure the "t" is the first variable!!
+	---T = TropicalCycleFromPolyhedralComplex (PolyhedralComplexFromSliceOfFan (tropicalVariety (I)));  
+	);
+	
+--Otherwise, we don't understand the given valuation. (or maybe no valuation was given?) 
+       return "Can't handle the given valuation. Maybe no valuation given? Then use tropicalVariety";
+);
+
+--EXPERIMENTAL: RAW function to execute singular code
+--This function should make its own package of interface to singular, but for now it is just a function to execute raw code
+--TODO: Write wrappers around several singular functions
+runSingularCommand = (data) -> (
+	tmpName := temporaryFileName();
+	--the command to run has a placeholder <<FILENAME>> for the name of the output
+	data = replace("<<FILENAME>>", tmpName | ".out", data);
+	tmpFile := openOut tmpName;
+	tmpFile << data << close;
+	-- return tmpName;
+	
+	-- in the future we want to make this check when we install SingularInterface package
+	if run ("Singular -q -c 'quit;'") =!= 0 then 
+		error("You need to install Singular") 
+	else (
+	ex := "Singular -q  < " | tmpName | " 2> " | tmpName | ".err";
+
+	returnvalue := run ex;
+	
+     	if(returnvalue != 0) then	
+	     error("Singular returned an error message.\n",
+	     "COMMAND RUN:\n    ", ex,
+	     "\nINPUT:\n", get(tmpName),
+	     "\nERROR:\n", get(tmpName |".err")  );
+	
+	out := get(tmpName | ".out");
+	return out;
+	);	
 )
 
 
@@ -927,6 +1016,37 @@ doc///
 ///
 
 
+
+doc///
+    Key
+      tropicalVarietyWithVal    
+      (tropicalVarietyWithVal, Ideal)
+      [tropicalVarietyWithVal, IsHomogeneous]
+      [tropicalVarietyWithVal, Valuation]
+
+    Headline
+      EXPERIMENTAL: tropical variety with valuations
+    Usage
+      tropicalVarietyWithVal(I,Valuation=>11)
+    Inputs
+      I:Ideal
+        of polynomials
+      IsHomogeneous=>Boolean
+        is the ideal homogeneous?   
+    Outputs
+        F:TropicalCycle
+    Description 
+       Text
+         EXPERIMENTAL feature to implement p-adic and puiseux valuation. Not yet done, contact a developer if you wish to help!
+      Example
+       R = QQ[x,y,z]
+       I = ideal(x+y+z)
+       tropicalVarietyWithVal(I)
+       tropicalVarietyWithVal(I, Valuation=>11)
+       tropicalVarietyWithVal(I, Valuation=>x)
+///
+
+
 doc///
     Key
 	stableIntersection
@@ -1078,6 +1198,25 @@ doc///
 		          QQ[x,y];
 			  I=ideal(x+y+1);
 			  T=tropicalVariety (I,IsHomogeneous=>false)
+			
+				    
+///
+
+doc///
+    Key
+	Valuation
+    Headline
+		option to declare a valuation for tropicalization
+    Usage
+    	tropicalVarietyWithVal(I,Valuation=>7)
+    
+    Description
+		Text
+			EXPERIMENTAL: Declare a p-adic or a puiseux valuation
+		Example
+		          QQ[x,y, z];
+			  I=ideal(x+y+z);
+			  tropicalVarietyWithVal (I,Valuation=>7)
 			
 				    
 ///
