@@ -1,3 +1,5 @@
+path = prepend ("~/src/M2/Workshop-2018-Leipzig/Tropical/", path)
+--Delete the line above when the "loading the wrong version" has been fixed.
 polymakeOkay := try replace( "polymake version ", "", first lines get "!polymake --version 2>&1") >= "3.0" else false;
 
 --TODO: uncomment examples for isBalanced and stableIntersection in next release of M2
@@ -21,13 +23,14 @@ newPackage(
 	Configuration => {
 		"path" => "",
 		"fig2devpath" => "",
-		"keepfiles" => false,
+		"keepfiles" => true,
 		"cachePolyhedralOutput" => true,
 		"tropicalMax" => false
 	},
         PackageExports => {"gfanInterface","EliminationMatrices","Binomials"},
 	DebuggingMode => true,
 	AuxiliaryFiles => true,
+--	AuxiliaryFiles => false,
 	CacheExampleOutput => true,
 	optArgs
 )
@@ -43,7 +46,11 @@ export {
   "tropicalVariety",
   "isTropicalBasis",
   "multiplicities",
-  "IsHomogeneous"}
+  "IsHomogeneous",
+  "Symmetry",
+  "visualizeHypersurface",
+  "Valuation"
+  }
 
 
 if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not present\n"
@@ -52,6 +59,92 @@ if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not pr
 ------------------------------------------------------------------------------
 -- CODE
 ------------------------------------------------------------------------------
+
+
+--Polymake visualization for tropical hypersurfaces
+
+--inputs: p prime, x rational number
+--outputs: p-adic valuation of x
+pAdicVal = (p,x) -> (
+    num := numerator(x);
+    denom := denominator(x);
+    temp := p;
+    if num%p===0 then (while (num%temp===0) do (temp=temp*p); return round(log(p,temp)-1));
+    if denom%p===0 then (while (denom%temp===0) do (temp=temp*p); return -round(log(p,temp)-1));
+    return 0;
+)
+
+--inputs: p prime, polyn polynomial with p-adic coefficients
+--outputs: polynomial whose coefficients are valuations of coefficients of polyn
+pAdicCoeffs := (p,polyn) -> (
+    (M,C):=coefficients polyn;
+    valuations := transpose matrix{apply(flatten entries C,i->pAdicVal(p,sub(i,QQ)))};
+    return (M,valuations);
+)
+
+--inputs: parameter specifies the coefficient ring for polyn, polyn polynomial over coefficient ring
+--outputss: polynomial whose coefficients are valuations of coefficients of polyn
+
+polynomialCoeffs := (parameter,polyn) -> (
+    (M,C):=coefficients(Variables=>delete(parameter,gens class polyn),polyn);
+    return (M,transpose matrix{apply(flatten entries C, i->min apply(exponents(polyn),sum))});
+)
+
+--inputs: var power of a monomial
+--outputs: term with power as coefficient
+expToCoeff = (var) -> (
+    temp := separate("^",toString(var));
+    if (length temp === 1) then return var else return concatenate(temp_1,temp_0);
+)
+
+--inputs: polyn macaulay 2 polynomial
+--outputs: min of linear polynomials for polymake
+toTropPoly = method(TypicalValue=>String)
+
+toTropPoly (RingElement) := (polyn) ->(
+    termList := apply(apply(terms polyn,toString),term->separate("*",term));
+    tropTerms := apply(apply(apply(termList, term->apply(term,expToCoeff)),term->between("+",term)),concatenate);
+    return "min("|concatenate(between(",",tropTerms))|")";
+)
+
+--inputs: (termList,coeffs)=coefficients polynomial
+--outputs: min of linear polynomials for polymake
+toTropPoly (Matrix,Matrix) := (termList,coeffs) ->(
+    noCoeffs := sum flatten entries termList;
+    termString := apply(apply(terms noCoeffs,toString),term->separate("*",term));
+    tropTerms := apply(apply(apply(termString, term->apply(term,expToCoeff)),term->between("+",term)),concatenate);
+    withCoeffs := for i when i<numColumns termList list toString((flatten entries coeffs)_i)|"+"|tropTerms_i;
+    return "min("|concatenate(between(",",withCoeffs))|")"; 
+)
+
+--outputs: return Min or Max depending on the state of tropcailMax
+minmax = () -> (if (Tropical#Options#Configuration#"tropicalMax") then return "Max" else return "Min";)
+
+visualizeHypersurface = method(Options=>{
+	Valuation=>null,
+	})
+
+visualizeHypersurface (RingElement) := o-> (polyn)->(
+    polynomial := toTropPoly(polyn);
+    if (instance(o.Valuation,Number)) then polynomial = toTropPoly(pAdicCoeffs(o.Valuation,polyn));
+    if (instance(o.Valuation,RingElement)) then polynomial = toTropPoly(polynomialCoeffs(o.Valuation,polyn));   
+    if (instance(o.Valuation,String) and o.Valuation == "constant") then polynomial = toTropPoly(sum flatten entries (coefficients polyn)_0);
+    print polynomial;
+    filename := temporaryFileName();
+    filename << "use application 'tropical';" << endl << "visualize_in_surface(new Hypersurface<"|minmax()|">(POLYNOMIAL=>toTropicalPolynomial(\""|polynomial|"\")));" << close;
+    runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
+    run runstring;
+    removeFile (filename|".err");
+    removeFile (filename|".out");
+    removeFile (filename);
+)    
+       
+
+--Example hypersurface
+--visualizeHypersurface("min(12+3*x0,-131+2*x0+x1,-67+2*x0+x2,-9+2*x0+x3,-131+x0+2*x1,-129+x0+x1+x2,-131+x0+x1+x3,-116+x0+2*x2,-76+x0+x2+x3,-24+x0+2*x3,-95+3*x1,-108+2*x1+x2,-92+2*x1+x3,-115+x1+2*x2,-117+x1+x2+x3,-83+x1+2*x3,-119+3*x2,-119+2*x2+x3,-82+x2+2*x3,-36+3*x3)")
+--opens in browser
+
+
 
 --Setting up the data type TropicalCycle
 
@@ -118,14 +211,27 @@ isBalanced (TropicalCycle):= T->(
 
 tropicalPrevariety = method(TypicalValue => Fan,  Options => {
 --in the future, more strategies not dependent on "gfan" will be available
-	Strategy=> "gfan"
+	Strategy=> "gfan",
 	})
-
- 
-tropicalPrevariety (List) := o -> L -> (gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,"symmetryExploit" => false,"restrict" => false,"stable" => false};
+  
+tropicalPrevariety (List) := o -> L -> ( 
+	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => false,"restrict" => false,"stable" => false};
+	
 --using strategy gfan
     if (o.Strategy=="gfan") then (
     	F:= gfanTropicalIntersection(L, gfanopt); 
+--gives only the fan and not the fan plus multiplicities which are wrongly computed in gfan
+	if (Tropical#Options#Configuration#"tropicalMax" == true) then return F_0 else return minmaxSwitch (F_0))
+    else error "options not valid"
+)
+
+tropicalPrevariety (List, List) := o -> (L, symmetryList) -> ( 
+	gfanopt:=(new OptionTable) ++ {"tropicalbasistest" => false,"tplane" => false,"symmetryPrinting" => false,
+	"symmetryExploit" => true,"restrict" => false,"stable" => false};
+--using strategy gfan
+    if (o.Strategy=="gfan") then (
+    	F:= gfanTropicalIntersection(L, symmetryList, gfanopt); 
 --gives only the fan and not the fan plus multiplicities which are wrongly computed in gfan
 	if (Tropical#Options#Configuration#"tropicalMax" == true) then return F_0 else return minmaxSwitch (F_0))
     else error "options not valid"
@@ -213,7 +319,8 @@ findMultiplicities=(I,T)->(
 tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 	ComputeMultiplicities => true,
 	Prime => true,
-	IsHomogeneous=>false
+	IsHomogeneous=>false,
+	Symmetry => {}
 	})
 
 
@@ -222,23 +329,45 @@ tropicalVariety = method(TypicalValue => TropicalCycle,  Options => {
 tropicalVariety (Ideal) := o -> (I) ->(
     local F;
     local T;
-    if o.IsHomogeneous==false  then 
+    newSymmetry:= o.Symmetry; --In case of homogenization we adjust the user given symmetries, recorded in the var newSymmetry.
+     
+    --If Symmetry present, check user has input permutations with the right length. If newSymmetry is {}, any always returns false.
+    M := #(gens ring I);
+    if any(newSymmetry, listPermutation ->  #listPermutation != M) then
+	error ("Length of permutations should be " | M);
+	
+    if o.IsHomogeneous==false then 
     (	 
-	 --First homogenize
-    	R:=ring I;
-    	AA:= symbol AA;
-    	S:= first flattenRing( R[getSymbol "AA", Join=>false]);
+	
+	--First homogenize, append variable AA to the beginning
+    	R := ring I;
+    	AA := symbol AA;
+	
+	--Extend to a new coefficient ring. The added variable is at the beginning.
+	S := first flattenRing(R[AA, Join =>false]);
+
 	J:=substitute(I,S);
 	J=homogenize(J,S_0);
 	J=saturate(J,S_0);
 	--we transform I in J so that the procedure continues as in the homogeneous case
 	I=J;
+	
+	--If Symmetry present, adjust the symmetry vectors to the right length and shift the values up by one. If not present, this operates on an empty list.
+    	--Increase the values of these lists by 1.
+	newSymmetry = for listPermutation in newSymmetry list --make a list with the following values 
+	             apply(listPermutation, j -> j + 1);
+        --Prepend a 0.
+        newSymmetry = apply(newSymmetry, listPermutation -> prepend(0, listPermutation));
     );
     if (o.Prime== true) then (
 	    cone := gfanTropicalStartingCone I;
 	    --check if resulting fan would be empty
 	    if instance(cone, String) then return cone;
-	    F= gfanTropicalTraverse cone;
+		if(newSymmetry == {}) then
+			F= gfanTropicalTraverse cone
+		else		   	
+			F= gfanTropicalTraverse (cone, "symmetry" => newSymmetry);	
+
 	    --check if resulting fan would be empty
 	    if (instance(F,String)) then return F; 
 	    T=tropicalCycle(F_0,F_1))
@@ -377,10 +506,10 @@ stableIntersection (TropicalCycle, TropicalCycle) := o -> (T1,T2) -> (
 	return tropicalCycle (F,mult);
     )
     else if (o.Strategy=="gfan") then (
-	F1 := T1#"Fan";	
-	m1 := T1#"Multiplicities";
-	F2 := T2#"Fan";	
-	m2 := T2#"Multiplicities";
+	F1 := fan(T1);
+	m1 := multiplicities(T1);
+	F2 := fan(T2);
+	m2 := multiplicities(T2);
 	return gfanStableIntersection(F1,m1,F2,m2);
     ) 
     else (
@@ -545,7 +674,6 @@ isPure TropicalCycle := Boolean => T->( isPure(fan(T)))
 isSimplicial TropicalCycle:= Boolean => T->( isSimplicial(fan(T)))
 
 
-
 ------------------------------------------------------------------------------
 -- DOCUMENTATION
 ------------------------------------------------------------------------------
@@ -569,6 +697,47 @@ doc ///
 
 ///
 
+
+doc ///
+	Key	
+		visualizeHypersurface
+		(visualizeHypersurface,RingElement)
+	Headline
+		visualize the tropical hypersurface of the given polynomial
+	Usage
+		visualizeHypersurface(polyn)
+		visualizeHypersurface(Valuation=>p,polyn)
+		visualizeHypersurface(Valuation=>t,polyn)
+	Inputs
+		polyn: RingElement
+		    polynomial
+		Valuation=>Number
+		    use p-adic coefficients with given p
+		Valuation=>RingElement
+		    use coefficients in R[t] with given t
+	Description
+	    Text
+	        This function wraps the Polymake visualization for a 
+		tropical hypersurface given an input polynomial. The input 
+		should be entered as a homogeneous polynomial. Running 
+		this method opens an image in a new browser window. The 
+		coefficients can be intereted as p-adic coefficients or as 
+		polynomials via the option @TO Valuation@. Examples are 
+		commented out because they open a new browser window.
+	    Example
+	    	--Examples are commented because they open in browser. Uncomment to run.
+    	        R=ZZ[x,y,z]
+		f=2*x*y+x*z+y*z+z^2
+		--visualizeHypersurface(Valuation=>2,f)
+		
+		f=2*x^2+x*y+2*y^2+x*z+y*z+2*z^2
+		--visualizeHypersurface(f)
+		
+		R=ZZ[w,x,y,z]
+		f=8*x^2+8*y^2+8*z^2+8*w^2+2*x*y+2*x*z+2*y*z+2*x*w+2*y*w+2*z*w
+		--visualizeHypersurface(f)
+///
+			
 
 doc ///
     Key 
@@ -645,15 +814,20 @@ doc///
 	Key
 		tropicalPrevariety
 		(tropicalPrevariety, List)
+		(tropicalPrevariety, List, List)
 		[tropicalPrevariety, Strategy]
 	Headline
 		the intersection of the tropical hypersurfaces
 	Usage
 		tropicalPrevariety(L)
+		tropicalPrevariaty(L,LS)
 		tropicalPrevariety(L,Strategy=>S)
+		tropicalPrevariety(L,LS,Strategy=>S)
 	Inputs
 		L:List
-		  of polynomials        
+		  of polynomials       
+		LS: List
+		  of Symmetries (optional) 
 		Strategy=>String
 		  Strategy (currently only "gfan")
 	Outputs
@@ -663,12 +837,17 @@ doc///
 		Text
 			This method intersects the tropical hypersurfaces
 			coming from the tropicalizations of the polynomials in the list L.
+			If there are symmetries that leave the specified polynomials fixed, 
+			they can  be specified by passing a list with the symmetries 
+			as second argument, with the same format as the option  @TO Symmetry@.
 		Example
 			QQ[x_1,x_2,x_3,x_4]
 			L={x_1+x_2+x_3+x_4,x_1*x_2+x_2*x_3+x_3*x_4+x_4*x_1,x_1*x_2*x_3+x_2*x_3*x_4+x_3*x_4*x_1+x_4*x_1*x_2,x_1*x_2*x_3*x_4-1}
 			tropicalPrevariety L
-			QQ[x,y]
-			tropicalPrevariety({x+y+1,x+y},Strategy => "gfan")
+			QQ[x_0,x_1]
+			tropicalPrevariety({x_0+x_1+1}, {{1,0}})
+			QQ[x_0,x_1]
+			tropicalPrevariety({x_0+x_1+1,x_0+x_1},Strategy => "gfan")
 ///
 
 
@@ -680,6 +859,7 @@ doc///
       [tropicalVariety, ComputeMultiplicities]
       [tropicalVariety, Prime]
       [tropicalVariety, IsHomogeneous]
+      [tropicalVariety, Symmetry]
 
     Headline
       the tropical variety associated to an ideal
@@ -688,15 +868,18 @@ doc///
       tropicalVariety(I,ComputeMultiplicities=>true)
       tropicalVariety(I,Prime=>true)
       tropicalVariety(I,IsHomogeneous=>false)
+      tropicalVariety(I,Symmetry=>{{...},{...}})
     Inputs
       I:Ideal
         of polynomials
       IsHomogeneous=>Boolean
         that ensures whether the ideal is already homogeneous   
-      ComputeMultiplicities =>Boolean
+      ComputeMultiplicities=>Boolean
         that confirms whether the multiplicities will be computed
       Prime=>Boolean
         that ensures whether the ideal is already prime
+      Symmetry=>List
+        that records the symmetries of the ideal 
     Outputs
         F:TropicalCycle
     Description 
@@ -710,7 +893,9 @@ doc///
          computeMultiplicities=>false turns this off.  This only saves
          time if Prime is set to false.  The ideal I is not assumed to
          be homogeneous.  The optional argument IsHomogeneous=>true
-         allows the user to assert that the ideal is homogeneous.
+         allows the user to assert that the ideal is homogeneous. If there
+	 are symmetries of the ring corresponding to I that leave I fixed, 
+	 they can be specified with the option @TO Symmetry@. 
       Example
        QQ[x,y];
        I=ideal(x+y+1);
@@ -721,6 +906,10 @@ doc///
        fVector fan T
        multiplicities(T)
        QQ[x,y,z,w];
+       I = ideal(w+x+y+z)
+       T = tropicalVariety(I, IsHomogeneous=>true, Symmetry=>{{1,0,2,3},{2,1,0,3},{3,1,2,0}})
+       rays(T)
+       maxCones(T)
        I=intersect(ideal(x+y+z+w),ideal(x-y,y-z));
        T= tropicalVariety(I,Prime=>false);
        rays(T)
@@ -857,7 +1046,7 @@ doc///
     Key
 	Prime
     Headline
-		option to declare if the input   ideal is prime
+		option to declare if the input ideal is prime
     Usage
     	tropicalVariety(I,Prime=>false)
     
@@ -877,7 +1066,7 @@ doc///
     Key
 	IsHomogeneous
     Headline
-		option to declare if the input  ideal is homogeneous
+		option to declare if the input ideal is homogeneous
     Usage
     	tropicalVariety(I,IsHomogeneous=>true)
     
@@ -893,6 +1082,34 @@ doc///
 				    
 ///
 
+
+doc///
+    Key
+	Symmetry
+    Headline
+		option to declare if the input ideal has symmetries
+    Usage
+    	tropicalVariety(I,Symmetry=>{{..},{..}})
+    
+    Description
+		Text
+			If the option is used, the specified
+			symmetries are used in the calculation of the
+			tropical variety. For an ideal I of a
+			polynomial ring R = KK[x_0 .. x_N], each
+			symmetry is a permutation encoded in a list
+			\{s_0, s_1, ..., s_N\} of numbers from 0 to N
+			which records that swapping the variable x_j
+			with the variable x_{s_j} in R leaves the
+			ideal I fixed. Exploiting symmetries reduces
+			the number of computations needed. The length
+			of each symmetry equals the number of
+			generators of R, otherwise an error is raised.
+		Example
+		          QQ[x_0,x_1,x_2];
+			  I=ideal(x_0+x_1+x_2+1);
+			  T=tropicalVariety (I,Symmetry=>{{1,0,2}, {2,1,0} })
+///
 
 
 doc///
@@ -1139,8 +1356,10 @@ doc///
 			T=tropicalVariety I;
 			L=linealitySpace T
 			    
-///
-	    
+///	    
+
+
+
     	
 ----- TESTS -----
 
@@ -1333,11 +1552,22 @@ assert(isBalanced G == false)
 
 TEST///
 QQ[x,y,z,w]
-F:=tropicalPrevariety({x+y+z+w,x^2+y*z})
+F=tropicalPrevariety({x+y+z+w,x^2+y*z})
+assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
+///
+
+TEST///
+QQ[x,y,z,w]
+F=tropicalPrevariety({x+y+z+w,x^2+y*z}, {{0,2,1,3}})
 assert((rays F) == matrix {{1,1,-1},{5,-3,-1},{-3,5,-1},{-3,-3,3}})
 ///
 
 
+TEST///
+QQ[x,y]
+F=tropicalPrevariety({x+y+1}, {{1,0}})
+assert((rays F) == matrix {{1,-1,0},{0,-1,1}})
+///
 
 -----------------------
 --stableIntersection
@@ -1429,7 +1659,15 @@ assert ((rays T)== (matrix {{-1, 0, 3}, {1, -3, 0}, {0, -1, 1}}))
 assert((linealitySpace T)==( matrix {{0}, {0}, {1}} ))
 assert((maxCones T)==( {{1}, {0}, {2}}))
 assert((multiplicities T)==( {1, 1, 1}))
-
+--symmetry and homogeneous 
+QQ[x,y, z]
+I=ideal(x^2+y^2+z^2)
+G=tropicalVariety(I, Symmetry=>{{1, 0, 2}, {1, 2, 0}, {2, 0, 1}})
+assert ((rays G)==(matrix {{2, -1, -1},{-1, 2, -1}, {-1, -1, 2}}))
+--symmetry and non-homogeneous 
+QQ[x,y]
+G=tropicalVariety(ideal(x+y+1), Symmetry=>{{1,0}})
+assert((rays G) == matrix {{1,-1,0},{0,-1,1}})
 
 ///
 

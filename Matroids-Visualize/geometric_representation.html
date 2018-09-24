@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>
+Geometric representations of rank &le; 3 matroids
+</title>
+</head>
+
+<body>
+
+<canvas id="matroidCanvas" width="800" height="600" style="border:1px solid #d3d3d3">
+</canvas>
+
+<script type="text/javascript">
+var c = document.getElementById("matroidCanvas");
+var ctx = c.getContext("2d");
+ctx.lineWidth = "2";
+ctx.translate(400, 300);
+ctx.beginPath();
+currX = 50;
+currY = 100;
+ctx.moveTo(currX, currY);
+portNum = visPort;
+visMatroid
+/*drawDot(ctx, currX, currY);
+drawSegment(ctx, 0, 150);
+drawSegment(ctx, 0, 300);
+drawSegment(ctx, 0, 100);
+drawDot(ctx, 350, 100);
+drawSegment(ctx, 5/4, -40);
+drawSegment(ctx, 5/4, -60);
+drawSegment(ctx, 5/4, -80);*/
+
+function drawDot(ctx, x, y) { ctx.beginPath(); ctx.arc(x,y,8,0,2*Math.PI); ctx.fill(); ctx.moveTo(x, y); currX = x; currY = y; }
+
+function drawSegment(ctx, m, dx) { currX += dx; currY -= m*dx; ctx.lineTo(currX, currY); ctx.stroke(); drawDot(ctx, currX, currY); }
+</script>
+
+</body>
+</html>
+
