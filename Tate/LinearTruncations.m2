@@ -80,7 +80,13 @@ coarseMultigradedRegularity Module := M->
 coarseMultigradedRegularity ChainComplex := F-> (
     t := degreeLength ring F;
    if t<=2 then 
-   partialRegularities F
+   (
+       if sum partialRegularities F <= regularity F 
+       then 
+       partialRegularities F+{ceiling((regularity F - sum partialRegularities F)/2),ceiling((regularity F - sum partialRegularities F)/2)}
+       else
+       partialRegularities F
+       )
   else
   (
     range := toList(min F..max F-1);
