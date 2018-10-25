@@ -4,7 +4,7 @@
 newPackage(
     "MomentVariety",
     Version => "0.1", 
-    Date => "6 June 2018",
+    Date => "30 November 2018",
     Authors => {{Name => "Some people", 
 	    Email => "your.name@email.edu", 
 	    HomePage => "http://your.website.html"}},
