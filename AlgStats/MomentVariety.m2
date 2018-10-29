@@ -25,7 +25,6 @@ export {
     "momentIdealPoisson",
     "momentIdealGaussianTest",
     "momentIdealMultinomial",
-    "momentIdealMultinomialMixture",
     "formalLog",
     "cumulantIdealGaussian",
     "cumulantIdealExponential",
@@ -57,9 +56,9 @@ GaussianMoments (ZZ, Ring) := List => (d, R) -> (
 --takes as input the number of mixtures, the highest degree d of moments and a ring
 momentIdealExponential = method(Options => {K => QQ})
 momentIdealExponential (ZZ, ZZ) := o -> (mix, d)->(
-    l := local l;
-    a := local a;
-    m := local m;
+    l := symbol l;
+    a := symbol a;
+    m := symbol m;
     R := o.K[l_1..l_mix,a_1..a_mix,m_0..m_d];
     I := ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list a_j*l_j^i*i!) + ideal(-1+sum for i from 1 to mix list a_i);
     I = homogenize(eliminate (toList(a_1..a_mix)|toList(l_1..l_mix) ,I),m_0);
@@ -260,10 +259,10 @@ momentVarietyGaussiansMixtures = (n,d,k,KK) -> (
 
 momentIdealPoisson = method(Options => {K => QQ})
 momentIdealPoisson (ZZ, ZZ) := o -> (mix, d)-> (
-    lambda := local lambda;
-    a := local a;
-    m := local m;
-    t := local t;
+    lambda := symbol lambda;
+    a := symbol a;
+    m := symbol m;
+    t := symbol t;
     R := o.K[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
     use R;
     series := sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
@@ -309,29 +308,13 @@ momentIdealGaussianTest (ZZ, ZZ) := o -> (mix, d)->(
 --d is the truncation order
 
 momentIdealMultinomial = method(Options => {K => QQ})
-momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
-    t := symbol t;
-    S := o.K[t_1..t_k];
-    exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
-    quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
-    Mons := ideal(apply(quotientExps, e->S_e));
-    p := symbol p;
-    m := symbol m;
-    R := o.K[p_1..p_k,apply(exps,i->m_i)][t_1..t_k];
-    Mons = sub(Mons,R);
-    R = R / Mons;
-    use R;
-    series := (sum apply(toList(1..k), j-> p_j*exp(t_j)))^n; --moment gen fxn of the multinomial distribution
-    I := ideal( apply(exps, e-> (sum e)!*coefficient(sub(S_e,R),series)-m_e) ) + ideal( 1 - sum apply(toList(1..k), i -> p_i));
-    T := o.K[apply(exps,i->m_i)];
-    homogenize(sub((eliminate(toList(p_1..p_k),I),T)),m_(exps#0))
-)
+
 
 --Mixtures of Multinomial Distributions
 
 -- param es a list with the varaibles k and n
-momentIdealMultiMixture = method(Options => {K => QQ, Mixture => 1})
-momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
+momentIdealMultinomial = method(Options => {K => QQ, Mixture => 1})
+momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
 
     mix := o.Mixture;
     t := symbol t;
@@ -359,7 +342,7 @@ momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
 --Binomial Distribution
 --n trials, truncation order d
 momentIdealBinomial = method()
-momentIdealBinomial = (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
+momentIdealBinomial = (n,mix,d) -> momentIdealMultinomial(2,n,mix,d)
 
 
 --Moment Ideal from Moment Generating function
@@ -808,6 +791,7 @@ doc ///
        n = 3
        d = 2
        momentIdealMultinomial (k,n,d) 
+       This is a test.
  
  ///
  
