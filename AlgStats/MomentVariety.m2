@@ -25,12 +25,9 @@ export {
     "momentVarietyGaussians",
     "momentIdealPoisson",
     "momentIdealMultinomial",
-<<<<<<< HEAD
-=======
     "momentIdealMultinomialMixture",
     "momentMapGaussiansMixtures",
     "momentVarietyGaussiansMixtures",
->>>>>>> ccd710b2e4f2f0880c04c2b46c99303a8bce4df4
     "formalLog",
     "cumulantIdealGaussian",
     "cumulantIdealExponential",
@@ -64,17 +61,10 @@ gaussianMoments (ZZ, Ring) := List => (d, R) -> (
 --takes as input the number of mixtures, the highest degree d of moments and a ring
 momentIdealExponential = method(Options => {GroundField => QQ})
 momentIdealExponential (ZZ, ZZ) := o -> (mix, d)->(
-<<<<<<< HEAD
-    l := symbol l;
-    a := symbol a;
-    m := symbol m;
-    R := o.K[l_1..l_mix,a_1..a_mix,m_0..m_d];
-=======
     l := local l;
     a := local a;
     m := local m;
     R := o.GroundField[l_1..l_mix,a_1..a_mix,m_0..m_d];
->>>>>>> ccd710b2e4f2f0880c04c2b46c99303a8bce4df4
     I := ideal (for i from 1 to d list -m_i+sum for j from 1 to mix list a_j*l_j^i*i!) + ideal(-1+sum for i from 1 to mix list a_i);
     I = homogenize(eliminate (toList(a_1..a_mix)|toList(l_1..l_mix) ,I),m_0);
     sub(I, o.GroundField[m_0..m_d])
@@ -271,11 +261,7 @@ momentIdealPoisson (ZZ, ZZ) := o -> (mix, d)-> (
     a := symbol a;
     m := symbol m;
     t := symbol t;
-<<<<<<< HEAD
-    R := o.K[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
-=======
     R := o.GroundField[lambda_1..lambda_mix,a_1..a_mix,m_0..m_d][t]/t^(d+1);
->>>>>>> ccd710b2e4f2f0880c04c2b46c99303a8bce4df4
     use R;
     series := sum for i from 1 to mix list a_i*exp(lambda_i*(exp(t)-1));
     I := ideal for i from 1 to d list i!*coefficient(t^i,series)-m_i+ideal(-1+sum for i from 1 to mix list a_i);
@@ -320,10 +306,6 @@ momentIdealGaussian (ZZ, ZZ) := o -> (mix, d)->(
 --t_1..t_r are the variables of the moment generating function
 --d is the truncation order
 
-<<<<<<< HEAD
-momentIdealMultinomial = method(Options => {K => QQ})
-
-=======
 momentIdealMultinomial = method(Options => {GroundField => QQ})
 momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
     t := symbol t;
@@ -342,19 +324,13 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
     T := o.GroundField[apply(exps,i->m_i)];
     homogenize(sub((eliminate(toList(p_1..p_k),I),T)),m_(exps#0))
 )
->>>>>>> ccd710b2e4f2f0880c04c2b46c99303a8bce4df4
 
 --Mixtures of Multinomial Distributions
 
 -- param es a list with the varaibles k and n
-<<<<<<< HEAD
-momentIdealMultinomial = method(Options => {K => QQ, Mixture => 1})
-momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
-=======
 momentIdealMultiMixture = method(Options => {GroundField => QQ, Mixture => 1})
 momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
->>>>>>> ccd710b2e4f2f0880c04c2b46c99303a8bce4df4
-
+    
     mix := o.Mixture;
     t := symbol t;
     S := o.GroundField[t_1..t_r];
@@ -381,12 +357,7 @@ momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
 --Binomial Distribution
 --n trials, truncation order d
 momentIdealBinomial = method()
-<<<<<<< HEAD
-momentIdealBinomial = (n,mix,d) -> momentIdealMultinomial(2,n,mix,d)
-=======
 momentIdealBinomial (ZZ, ZZ, ZZ) := Ideal => (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
->>>>>>> ccd710b2e4f2f0880c04c2b46c99303a8bce4df4
-
 
 --Moment Ideal from Moment Generating function
 --takes as input the number of mixtures, the highest degree of moments appearing, a list with the MGF and the parameters of this function, and a Ring.
