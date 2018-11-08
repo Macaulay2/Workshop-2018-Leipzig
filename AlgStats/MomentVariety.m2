@@ -42,7 +42,8 @@ export {
     "Mixture"
     }
 
--- Lists all moments of the univariate Gaussian
+-- Lists all moments of the univariate Gaussian. The first generator of R is the
+-- mean, the sectond is the variance.
 
 gaussianMoments = method()
 gaussianMoments (ZZ, Ring) := List => (d, R) -> (
@@ -58,7 +59,7 @@ gaussianMoments (ZZ, Ring) := List => (d, R) -> (
 )
 
 --Exponential mixture
---takes as input the number of mixtures, the highest degree d of moments and a ring
+--takes as input the number of mixtures and the highest degree d of moments
 momentIdealExponential = method(Options => {GroundField => QQ})
 momentIdealExponential (ZZ, ZZ) := o -> (mix, d)->(
     l := local l;
@@ -123,14 +124,7 @@ momentVarietyGaussians (ZZ, ZZ) := Ideal => (n,d) -> (
   I := kernel f;
   I = homogenize(I,varmoms_0);
   
-  -- temporary hack: makes rectangular format
-  zeroes := for i from 0 to n - 1 list 0;
-  full := for i from 0 to n - 1 list d;
-  m := (baseName varmoms_0)#0;
---  S := k[m_zeroes..m_full];
---  phi := map(R, ring I, varmoms);
---  I = phi I;
-  return sub(I,QQ[m_zeroes..m_full])
+  return I;
 )
 
 -------------------------------------------------------------------------------------
@@ -227,6 +221,7 @@ momentMapGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Sequence => (n,mix,d,KK) -> (
 
 ----------------------------------------------------------------
 -- This computes the homogeneous ideal of the moment variety of multidimensional Gaussian mixtures
+-- KK = basefield?
 
 momentVarietyGaussiansMixtures = method()
 momentVarietyGaussiansMixtures (ZZ,ZZ,ZZ,Ring) := Ideal => (n,mix,d,KK) -> (
@@ -328,6 +323,7 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
 --Mixtures of Multinomial Distributions
 
 -- param es a list with the varaibles k and n
+-- shouldn't this return something?? --Orlando
 momentIdealMultiMixture = method(Options => {GroundField => QQ, Mixture => 1})
 momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
     
@@ -356,12 +352,14 @@ momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
 
 --Binomial Distribution
 --n trials, truncation order d
+--doesn't work :( --Orlando
 momentIdealBinomial = method()
 momentIdealBinomial (ZZ, ZZ, ZZ) := Ideal => (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
 
 --Moment Ideal from Moment Generating function
 --takes as input the number of mixtures, the highest degree of moments appearing, a list with the MGF and the parameters of this function, and a Ring.
 --computes the homogeneous moment ideal 
+-- doesn't work... --Orlando
 
 momentIdealFromMGF = method(Options => {GroundField => QQ})
 momentIdealFromMGF (ZZ, ZZ, Thing, List) := o -> (mix, d, f, param) -> (
@@ -399,7 +397,7 @@ cumulantIdealGaussian (ZZ,ZZ) := Ideal => (mix,d) -> (
     use R;
     series:=formalLog(sum for i from 1 to mix list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2),d);
     I:=ideal for i from 1 to d list i!*coefficient(t^i,series)-k_i +ideal(-1+sum for i from 1 to mix list a_i);
-    eliminate(toList(mn_1..mn_mix)|toList(sd_1..sd_mix)|toList(a_1..a_mix),I)
+    return eliminate(toList(mn_1..mn_mix)|toList(sd_1..sd_mix)|toList(a_1..a_mix),I);
 )
 
 --note: l_i's are actually (l_i)^(-1)
@@ -842,33 +840,33 @@ doc ///
       Given the number of possible outcomes, the number of trials in a statistical experiment as well as the truncation order, compute the moment ideal for the multinomial distribution      
     Text
       Here we show an example
-    Example
+--    Example
 
       
- ///
+///
  
- doc ///
-   Key
-     momentIdealGaussianTest
-     (momentIdealGaussianTest, ZZ, ZZ, Ring)
-   Headline
-     TO BE GIVEN
-   Usage
-     I = momentIdealGaussianTest(mix,d,K)
-   Inputs
-     mix : ZZ
-     d : ZZ
-   Outputs
-     I : Ideal
-   Description
-     Text
-       TO BE GIVEN
-     Text
-       Here we show an example
+-- doc ///
+--   Key
+--     momentIdealGaussianTest
+--     (momentIdealGaussianTest, ZZ, ZZ, Ring)
+--   Headline
+--     TO BE GIVEN
+--   Usage
+--     I = momentIdealGaussianTest(mix,d,K)
+--   Inputs
+--     mix : ZZ
+--     d : ZZ
+--   Outputs
+--     I : Ideal
+--   Description
+ --    Text
+--       TO BE GIVEN
+--     Text
+--       Here we show an example
      -- Example
      --   TO BE GIVEN
        
- ///
+-- ///
  
  doc ///
    Key
@@ -896,34 +894,34 @@ doc ///
  ///
  
 
- doc ///
-   Key
-     momentIdealMultinomial
-     (momentIdealMultinomial, ZZ, ZZ, ZZ, Ring)
-   Headline
-     multinomial distribution
-   Usage
-     I = momentIdealMultinomial (k, n, d, K)
-   Inputs
-     k : ZZ
-     n : ZZ
-     d : ZZ
-     K : Ring
-   Outputs 
-     I : Ideal
-   Description
-     Text
-       Given the number of possible outcomes, the number of trials in a statistical experiment as well as the truncation order, compute the moment ideal for the multinomial distribution      
-     Text
-       Here we show an example
-     Example
-      k = 2
-      n = 3
-      d = 2
-      momentIdealMultinomial (k,n,d) 
+-- doc ///
+--   Key
+--     momentIdealMultinomial
+--     (momentIdealMultinomial, ZZ, ZZ, ZZ, Ring)
+--   Headline
+--     multinomial distribution
+--   Usage
+--     I = momentIdealMultinomial (k, n, d, K)
+--   Inputs
+--     k : ZZ
+--     n : ZZ
+--     d : ZZ
+--     K : Ring
+--   Outputs 
+--     I : Ideal
+--   Description
+--     Text
+--       Given the number of possible outcomes, the number of trials in a statistical experiment as well as the truncation order, compute the moment ideal for the multinomial distribution      
+--     Text
+--       Here we show an example
+--     Example
+--      k = 2
+--      n = 3
+--      d = 2
+--      momentIdealMultinomial (k,n,d) 
 
  
-///
+--///
  
 end--
 uninstallPackage "MomentVariety"
