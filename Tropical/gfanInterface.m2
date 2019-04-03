@@ -569,35 +569,35 @@ gfanParseGfanType (String, List) := (T, L) -> (
 	)
 )
 
-{*
-polymakeFanToFan = method()
+-- {*
+-- polymakeFanToFan = method()
 
-polymakeFanToFan PolymakeFan := (F) -> (
-	linealitySpace := posHull transpose matrix(F#"LINEALITY_SPACE" | - F#"LINEALITY_SPACE");
-	fan apply(F#"MAXIMAL_CONES", L -> posHull(posHull transpose matrix apply(L, i -> F#"RAYS"#i), linealitySpace))
-)
+-- polymakeFanToFan PolymakeFan := (F) -> (
+-- 	linealitySpace := posHull transpose matrix(F#"LINEALITY_SPACE" | - F#"LINEALITY_SPACE");
+-- 	fan apply(F#"MAXIMAL_CONES", L -> posHull(posHull transpose matrix apply(L, i -> F#"RAYS"#i), linealitySpace))
+-- )
 
-polymakeConeToCone = method()
+-- polymakeConeToCone = method()
 
-polymakeConeToCone PolymakeCone := (C) -> (
-	linealitySpace := posHull transpose matrix(C#"LINEALITY_SPACE" | - C#"LINEALITY_SPACE");
-	posHull(posHull transpose matrix C#"FACETS", linealitySpace)
-)
+-- polymakeConeToCone PolymakeCone := (C) -> (
+-- 	linealitySpace := posHull transpose matrix(C#"LINEALITY_SPACE" | - C#"LINEALITY_SPACE");
+-- 	posHull(posHull transpose matrix C#"FACETS", linealitySpace)
+-- )
 
-polymakeFan = method()
-polymakeFan (Matrix,Matrix,List) := (rays, lineality, maxcones) ->  (
-	ambientdim := numRows(rays);
-	lindim := numColumns(lineality);
-	dim := numColumns(lineality) + max apply(maxcones, c-> #c);
-	orthlin := entries transpose gens kernel lineality;
-	lin := entries transpose lineality;
-	r := entries transpose rays;
-	numr := numColumns(rays);
-	pure := all(maxcones, c -> #c == dim);
-	--rawstr := blah;
-	--Not done yet!
-)
-*}
+-- polymakeFan = method()
+-- polymakeFan (Matrix,Matrix,List) := (rays, lineality, maxcones) ->  (
+-- 	ambientdim := numRows(rays);
+-- 	lindim := numColumns(lineality);
+-- 	dim := numColumns(lineality) + max apply(maxcones, c-> #c);
+-- 	orthlin := entries transpose gens kernel lineality;
+-- 	lin := entries transpose lineality;
+-- 	r := entries transpose rays;
+-- 	numr := numColumns(rays);
+-- 	pure := all(maxcones, c -> #c == dim);
+-- 	--rawstr := blah;
+-- 	--Not done yet!
+-- )
+-- *}
 
 
 ------------------------------------------
@@ -973,32 +973,32 @@ toPolymakeFormat(Fan) := (F) ->(
      return(str);	     
 )
 
-{*
-makeGfanFile = method(TypicalValue => String)
-makeGfanFile(PolyhedralObject,String) := (P, fileName) ->(
-     if P#"GfanFileHeader" then fileName << P#"GfanFileHeader" << endl;
-     if P#"GfanFileRawString" then
-     	 file << P#"GfanFileRawString" << endl << close
-     else
-         fileName << toPolymakeFormat(P) << endl << close;
-     P#"GfanFileName" = fileName;
-     fileName
-     )
+-- {*
+-- makeGfanFile = method(TypicalValue => String)
+-- makeGfanFile(PolyhedralObject,String) := (P, fileName) ->(
+--      if P#"GfanFileHeader" then fileName << P#"GfanFileHeader" << endl;
+--      if P#"GfanFileRawString" then
+--      	 file << P#"GfanFileRawString" << endl << close
+--      else
+--          fileName << toPolymakeFormat(P) << endl << close;
+--      P#"GfanFileName" = fileName;
+--      fileName
+--      )
 
-makePolymakeFormat(PolyhedralObject) := (P) ->(
-     fileName := "";
-     if P#?"GfanFileName" and fileExists P#"GfanFileName" then
-     (	  fileName = P#"GfanFileName";
-	  << "using existing file " << filename << endl;
-     )
-     else (
-	  fileName = temporaryFileName()|currentTime()|."gfan";
-     	  << "using temporary file " << fileName << endl;
-	  writeGfanFile(P,fileName);
-     )
-     fileName
-     )
-*}
+-- makePolymakeFormat(PolyhedralObject) := (P) ->(
+--      fileName := "";
+--      if P#?"GfanFileName" and fileExists P#"GfanFileName" then
+--      (	  fileName = P#"GfanFileName";
+-- 	  << "using existing file " << filename << endl;
+--      )
+--      else (
+-- 	  fileName = temporaryFileName()|currentTime()|."gfan";
+--      	  << "using temporary file " << fileName << endl;
+-- 	  writeGfanFile(P,fileName);
+--      )
+--      fileName
+--      )
+-- *}
 
 
 --------------------------------------------------------
@@ -1319,7 +1319,7 @@ gfanDoesIdealContain (List, List) := opts -> (I,J) -> (
 
 gfanFanCommonRefinement = method( Options => {
 	"i1" => null, -- these are set inside the method
-	"i2" => null, -- these are set inside the method
+	"i2" => null -- these are set inside the method
 	}
 )
 
@@ -1364,7 +1364,7 @@ gfanFanCommonRefinement (Fan, Fan) := opts -> (F,G) -> (
 
 gfanStableIntersection = method( Options=> {
 	"i1" => null, -- these are set inside the method
-	"i2" => null, -- these are set inside the method
+	"i2" => null -- these are set inside the method
 	}
 )
     
@@ -1430,10 +1430,11 @@ gfanFanLink (Fan, List) := opts -> (F,V) -> (
 --------------------------------------------------------
 
 gfanFanProduct = method( Options => {
-	"i1" => null, -- these are set inside the method
-	"i2" => null, -- these are set inside the method
+	"i1" => null, 
+	"i2" => null
 	}
 )
+-- Set to null because they are set inside the method
 
 	-- version 0.4
 gfanFanProduct (Fan, Fan) := opts -> (F,G) -> (
@@ -1962,7 +1963,7 @@ gfanPolynomialSetUnion (List, MarkedPolynomialList) := opts -> (L,M) -> (
 
 gfanRender = method( Options => {
 	"L" => false,
-	"shiftVariables" => 0,
+	"shiftVariables" => 0
 	}
 )
 
@@ -2278,7 +2279,7 @@ gfanTropicalIntersection = method( Options => {
 	"symmetryPrinting" => false,
 	"symmetryExploit" => false,
 	"restrict" => false,
-	"stable" => false,
+	"stable" => false
 	}
 )
 
@@ -2342,8 +2343,8 @@ gfanTropicalLifting := opts -> () -> (
 
 gfanTropicalLinearSpace = method( Options => {
 	"trees" => false,
-	"n" => null;
-	"d" => null;
+	"n" => null,
+	"d" => null
 	}
 )
 
