@@ -122,7 +122,7 @@ toTropPoly (Matrix,Matrix) := (termList,coeffs) ->(
 minmax = () -> (if (Tropical#Options#Configuration#"tropicalMax") then return "Max" else return "Min";)
 
 visualizeHypersurface = method(Options=>{
-	Valuation=>null,
+	Valuation=>null
 	})
 
 visualizeHypersurface (RingElement) := o-> (polyn)->(
@@ -212,7 +212,7 @@ isBalanced (TropicalCycle):= T->(
 
 tropicalPrevariety = method(TypicalValue => Fan,  Options => {
 --in the future, more strategies not dependent on "gfan" will be available
-	Strategy=> "gfan",
+	Strategy=> "gfan"
 	})
   
 tropicalPrevariety (List) := o -> L -> ( 
