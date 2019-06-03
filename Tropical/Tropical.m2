@@ -1,14 +1,15 @@
-path = prepend ("~/src/M2/Workshop-2018-Leipzig/Tropical/", path)
+--path = prepend ("~/src/M2/Workshop-2018-Leipzig/Tropical/", path)
 --Delete the line above when the "loading the wrong version" has been fixed.
-polymakeOkay := try replace( "polymake version ", "", first lines get "!polymake --version 2>&1") >= "3.0" else false;
+--polymakeOkay := try replace( "polymake version ", "", first lines get "!polymake --version 2>&1") >= "3.0" else false;
+--polymakeOkay := try replace( "polymake version ", "", first lines get "!polymake --version") >= "3.0" else false;
 
 --TODO: uncomment examples for isBalanced and stableIntersection in next release of M2
-optArgs := new OptionTable from if (version#"VERSION" > "1.10") then {OptionalComponentsPresent => polymakeOkay} else {}
+--optArgs := new OptionTable from if (version#"VERSION" > "1.10") then {OptionalComponentsPresent => polymakeOkay} else {}
 
 newPackage(
     	"Tropical",
-	Version => "0.1",
-	Date => "May 2016",
+	Version => "0.9",
+	Date => "May 2019",
 	Authors => {
    		{Name => "Carlos Amendola", Email => "amendola@math.tu-berlin.de", HomePage=>""},
 	    	{Name => "Kathlen Kohn", Email => "kathlen.korn@gmail.com", HomePage=>""},
@@ -25,14 +26,15 @@ newPackage(
 		"fig2devpath" => "",
 		"keepfiles" => true,
 		"cachePolyhedralOutput" => true,
-		"tropicalMax" => false
+		"tropicalMax" => false,
+		"polymakeCommand" =>""
 	},
         PackageExports => {"gfanInterface","EliminationMatrices","Binomials"},
 	DebuggingMode => true,
 	AuxiliaryFiles => true,
 --	AuxiliaryFiles => false,
-	CacheExampleOutput => true,
-	optArgs
+	CacheExampleOutput => true
+--	optArgs
 )
 
 export {
@@ -54,7 +56,9 @@ export {
   }
 
 
-if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not present\n"
+polymakeCommand = (options Tropical)#Configuration#"polymakeCommand"
+if polymakeCommand !="" then polymakeOkay=true else polymakeOkay=false;
+if polymakeOkay then << "-- polymake is installed\n" else << "-- polymake not present\n";
 
 
 ------------------------------------------------------------------------------
@@ -133,7 +137,7 @@ visualizeHypersurface (RingElement) := o-> (polyn)->(
     print polynomial;
     filename := temporaryFileName();
     filename << "use application 'tropical';" << endl << "visualize_in_surface(new Hypersurface<"|minmax()|">(POLYNOMIAL=>toTropicalPolynomial(\""|polynomial|"\")));" << close;
-    runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
+    runstring := polymakeCommand | " " |filename | " > "|filename|".out  2> "|filename|".err";
     run runstring;
     removeFile (filename|".err");
     removeFile (filename|".out");
@@ -190,8 +194,13 @@ isBalanced (TropicalCycle):= T->(
 	C := tropicalCycle(embedFan fan T, multiplicities T);
 -- parse object into a polymake script, run polymake and get result back from the same file (which got overwritten by polymake)
 	filename := temporaryFileName();
-	filename << "use application 'tropical';" << endl << "my $c = "|convertToPolymake(C) << endl << "print is_balanced($c);" << endl << "use strict;" << endl << "my $filename = '" << filename << "';" << endl << "open(my $fh, '>', $filename);" << endl << "print $fh is_balanced($c);" << endl << "close $fh;" << endl << close;
-	runstring := "polymake "|filename | " > "|filename|".out  2> "|filename|".err";
+<<filename<<endl;	
+<<convertToPolymake(C)<<endl;
+	filename << "use application 'tropical';" << endl << "my $c = "|convertToPolymake(C) << endl << "print is_balanced($c);" << endl;
+	filename << "use strict;" << endl << "my $filename = '" << filename << "';" << endl << "open(my $fh, '>', $filename);" << endl;
+	filename << "print $fh is_balanced($c);" << endl << "close $fh;" << endl << close;
+	runstring := polymakeCommand | " "|filename | " > "|filename|".out  2> "|filename|".err";
+<<runstring<<endl;	
 	run runstring;
 	removeFile (filename|".err");
 	result := get (filename|".out");
@@ -567,7 +576,7 @@ stableIntersection (TropicalCycle, TropicalCycle) := o -> (T1,T2) -> (
 	maxConeStr := "\"MAXIMAL_CONES\\n\";";
 	weightStr := "\"\\nMULTIPLICITIES\\n\";";
 	filename << "use application 'tropical';" << "my $c = "|convertToPolymake(C1) << "my $d = "|convertToPolymake(C2) << "my $i = intersect($c,$d);" << "use strict;" << "my $filename = '" << filename << "';" << "open(my $fh, '>', $filename);" << "print $fh " << openingStr << "print $fh $i->AMBIENT_DIM;" << "print $fh " << dimStr << "print $fh $i->DIM;" << "print $fh " << linDimStr << "print $fh $i->LINEALITY_DIM;" << "print $fh " << raysStr << "print $fh $i->RAYS;" << "print $fh " << nRaysStr << "print $fh $i->N_RAYS;" << "print $fh " << linSpaceStr << "print $fh $i->LINEALITY_SPACE;" << "print $fh " << orthLinStr << "print $fh $i->ORTH_LINEALITY_SPACE;" << "print $fh " << fStr << "print $fh $i->F_VECTOR;" << "print $fh " << simpStr << "print $fh $i->SIMPLICIAL;" << "print $fh " << pureStr << "print $fh $i->PURE;" << "print $fh " << coneStr << "my $cones = $i->CONES;" << "$cones =~ s/['\\>','\\<']//g;" << "print $fh $cones;" << "print $fh " << maxConeStr << "print $fh $i->MAXIMAL_CONES;" << "print $fh " << weightStr << "print $fh $i->WEIGHTS;" << "close $fh;" << close;
-	runstring := "polymake "|filename | " 2> "|filename|".err";
+	runstring := polymakeCommand |filename | " 2> "|filename|".err";
 	run runstring;
 	removeFile (filename|".err");
 	result := get filename;
