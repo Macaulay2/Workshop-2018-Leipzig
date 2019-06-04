@@ -1,0 +1,2 @@
+runstring = "/Applications/polymake.app/Contents/MacOS/polymake.start polymaketestinput > polymakeoutput"
+run runstring
