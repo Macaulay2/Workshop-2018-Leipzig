@@ -1,3 +1,3 @@
 use application 'tropical';
-$H = new Hypersurface<Min>(POLYNOMIAL=>toTropicalPolynomial("min(a,b,c)"));
+my $H = new Hypersurface<Min>(POLYNOMIAL=>toTropicalPolynomial("min(a,b,c)"));
 print $H->VERTICES;
