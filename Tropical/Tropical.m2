@@ -194,19 +194,20 @@ isBalanced (TropicalCycle):= T->(
 	C := tropicalCycle(embedFan fan T, multiplicities T);
 -- parse object into a polymake script, run polymake and get result back from the same file (which got overwritten by polymake)
 	filename := temporaryFileName();
-<<filename<<endl;	
-<<convertToPolymake(C)<<endl;
+--<<filename<<endl;	
+--<<convertToPolymake(C)<<endl;
 	filename << "use application 'tropical';" << endl << "my $c = "|convertToPolymake(C) << endl << "print is_balanced($c);" << endl;
-	filename << "use strict;" << endl << "my $filename = '" << filename << "';" << endl << "open(my $fh, '>', $filename);" << endl;
-	filename << "print $fh is_balanced($c);" << endl << "close $fh;" << endl << close;
+filename<<close;
+--	filename << "use strict;" << endl << "my $filename = '" << filename << "';" << endl << "open(my $fh, '>', $filename);" << endl;
+--	filename << "print $fh is_balanced($c);" << endl << "close $fh;" << endl << close;
 	runstring := polymakeCommand | " "|filename | " > "|filename|".out  2> "|filename|".err";
-<<runstring<<endl;	
+--<<runstring<<endl;	
 	run runstring;
 	removeFile (filename|".err");
 	result := get (filename|".out");
 	removeFile (filename|".out");
 	removeFile (filename);
-	if (result=="1") then return true
+	if (substring(-4,result)=="true") then return true
 	else if (result=="") then return false
 	else return "Polymake throws an error";
 )
