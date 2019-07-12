@@ -43,7 +43,7 @@ export {
     }
 
 -- Lists all moments of the univariate Gaussian. The first generator of R is the
--- mean, the sectond is the variance.
+-- mean, the second is the variance.
 
 gaussianMoments = method()
 gaussianMoments (ZZ, Ring) := List => (d, R) -> (
@@ -866,34 +866,6 @@ doc ///
      -- Example
      --   TO BE GIVEN
        
--- ///
- 
- doc ///
-   Key
-     momentVarietyGaussians
-     (momentVarietyGaussians, ZZ, ZZ)
-   Headline
-     compute the homogeneous ideal of the moment variety
-   Usage
-     momentVarietyGaussians (n,d)
-   Inputs
-     n : ZZ
-     d : ZZ
-   Outputs
-     : Ideal
-   Description
-     Text
-       compute the homogeneous ideal of the moment variety
-     Text
-       Here we show an example
-     Example
-       n = 1
-       d = 4
-       momentVarietyGaussians (n,d)
- 
- ///
- 
-
 -- doc ///
 --   Key
 --     momentIdealMultinomial
