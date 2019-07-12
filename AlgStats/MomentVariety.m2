@@ -541,7 +541,7 @@ formalExp = (f, d) -> (
 )
 
 -- the first 'd' coefficients of the formal power series of the log function
-firmalLog = method()
+formalLog = method()
 formalLog (MethodFunction, ZZ) := MethodFunction => (f, d) -> (
     sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
 )
