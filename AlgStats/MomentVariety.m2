@@ -285,9 +285,8 @@ momentIdealGaussian (ZZ, ZZ) := o -> (mix, d)->(
 	R2 := o.GroundField[mn_1..mn_mix,sd_1..sd_mix,a_1..a_(mix-1),m_0..m_d][t]/t^(d+1);
 	use R2;
     	amix := 1 - sum for i from 1 to mix-1 list a_i;
-
     	series2 := sum for i from 1 to mix-1 list a_i*exp(mn_i*t+(1/2)*sd_i^2*t^2) + amix*exp(mn_mix*t+(1/2)*sd_mix^2*t^2);
-    	I2 := ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
+	I2 := ideal for i from 1 to d list i!*coefficient(t^i,series2)-m_i;
     	I = homogenize(eliminate((for i from 1 to mix-1 list a_i)|(for i from 1 to mix list mn_i)|(for i from 1 to mix list sd_i),I2),m_0);
 	return sub(I, o.GroundField[m_0..m_d])
 	)
@@ -326,11 +325,9 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
 -- shouldn't this return something?? --Orlando
 momentIdealMultiMixture = method(Options => {GroundField => QQ, Mixture => 1})
 momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
-    
     mix := o.Mixture;
     t := symbol t;
     S := o.GroundField[t_1..t_r];
-
     exps := flatten apply(toList(0..d), i->flatten entries basis(i,S) / exponents / flatten);
     quotientExps := flatten entries basis(d+1,S) / exponents / flatten;
     Mons := ideal(apply(quotientExps, e->S_e));
