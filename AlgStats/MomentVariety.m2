@@ -380,13 +380,6 @@ momentIdealFromMGF (ZZ, ZZ, Thing, List) := o -> (mix, d, f, param) -> (
     sub(I, o.GroundField[m_0..m_d])
 )
 
-
---Cumulant ideals
-formalLog = (f, d) -> (
-    sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
-)
-
-
 cumulantIdealGaussian = method()
 cumulantIdealGaussian (ZZ,ZZ) := Ideal => (mix,d) -> (
     mn := symbol mn;
