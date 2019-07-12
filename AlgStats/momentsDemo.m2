@@ -25,7 +25,7 @@ I4 = momentIdealPoisson(2,4)
 I5 = momentIdealMultinomial(3,10,2)
 
 -- Mixture of two such multinomial distributions
-I6 = momentIdealMultiMixture(3,10,2,Mixture => 2)
+I6 = momentIdealMultinomialMixture(3,10,2,Mixture => 2)
 
 -- We can also find relations between the cumulants
 I7 = cumulantIdealGaussian(1,4)
@@ -56,3 +56,5 @@ transpose gens gb I12
 
 -- pass name = "k" as a parameter.
 -- 
+
+

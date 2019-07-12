@@ -323,8 +323,8 @@ momentIdealMultinomial (ZZ, ZZ, ZZ) := o -> (k, n, d) -> (
 
 -- param es a list with the varaibles k and n
 -- shouldn't this return something?? --Orlando
-momentIdealMultiMixture = method(Options => {GroundField => QQ, Mixture => 1})
-momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
+momentIdealMultinomialMixture = method(Options => {GroundField => QQ, Mixture => 1})
+momentIdealMultinomialMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
     mix := o.Mixture;
     t := symbol t;
     S := o.GroundField[t_1..t_r];
@@ -351,7 +351,7 @@ momentIdealMultiMixture (ZZ, ZZ, ZZ) := o -> (r, n, d) -> (
 --n trials, truncation order d
 --doesn't work :( --Orlando
 momentIdealBinomial = method()
-momentIdealBinomial (ZZ, ZZ, ZZ) := Ideal => (n,mix,d) -> momentIdealMultiMixture(2,n,mix,d)
+momentIdealBinomial (ZZ, ZZ, ZZ) := Ideal => (n,mix,d) -> momentIdealMultinomialMixture(2,n,mix,d)
 
 --Moment Ideal from Moment Generating function
 --takes as input the number of mixtures, the highest degree of moments appearing, a list with the MGF and the parameters of this function, and a Ring.
