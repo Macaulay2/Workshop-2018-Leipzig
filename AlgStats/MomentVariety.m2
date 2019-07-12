@@ -386,6 +386,7 @@ formalLog = (f, d) -> (
     sum for k from 1 to d list (-1)^(k-1)/k * (f-1)^k
 )
 
+
 cumulantIdealGaussian = method()
 cumulantIdealGaussian (ZZ,ZZ) := Ideal => (mix,d) -> (
     mn := symbol mn;
