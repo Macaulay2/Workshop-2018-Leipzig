@@ -1,0 +1,47 @@
+Package name: MomentIdeals: M
+
+Documentation: 
+ - Fix the preamble: A
+ - Fix the grammar: J
+
+Wiki/txt file: A
+
+Functions: Replace variety for ideal --> Uniformize notation: M 
+ - momentIdealDistribution // momentIdealDistributionMixture // cumulantIdealDistribution // momentIdealToCumulantIdeal
+ - Add local dirac functions: A
+ - Variables:
+    + moments: m
+    + cumulants: k
+    + Number of moments: From 0 to d
+    + 
+
+Paper: A
+
+Tests:
+- Standard test for one distribution (Gaussian distr): J (Then we'll use as a template for the other distributions)
+
+    "gaussianMoments": J
+    "momentIdealExponential": Or
+    "momentIdealGaussian": J
+    "momentMapGaussians": M
+    "momentVarietyGaussians": M
+    "momentIdealPoisson": Ol
+    "momentIdealMultinomial": J
+    "momentIdealMultinomialMixture": J
+    "momentMapGaussiansMixtures": M
+    "momentVarietyGaussiansMixtures": M
+    "formalLog": Or
+    "cumulantIdealGaussian": J
+    "cumulantIdealExponential": Or
+    "cumulantIdealPoisson": Ol
+    "cumulantsToMoments": Or
+    "momentsToCumulants": Or
+    "momentIdealToCumulants": Or
+    "cumulantToMoments": Or
+    "momentIdealToCumulantsMultivariate": Ol
+    "cumulantIdealToMomentsMultivariate": Ol
+    "GroundField": M
+    "Mixture": M
+    Complete the list of functions (and assign them to people): J
+
+
