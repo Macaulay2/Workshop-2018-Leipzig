@@ -797,6 +797,8 @@ doc ///
             loadPackage("Tropical",Configuration=>{"tropicalMax"=>true});
 	    
 	    The main command is @TO tropicalVariety@.
+	    
+	    To use the Polymake commands see the @TO "Polymake interface instructions"@.
 
 ///
 
@@ -1512,6 +1514,27 @@ doc///
 ///	    
 
 
+doc///
+   Key 
+       "Polymake interface instructions"
+   Headline
+       instructions for loading Polymake with this package.
+   Description
+       Text
+       	   The software program Polymake is not distributed with
+       	   Macaulay2, so to use the Polymake commands the user needs
+       	   to install Polymake on their own machine, and tell
+       	   Macaulay2 where to find it.  This is done with the
+       	   Configuration option "polymakeCommand".  The default is
+       	   that this is empty, which means that Polymake options will
+       	   not be used.  To tell the package where your copy of Polymake is installed, use either
+	   loadPackage("Tropical",Configuration=>{"polymakeCommand"=>"YOUR COMMAND"}), or
+	   edit the init-Tropical.m2 file (created after you install the package).
+	   
+	   On a Mac, the default value for YOUR COMMAND is 
+	   /Applications/polymake.app/Contents/MacOS/polymake.start
+	   and the init-Tropical.m2 file is usually in ~/Library/Application Support/Macaulay2.
+///    
 
     	
 ----- TESTS -----
