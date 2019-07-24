@@ -211,6 +211,8 @@ filename<<close;
 	removeFile (filename);
 	if (substring(-4,result)=="true") then return true
 	else if  (substring(-5,result)=="false")  then return false
+	else if (substring(-1,result)=="1") then return true
+	else if (substring(0,result)=="") then return false
 	else return "Polymake throws an error";
 )
 
@@ -1534,6 +1536,10 @@ doc///
 	   On a Mac, the default value for YOUR COMMAND is 
 	   /Applications/polymake.app/Contents/MacOS/polymake.start
 	   and the init-Tropical.m2 file is usually in ~/Library/Application Support/Macaulay2.
+	   
+	   ???put unix instructions here???
+	   
+	   This package should work with Polymake versions > 3.2, and has been tested up to 3.4.
 ///    
 
     	
