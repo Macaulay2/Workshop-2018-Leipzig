@@ -1531,13 +1531,18 @@ doc///
        	   that this is empty, which means that Polymake options will
        	   not be used.  To tell the package where your copy of Polymake is installed, use either
 	   loadPackage("Tropical",Configuration=>{"polymakeCommand"=>"YOUR COMMAND"}), or
-	   edit the init-Tropical.m2 file (created after you install the package).
+	   edit the init-Tropical.m2 file (created after you install the package)
+	   by changing "polymakeCommand" => "", into "polymakeCommand" => "YOUR COMMAND"
 	   
 	   On a Mac, the default value for YOUR COMMAND is 
 	   /Applications/polymake.app/Contents/MacOS/polymake.start
 	   and the init-Tropical.m2 file is usually in ~/Library/Application Support/Macaulay2.
 	   
-	   ???put unix instructions here???
+	   On Unix, the default value for YOUR COMMAND is
+           /usr/bin/polymake
+	   and the init-Tropical.m2 file is usually in ~/.Macaulay2.
+	   If polymake is installed in a nonstandard location, you can
+	   find YOUR COMMAND with the terminal command "which polymake".
 	   
 	   This package should work with Polymake versions > 3.2, and has been tested up to 3.4.
 ///    
