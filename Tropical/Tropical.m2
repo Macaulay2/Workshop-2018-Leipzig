@@ -8,10 +8,10 @@
 
 newPackage(
     	"Tropical",
-	Version => "0.9",
-	Date => "May 2019",
+	Version => "1.0",
+	Date => "July 2019",
 	Authors => {
-   		{Name => "Carlos Amendola", Email => "amendola@math.tu-berlin.de", HomePage=>""},
+   		{Name => "Carlos Amendola", Email => "carlos.amendola@tum.de", HomePage=>""},
 	    	{Name => "Kathlen Kohn", Email => "kathlen.korn@gmail.com", HomePage=>""},
   		{Name => "Sara Lamboglia", Email => "lamboglia@math.uni-frankfurt.de", HomePage=>""},
 	    	{Name => "Diane Maclagan", Email => "D.Maclagan@warwick.ac.uk", HomePage=>"http://homepages.warwick.ac.uk/staff/D.Maclagan/"},
@@ -801,7 +801,17 @@ doc ///
 	    The main command is @TO tropicalVariety@.
 	    
 	    To use the Polymake commands see the @TO "Polymake interface instructions"@.
-
+	    
+        Text
+            @SUBSECTION "Contributors"@
+        Text
+	    The following people have also contributed to the package:
+	Text
+	     @UL {
+	       {HREF("https://users.math.yale.edu/~km995/","Kalina Mincheva")},
+	       {HREF("http://www.math.unibe.ch/ueber_uns/personen/vargas_de_leon_alejandro/index_ger.html","Alejandro Vargas de Leon")},
+	       {HREF("http://www.math.harvard.edu/~cmwang/","Charles Wang")},			       					
+    	     }@
 ///
 
 
