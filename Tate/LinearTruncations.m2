@@ -33,6 +33,7 @@ export {
     }
 
 -- Code here
+needsPackage "Truncations"
 
 multigradedPolynomialRing = method(Options=>
     {CoefficientField=>ZZ/32003,
@@ -384,7 +385,7 @@ Caveat
 SeeAlso
   coarseMultigradedRegularity
 ///
-doc ///pp
+doc ///
 Key
     multigradedPolynomialRing
    (multigradedPolynomialRing,List)

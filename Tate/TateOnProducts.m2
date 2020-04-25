@@ -1,3 +1,4 @@
+
 ///
 restart
 uninstallPackage"TateOnProducts"
@@ -5,6 +6,7 @@ restart
 installPackage("TateOnProducts")--,FileName=>schreyer/Dropbox/SVDComplexes/from-git/TateOnProducts.m2)
 loadPackage("TateOnProducts",Reload=>true)
 viewHelp "TateOnProducts"
+viewHelp res
 peek loadedFiles
 check "TateOnProducts" 
 ///
@@ -19,7 +21,7 @@ newPackage(
 	{ Name => "Frank-Olaf Schreyer", Email => "schreyer@math.uni-sb.de", HomePage => "http://www.math.uni-sb.de/ag/schreyer/" },
 	{ Name => "Michael E. Stillman", Email => "mike@math.cornell.edu",   HomePage => "http://www.math.cornell.edu/People/Faculty/stillman.html" }
 	},
-    DebuggingMode => false
+    DebuggingMode => true
     )
 
 export {
@@ -2238,6 +2240,20 @@ directImageComplex(Ideal,Module,Matrix) := (I,M,phi) -> (
     RphiM)
     
 ///
+(S,E) = productOfProjectiveSpaces{5,2}
+m1 = matrix{{S_0,S_1,S_2},{S_1,S_3,S_4},{S_2,S_4,S_5}}
+m11 = matrix{{S_0,S_1,S_2}}
+m2 = matrix{{S_6,S_7,S_8}}
+m = m1||m2
+m' = m11||m2
+graph = minors(2,m1)+minors(2,m')
+saturate(graph, J*ideal(m11)) == I
+I = minors(2,m)
+J = ideal(m1)*ideal(m2)
+saturate(I,J) == I
+
+///
+///
 kk=ZZ/101    
 R=kk[x_0..x_4]
 m=matrix {{ x_0,x_1,x_3},{x_1,x_2,x_4}}
@@ -2626,7 +2642,6 @@ doc ///
 doc ///
    Key
     composedFunctions
-    (composedFunctions)
    Headline
     composed functions
    Usage
@@ -2650,6 +2665,10 @@ doc ///
       betti P
       LP=bgg P 
       M = (HH^0 LP)**S^{-n}
+     Text
+      We see from the presentation matrix that M is the first syzygy of the maximal ideal
+      of the Cox ring S, and we check this by computing its resolution:
+     Example
       betti res M
       T = tateResolution(M,low,high) 
       cohomologyMatrix(T,low,high)
@@ -5640,3 +5659,13 @@ time    T=tateExtension W; -- 84 seconds
 	T2=T1**E^{a}[sum a];
 	W=beilinsonWindow T2
 time    T=tateExtension W; -- still computing 10 minutes later...
+
+-------------------------------
+--construct a sheaf on P1 x P1 that corresponds to (ideal vars E)^2?
+(S,E) = productOfProjectiveSpaces{1,1}
+U = prune ker vars S
+cohomologyMatrix(U,-high,high)
+tateResolution(U,-high,high)
+res((ideal vars E)^2, LengthLimit =>12)
+
+
