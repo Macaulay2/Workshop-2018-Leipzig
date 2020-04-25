@@ -1,0 +1,271 @@
+\documentclass[11pt]{amsart}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx,epsfig}
+\usepackage{enumerate}
+\usepackage{xypic}
+\usepackage{tikz}
+\usepackage{csquotes}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{times}  
+\usetikzlibrary{calc}
+  \input{xy}
+  \xyoption{all}
+\usepackage{url}
+\usepackage[]{algorithm2e}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\parskip}{0.15cm}
+\setlength{\parindent}{0.5cm}
+
+\DeclareMathOperator{\reg}{reg}
+\DeclareMathOperator{\proj}{proj}
+\DeclareMathOperator{\adj}{adj}
+\DeclareMathOperator{\spec}{spec}
+\DeclareMathOperator{\tor}{Tor}
+\DeclareMathOperator{\Mat}{Mat}
+\DeclareMathOperator{\Ima}{Im}
+\DeclareMathOperator{\Tor}{Tor}
+\DeclareMathOperator{\Z}{\mathbb{Z}}
+\DeclareMathOperator{\N}{\mathbb{N}}
+\DeclareMathOperator{\p}{\mathfrak{p}}
+\DeclareMathOperator{\Stab}{Stab}
+\DeclareMathOperator{\Supp}{ Supp}
+\DeclareMathOperator{\en}{end}
+\DeclareMathOperator{\maxdegree}{maxdegree}
+
+
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{coro}[thm]{Corollary}
+\newtheorem{conjecture}[thm]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{dfn}[thm]{Definition}
+\newtheorem{notation}[thm]{Notation}
+\newtheorem{thmdef}[thm]{Theorem-Definition}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{remdef}[thm]{Remark-Definition}
+\newtheorem{example}[thm]{Example}
+\newtheorem{exercise}[thm]{Exercise}
+\newtheorem{question}[thm]{Question}
+
+\begin{document}
+
+\title[LinearTruncations.m2]{Linear Truncations Package in Macaulay 2} 
+\author{David Eisenbud}
+\address{Mathematical Sciences Research Institute, Berkeley, CA 94720, USA}
+\email{de@msri.org}
+\author{Navid Nemati}
+\address{Institut de Math\'{e}matiques de Jussieu, Sorbonne Universit\'{e}, 4 Place de Jussieu, 75005 Paris, France}
+\email{navid.nemati@imj-prg.fr}
+
+
+\begin{abstract}
+ We introduce a  Macaulay2 package, entitled \textit{linearTruncations}, which computes the multigraded truncations that give linear resolutions.
+\end{abstract}
+
+\maketitle
+\section{Introduction}
+
+Castelnuovo-Mumford regularity is a fundamental invariant in commutative algebra and algebraic geometry. Roughly speaking, it measures the complexity of a module or a sheaf. Let $S$ be a polynomial ring with a standard grading and $M$ be a finitely generated $S$-module. In this case, the two most frequently definitions of Castelnuovo-Mumford regularity are the one in term of graded Betti numbers and the one using vanishing of local cohomology. There is a folklore result that Castelnuovo-Mumford regularity is the smallest number where truncation of the module has a linear resolution. An extension of Castelnuovo-Mumford regularity for a multigraded case was first introduced by Hoffman and Wang in a special case \cite{HoffmanWang}, and later by Maclagen and Smith in \cite{MaclagenSmith} and Botbol and Chardin in \cite{BotbolChardin} in a more general setting. An interesting question is to ask about the relation between Castelnuovo-Mumford regularity of $M$ in the multigraded case and the degrees $\textbf{d}$ where the truncation $M_{\geq \textbf{d}}$ has a linear resolution.  Note that, If $M_{\textbf{d}}$ has a linear resolution so does $M_{\textbf{d}'}$  for all $\textbf{d}'\geq \textbf{d}$. Therefore these multidegrees form a region and we call it \textit{linear truncations}. Also, it is enough to find  minimal generators for the region where the truncation has a linear resolution.
+
+
+
+The first question is to show the linear truncations is a non-empty set.  In  \autoref{Section Theorems} we will answer to this question. Indeed, in  \cite{EisenbudErmanSchreyer}  the authors provide a degree $\textbf{d}$  where $M_{\geq \textbf{d}}$ has a linear resolution. Unfortunately, this degree, in general,  is greater than the generators of a linear truncation region. Moreover, we refine this theorem and give a better bound in the bigraded case in Theorem \autoref{r=2}.
+
+In the last section, we provide some interesting examples and give an answer to some initial questions  that may arise about linear truncations. 
+
+\section{Linear Truncations: \\ $\mathtt{coarseMultigradedRegularity}$ and  $\mathtt{findAllLinearTruncations}$ }\label{Section Theorems}
+Throughout, we shall use the following notations. Let $k$ be a field and $S=k[x_1,\dots ,x_n]$ be a $\Z^r$-graded polynomial ring over $k$. Let $M$ be a finitely generated $S$-module, let $\textbf{d}=(d_1,\dots,d_r)\in \Z^r$, define $\bar{\textbf{d}}=d_1+\cdots +d_r$ to be the total degree of $\textbf{d}$ and  $M_{\geq \textbf{d}}:= \oplus _{\textbf{d}'\geq \textbf{d}} M_{\textbf{d}'}$ is the truncation of $M$ at $\textbf{d}$. 
+ We define the \textit{linear truncations} of $M$ to  be 
+ $$
+ \{ \textbf{d} \in \Z^r \mid M_{\geq \textbf{d}} \,\text{has a linear resolution}\}\subset \Z^r.
+ $$
+As we mentioned before, in \cite{EisenbudErmanSchreyer} the authors proved the linear truncations is a non-empty set.
+ \begin{prop}\cite[Proposition 1.7 ]{EisenbudErmanSchreyer}\label{prop EES}
+ Let $M$ be finitely generated $\Z^r$-graded $S$-module. Suppose $M$ has a finite free multi-homogeneous resolution
+ $$
+ 0\leftarrow M\leftarrow G_0\leftarrow G_1\leftarrow \cdots \leftarrow G_N\leftarrow 0.
+ $$
+ Write $G_k= \oplus S(-a)^{\beta_{k,a}}$ and set $b_i = \max \{ a_i \mid \exists \beta_{k,a}\neq 0 \}$ and $b=(b_1,\dots,b_r)$, then $M_{\geq b}$ has a linear resolution.
+ \end{prop}
+The code $\mathtt{CoarseMultigradedRegularity}$ in the package is implemented to find an element in the linear truncations of a finitely generated module. While $r\geq 3$, this code is implemented by using  proposition \autoref{prop EES}.
+
+  \begin{footnotesize}
+ \begin{verbatim}
+i0 : S= QQ[x,y,z,Degrees=>{{1,0,0},{0,1,0}, {0,0,1}}];
+i1 : I = ideal(x*y*z, x*y^2, y*z^2);
+i2 : M = S^1/I;
+i3 : coarseMultigradedRegularity M
+o3 :  {1, 2, 2}
+\end{verbatim}
+\end{footnotesize}
+In  the above example one can check truncation of $M$ at $(0,0,2), (0,1,1), (1,0,1) $ and $(1,1,0)$ has a linear resolution. 
+
+\subsection*{Bigraded Case} In this part, let $S=k[x_1,\dots,x_n,y_1,\dots,y_m]$ be a polynomial ring and $\deg(x_i)=(1,0)$ and $\deg(y_i)=(0,1)$.   for any $\textbf{d}\in \Z^2$ we have
+$$
+0\rightarrow M_{\geq \textbf{d}} \rightarrow M\rightarrow E\rightarrow 0
+$$
+where $E= M/M_{\geq \textbf{d}}$. The above short exact sequence yields the following long exact sequence on $\Tor$ modules
+$$
+\cdots \rightarrow \Tor_{i+1}^S(M,k)\rightarrow \Tor_{i+1}^S(E,k)\rightarrow 
+\Tor_i^S({M_{\geq \textbf{d}}},k)\rightarrow \Tor_i^S(M,k)\rightarrow \cdots .
+$$
+Therefore, vanishing of $\tor_i^S(M_{\geq \textbf{d}},k)$ in degree $\mu$ deduced by vanishing of $\tor_i^S(M,k)$ and $\tor_{i+1}^S(E)$ in that degree. 
+\begin{dfn}
+Let $M$ be a finitely generated bigraded $S$-module. Define
+\begin{align*}
+b_i^x(M) &:= \max \lbrace p \vert \, \exists \,q \,;\,  \tor_{i}^S(M,k)_{p,q}\neq 0\rbrace = \max \lbrace p \vert \tor_i^S(M, k[y])_{(p,\star)\neq 0}\rbrace\\
+b_i^y(M) &:= \max \lbrace q \vert \, \exists \,p \,;\, \tor_{i}^S(M,k)_{p,q}\neq 0\rbrace= \max \lbrace q \vert \tor_i^S(M, k[x])_{(\star,q)\neq 0}\rbrace.
+\end{align*}
+The partial regularities of $M$ up to $i$-th step are defined as follows:
+$$
+\reg^i _x(M) := \max_{j\leq i} \lbrace b_j^x(M)-j\rbrace, \reg^i_y(M) = \max_{j\leq i}\lbrace b_j^y(M)-j\rbrace
+$$
+and  partial regularities of $M$ are:
+$$
+\reg _x(M) := \max_{j} \lbrace b_j^x(M)-j\rbrace, \reg_y(M) = \max_{j}\lbrace b_j^y(M)-j\rbrace.
+$$
+\end{dfn}
+\begin{thm}\label{r=2}
+Let $S=k[x_1,\dots,x_n,y_1,\dots, y_m]$ be a bigraded polynomial ring and $M$ be a finitely generated bigraded $S$-module.  Let $\textbf{d}\in \Z^2$, if $\bar{\textbf{d}}\geq \reg(M)$ and $ \textbf{d} \geq  (\reg^t_x(M),\reg^t_y(M))$, then  
+$M_{\geq \textbf{d}}$ has a linear resolution for $t$ steps. In particular, truncation of $M$ at $(\reg_x(M),\reg_y(M))$ has a linear resolution.
+\end{thm}
+\begin{proof}
+For simplicity, we replace $M$ with $M(\textbf{d})$ and we show $M_{\geq 0}$ has a linear resolution.
+
+We have $\tor_i^S(M,k)_{(a,b)}=0$ for any $a>0$ or $b> 0$ and $i\leq t$. Hence, it is suffices to show $\tor_{i+1}^S(E,k)_{(a,b)} =0 $ if $a+b\geq i+1$. Note that, $\Tor^S_{\star}(E,k)$ can be computed by the homologies of the Koszul complex $\textbf{K}_{\bullet}((\textbf{x},\textbf{y}),E )$, where $\textbf{x}= (x_1,\dots,x_n)$ and $\textbf{y}= (y_1,\dots, y_m)$. On the other hand, homologies of $\textbf{K}_{\bullet}((\textbf{x},\textbf{y}),E )$ is the total homologies of the double Koszul complex $(\textbf{K}_{\bullet,\bullet}(\textbf{x};\textbf{y},E )$. Therefore,
+\begin{align*}
+\tor_{i+1}^S(E,k)_{(a,b)}&\cong H_{i+1}\textbf{K}_{\bullet}((\textbf{x},\textbf{y}),E )_{(a,b)}\\
+&\cong H_{i+1}(\textbf{Tot}(\textbf{K}_{\bullet,\bullet}(\textbf{x};\textbf{y},E))_{(a,b)}.
+\end{align*}
+ In the spectral sequence, $\textbf{K}_{p,q}(\textbf{x};\textbf{y},E)_{(a,b)}\cong E(a-p,b-q)^{\binom{n}{p}\binom{m}{q}}$. Let 
+ $$
+ z\in Z_{i+1}(\textbf{Tot}(\textbf{K}_{\bullet,\bullet}(\textbf{x};\textbf{y},E))_{(a,b)}\subseteq  \oplus_{p+q=i+1}\textbf{K}_{p,q}(\textbf{x};\textbf{y},E)_{(a,b)}
+ $$
+  be a cycle. Decompose $z$ into  $z=z_1\oplus z_2$, where $ z_1\in \oplus_{
+ p>a} \textbf{K}_{p,q}(\textbf{x};\textbf{y},E)_{(a,b)}$,$ z_2\in \oplus_{
+ q>b} \textbf{K}_{p,q}(\textbf{x};\textbf{y},E)_{(a,b)}$ and $p+q=i+1$.
+It is suffices to show  
+$$
+ z_1\oplus z_2 \in B_{i+1}(\textbf{Tot}(\textbf{K}_{\bullet,\bullet}(\textbf{x};\textbf{y},E)))_{(a,b)}.
+ $$
+Truncate $\textbf{K}_{p,q}$ where $p>a$ and denote it by $(\textbf{K}_{\bullet,\bullet}^{p>a})$ and denote the total complex by $(\textbf{K}^{p>a}_{\bullet}, \partial^{p>a})$. Note that
+$$
+\textbf{K}_{\bullet,\bullet}^{p>a}(\textbf{x};\textbf{y},E)_{(a,b)}\cong \textbf{K}_{\bullet,\bullet}^{p>a}(\textbf{x};\textbf{y},M)_{(a,b)}
+$$
+Denote  the corresponding spectral sequence to $\textbf{K}_{\bullet,\bullet}^{p>a}(\textbf{x};\textbf{y},E)_{(a,b)}$ by $\mathcal{E}$, therefore
+$ \mathcal{E}^1_{p,q}= 0$ for $p\leq a$ and if $p>a$ then 
+$$
+{\mathcal{E}^1_{p,q}}_{(a,b)}\cong \tor_q^S(M, k[\textbf{x}])_{(a-p,b)}^{\binom{n}{p}}.
+$$
+In particular, $(\mathcal{E}^1_{p,q})_{(a,b)}=0$ if  $b-q> b^y_q(M)-q$. This holds as $b-q>\reg^q_y(M)$. Indeed, $q\leq i$ since $p\geq 1$ and $b>q$ as $p+q\leq a+b$.
+%\begin{align}
+%H_{i+1}(\textbf{Tot}(\textbf{K}_{\bullet,\bullet}^{p>a}(E, \textbf{x};\textbf{y})))_{(a,b)} &\cong \oplus_{p>a} (\Tor^{k[\textbf{y}]}_{i+1-p}(M_{(a,\star)},k)(-p))_{(a,b)}\nonumber\\
+% &\cong \oplus_{i+1-p}  \Tor^{k[\textbf{y}]}_{i+1-p}(M_{(a-p,\star)}, k)_{(a-p,b)}\nonumber\\
+% &\cong 0 \qquad\label{equation}
+%\end{align}
+%The \ref{equation} follows from Lemma \ref{Lemma1} and $q-b\geq \reg_y(M)$.
+
+Hence there exists $c_1\in \textbf{K}^{p>a}_{i+2}(\textbf{x};\textbf{y},E)_{(a,b)}$ such that $\partial^{p>a}(c_1)= z_1$. Write $c_1= \oplus_{p>a}c_{p,i+2-p} $
+$$
+\partial(c_1)= \partial^{p>a}(c_1)+ \partial^x(c_{a+1,i+1-a})
+$$
+$\partial^x(c_{a+1,i+1-a})\in \textbf{K}_{a, i+1-a}(\textbf{x};\textbf{y},E)_{(a,b)}\cong {E_{(0, a+b-(i+1))}}^{\binom{n}{a}\binom{m}{i+1-a}}=0$ since $a+b\geq i+1$. The argument for $z_2$ is the same.
+\end{proof}
+\begin{rem}
+The assumption $\bar{\textbf{d}}\geq \reg M$ is necessary for the Theorem \ref{r=2}. Let $S=k[x_1,y_1,y_2]$ and $I= (x_1^2y_1, x_1y_2^2)$, $\reg (S/I)=3$. The partial regularities of $S/I$ is $(1,1)$, but one can see the truncation of $M$ at $(1,1)$ does not have a linear resolution.
+\end{rem}
+Proposition \autoref{prop EES} and Theorem \autoref{r=2} give a single degree in the linear truncations of $M$ . In general, this degree could be far from the minimal generators. Because of that, we implemented $\mathtt{findAllLinearTruncation}$, which is useful to find all minimal generators of linear truncations of $M$.
+
+
+\begin{algorithm}[H]
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+ \Input{A module $M$ and a range $(a,b)$}
+ \Output{Minimal generators of linear truncation with total degree between $a$ and $b$}
+ $A,L:= \emptyset \subset \Z^r$\;
+ \While{$a\leq i\leq b$}{
+ \For {all $d\in \Z^r$ with $\bar{d}=i$} {  
+  \If{$d\notin L$ and $M_{\geq d}$ has a linear resolution }{
+ $L:= L\cup  (d+\Z^r)$ \;
+	$A:= A\cup \{d\}$\;
+   }
+ }
+ }
+ \Return { $A$.}
+ \caption{Algorithm for implementing $\mathtt{findAllLinearTruncation}$}
+\end{algorithm}
+\section{Some Examples}
+In this section, we provide some interesting examples.  In the following example ,the minimal generators of linear truncations have two different total degrees. 
+  \begin{footnotesize}
+ \begin{verbatim}
+i0 : S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}];
+i1 : I = ideal(x_1*x_4*x_6,x_1*x_3^2,x_3^2*x_4*x_5,x_2^2*x_5^2,x_1*x_4^2*x_5,x_1*x_2^2*x_4);
+i2 : M = S^1/I;
+i3 : c = coarseMultigradedRegularity M
+o3 = {3, 4, 2}
+i4 : findAllLinearTruncations({regularity M, sum coarseMultigradedRegularity M}, M)
+o4 = {{2, 2, 1}, {1, 3, 2}}
+\end{verbatim}
+\end{footnotesize}
+\begin{question}
+Let $S=k[x_1,\dots, x_n]$ be polynomial ring and $M$ be a finitely generated $S$-module. Is it possible for a degree $\textbf{d}$ where $\bar{\textbf{d}}<\reg(M)$ to be in a linear truncations of $M$?
+\end{question}
+The answer to this question is yes.  Let $M$ be an Artinian module, the regularity of $M$ is equal to the maximum degree of the socle elements. On the other hand, truncating at each socle element has a linear resolution. Hence, it is possible to find that $\textbf{d}$ if the two socle elements of $M$ have different degrees.  Here is a simple example: 
+\begin{footnotesize}
+ \begin{verbatim}
+i0 : S = QQ[x,y,Degrees=>{{1,0},{0,1}}];
+i1 : I = ideal(x^3, x*y,y^7 );
+i2 : M = S^1/I;
+i3 : regularity M
+o3 = 6
+i4 : isLinearComplex (res truncate({2,0},M))
+o4 = true
+\end{verbatim}
+\end{footnotesize}
+Since $M$ is an Artinian module, it is are not very interesting in the algebraic geometry's point of view. 
+Moreover, there is an interesting example  by studying $96$ generic points in $\mathbb{P}^2\times \mathbb{P}^2$.
+\begin{footnotesize}
+ \begin{verbatim}
+i0 : S = QQ[x_0,x_1,x_2,y_0,y_1,y_2,Degrees=>{{1,0},{1,0},{1,0},{0,1},{0,1},{0,1}}];
+i1 : I = ideal(x_0^2*y_0^2,x_1^2*y_1^2,x_2^2*y_2^2,(x_0+x_1+x_2)^2*(y_0+y_1+y_2)^2);
+i2 : B = intersect(ideal(x_0,x_1,x_2), ideal(y_0, y_1,y_2));
+i3 : J = saturate (I,B);
+i4 : M = S^1/J;
+i5 : regularity M
+o5 = 11
+i6 : findAllLinearTruncations({0,11},M)
+o6 = {{2, 6}, {6, 2}}
+\end{verbatim}
+\end{footnotesize}
+This example is also interesting because the minimal generators of the linear truncations of $M$ is not a convex set. In addition, if we look at the bigraded Hilbert function of $M$:
+\begin{footnotesize}
+ \begin{verbatim}
+i7 :  matrix for i to 10 list for j to 10 list hilbertFunction({j,i},M)
+o7 = | 1  3  6  10 15 21 24 24 24 |
+     | 3  9  18 30 45 63 72 72 72 |
+     | 6  18 32 48 66 86 96 96 96 |
+     | 10 30 48 64 78 90 96 96 96 |
+     | 15 45 66 78 87 93 96 96 96 |
+     | 21 63 86 90 93 95 96 96 96 |
+     | 24 72 96 96 96 96 96 96 96 |
+     | 24 72 96 96 96 96 96 96 96 |
+     | 24 72 96 96 96 96 96 96 96 |
+\end{verbatim}
+\end{footnotesize}
+and applying Proposition 6.7 in \cite{MaclagenSmith}, the multigraded regularity and linear truncations in this example are the same.
+
+
+\section{Acknowledgment}
+The authors thanks the organizers and of the Macaulay2 workshop June 2018 in Leipzig during which the algorithms were first implemented. The second author would like to thank Marc Chardin for his useful comments.
+
+
+\bibliographystyle{alpha}
+\bibliography{bib.bib}
+
+\end{document}  
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
