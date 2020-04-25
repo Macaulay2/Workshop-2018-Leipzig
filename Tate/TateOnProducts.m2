@@ -1,5 +1,4 @@
-
-///
+-*
 restart
 uninstallPackage"TateOnProducts"
 restart
@@ -9,7 +8,7 @@ viewHelp "TateOnProducts"
 viewHelp res
 peek loadedFiles
 check "TateOnProducts" 
-///
+*-
 newPackage(
     "TateOnProducts",
     Version => "1.0",
@@ -1094,7 +1093,7 @@ isMinimalChainComplex = C -> (
     )
 
 
-{*
+-*
 minimize = method (
     Options => {Check => false}
     )
@@ -1133,7 +1132,7 @@ minimize ChainComplex := o -> E ->(
     E'.cache.pruningMap = m[-min E];
     E'
     )
-*}
+*-
 isExact=method()
 isExact(ChainComplex):=(C) -> (
    if (all((min C,max C), i -> (prune HH_i(C) == 0))) then true else false
@@ -1145,14 +1144,14 @@ isQuism(ChainComplexMap):=(phi) -> (
 )
 
 
-///
+-*
 restart
 loadPackage "TateOnProducts"
 S=ZZ/101[x_0..x_2]
 m=random(S^{1,0},S^{0,-1})
 C=chainComplex{m}
 target minimize C
-///
+*-
 
 -----------------------------------------------
 -- Beilinson monads, Tate extensions         --
@@ -1216,7 +1215,7 @@ pushAboveWindow1 Module := Matrix => M -> (
     then powers(v-D,irrList)**E^{ -D} else id_(E^{ -D}))
     )
 
-TEST///
+TEST ///
 debug TateOnProducts
 (S,E) = productOfProjectiveSpaces {1,2}
 (t,v,n,varsLists,irrList) = ringData E
@@ -1233,11 +1232,11 @@ pushAboveWindow Matrix := Matrix =>A ->(
     mingens image (A*pushAboveWindow source A)
     )
 
-///
+-*
 (S,E) = productOfProjectiveSpaces {1,2}
 A=matrix{{E_0,E_2}}
 pushAboveWindow A
-///
+*-
 
 pushAboveWindow(Matrix,Matrix) := (A,B) ->(
     --A is already correct, B is a matrix of syzygies.
@@ -1297,7 +1296,7 @@ pushAboveWindow ChainComplex := ChainComplex => C -> (
     chainComplexFromData(min C', M)
     )
 
-TEST///
+TEST ///
 debug TateOnProducts
         n={1,1};
         (S,E) = productOfProjectiveSpaces n;
@@ -1355,7 +1354,7 @@ continueComplex ChainComplex := o->C ->(
     D
     )
 
-TEST///
+TEST ///
 debug TateOnProducts
 n={1,1};
 (S,E) = productOfProjectiveSpaces n;
@@ -4469,7 +4468,7 @@ doc ///
        and the morphism f: X -> P^1 onto the base.
        f is defined by ratio of the two rows of m, hence by the 3x2 matrix phi=m^t.
        
-       As a module N we take a symmetric power of the cokernel m, twisted by R^{d}.
+       As a module N we take a symmetric power of the cokernel m, twisted by R^{\{d\}}.
      Example
        kk=ZZ/101    
        R=kk[x_0..x_4]
@@ -4499,7 +4498,8 @@ doc ///
        saturate annihilator coker transpose sR0Dual
        dual source sR0Dual       
      Text
-       We conclude that the sheaf represented by R0 is O(-4)+O(-5) on P^1. 
+       We conclude that the sheaf represented by R0 is O(5)+O(4) on P^1, which is correct
+       because N represents phi^*O(1) and phi_* O_X(H) = O(2)+O(1). 
   Caveat
      Note that the resulting complex is a chain complex instead of a cochain complex,
      so that for example HH^i RpiM = HH_{-i} RpiM.
@@ -4799,7 +4799,7 @@ doc ///
 ------------------------------------
 -----TESTS-----
 ------------------------------------
-TEST///
+TEST ///
 S = ZZ/32003[a,b, Degrees =>{{1,0},{0,1}}]
 M = S^{{1,0},{0,1}}
 M' = S^{{0,1},{1,0}}
@@ -4809,7 +4809,7 @@ assert(isIsomorphic(M,M') ===true)
 assert(isIsomorphic(A,B) ===false)
 ///
 
-TEST///
+TEST ///
 (S,E) = productOfProjectiveSpaces{1,2}
 P = prune truncate({1,2},E^1)
 L = bgg P
@@ -5092,7 +5092,7 @@ betti F
 cohomologyMatrix(Fm,deg-{5,5},deg+{1,1})
 ///
 
-TEST///
+TEST ///
 --error"we don't know what this should be testing. Note that 'corner'
 --no longer exists"
 
