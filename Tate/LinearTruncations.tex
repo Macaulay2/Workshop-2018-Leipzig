@@ -135,6 +135,23 @@ $$
 Let $S=k[x_1,\dots,x_n,y_1,\dots, y_m]$ be a bigraded polynomial ring and $M$ be a finitely generated bigraded $S$-module.  Let $\textbf{d}\in \Z^2$, if $\bar{\textbf{d}}\geq \reg(M)$ and $ \textbf{d} \geq  (\reg^t_x(M),\reg^t_y(M))$, then  
 $M_{\geq \textbf{d}}$ has a linear resolution for $t$ steps. In particular, truncation of $M$ at $(\reg_x(M),\reg_y(M))$ has a linear resolution.
 \end{thm}
+
+\begin{example}
+ Herre is a counterexample to Theorem 2.3 in $\Z^r$-graded case. 
+\begin{align*}
+S =  \mathbb Q[x_0,x_1,y_0,y_1,z_0,z_1 ,&Degrees=>\{\{1,0,0\},\{1,0,0\},\{0,1,0\},\{0,1,0\},\{0,0,1\},\{0,0,1\}\}]\\
+ I = {\rm ideal}(&x_0*x_1*y_0*z_0^2, x_1^2*y_0^2*y_1^2*z_0^2, x_0^3*y_0*z_1, x_0^2*x_1*y_1*z_0*z_1,\\
+ &x_0*x_1^2*y_1^2*z_0^3, x_1^3*y_0^2*y_1*z_1^2)
+\end{align*}
+Partial regularities $(S^1/I)= \{4,3,2\}$ and  $\reg(S/I)=9$, but the truncation at $\{4,3,2\}$ doesn?t have a linear resolution. In general, we need more conditions than that the total degree of the partial regularities $\geq reg$.   In fact, each pair should satisfy the same condition.
+ 
+ For instance, in the above example, $\{3,4,4\}$ is the degree of a generator of $F_2$ in the minimal free resolution. Now just by looking at degrees of $y$ and $z$ we have  $\reg_\{y, z\}>= 4+4-2=6$ ( I mean, the same definition
+ as regularity but without looking at the first degree).  On the other hand 
+ $\reg_y+\reg_z= 3+2=5 < \reg_\{y, z\}.$   In all the counter-examples that I have computed, the same phenomenon happened.
+
+ For finding all the linear truncations, in the above example, we can see it is \emph{not} enough to look at all the point with total degree $\leq 9$.
+\end{example}
+
 \begin{proof}
 For simplicity, we replace $M$ with $M(\textbf{d})$ and we show $M_{\geq 0}$ has a linear resolution.
 
