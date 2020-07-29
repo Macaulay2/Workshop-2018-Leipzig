@@ -57,7 +57,7 @@
 
 \title[LinearTruncations.m2]{Linear Truncations Package in Macaulay 2} 
 \author{David Eisenbud}
-\address{Mathematical Sciences Research Institute, Berkeley, CA 94720, USA}
+\address{Department of Mathematics, University of California at Berkeley and the Mathematical Sciences Research Institute, Berkeley, CA 94720, USA}
 \email{de@msri.org}
 \author{Navid Nemati}
 \address{Institut de Math\'{e}matiques de Jussieu, Sorbonne Universit\'{e}, 4 Place de Jussieu, 75005 Paris, France}
@@ -71,40 +71,40 @@
 \maketitle
 \section{Introduction}
 
-Castelnuovo-Mumford regularity is a fundamental invariant in commutative algebra and algebraic geometry. Roughly speaking, it measures the complexity of a module or a sheaf. Let $S$ be a polynomial ring with a standard grading and $M$ be a finitely generated $S$-module. In this case, the two most frequently definitions of Castelnuovo-Mumford regularity are the one in term of graded Betti numbers and the one using vanishing of local cohomology. There is a folklore result that Castelnuovo-Mumford regularity is the smallest number where truncation of the module has a linear resolution. An extension of Castelnuovo-Mumford regularity for a multigraded case was first introduced by Hoffman and Wang in a special case \cite{HoffmanWang}, and later by Maclagen and Smith in \cite{MaclagenSmith} and Botbol and Chardin in \cite{BotbolChardin} in a more general setting. An interesting question is to ask about the relation between Castelnuovo-Mumford regularity of $M$ in the multigraded case and the degrees $\textbf{d}$ where the truncation $M_{\geq \textbf{d}}$ has a linear resolution.  Note that, If $M_{\textbf{d}}$ has a linear resolution so does $M_{\textbf{d}'}$  for all $\textbf{d}'\geq \textbf{d}$. Therefore these multidegrees form a region and we call it \textit{linear truncations}. Also, it is enough to find  minimal generators for the region where the truncation has a linear resolution.
+\noindent Castelnuovo-Mumford regularity is a fundamental invariant in commutative algebra and algebraic geometry. Roughly speaking, it measures the complexity of a module or a sheaf. Let $S$ be a polynomial ring with a standard grading and $M$ be a finitely generated $S$-module. In this case, the two most frequently definitions of Castelnuovo-Mumford regularity are the one in terms of graded Betti numbers and the one using vanishing of local cohomology. It is proved in \cite{EisenbudGoto} that Castelnuovo-Mumford regularity is the smallest number where the truncation of the module has a linear resolution. An extension of Castelnuovo-Mumford regularity for a multigraded case was first introduced by Hoffman and Wang in a special case \cite{HoffmanWang}, and later by Maclagen and Smith \cite{MaclagenSmith} and Botbol and Chardin in a more general setting \cite{BotbolChardin}. An interesting question is to ask about the relation between Castelnuovo-Mumford regularity of $M$ in the multigraded case and the degrees $\textbf{d}$ where the truncation $M_{\geq \textbf{d}}$ has a linear resolution.  Note that, If $M_{\textbf{d}}$ has a linear resolution (as a standard graded module) so does $M_{\textbf{d}'}$  for all $\textbf{d}'\geq \textbf{d}$. Therefore these multidegrees form a region and we call it \textit{linear truncations}. Also, it is enough to find  minimal generators for the region where the truncation has a linear resolution.
 
 
 
-The first question is to show the linear truncations is a non-empty set.  In  \autoref{Section Theorems} we will answer to this question. Indeed, in  \cite{EisenbudErmanSchreyer}  the authors provide a degree $\textbf{d}$  where $M_{\geq \textbf{d}}$ has a linear resolution. Unfortunately, this degree, in general,  is greater than the generators of a linear truncation region. Moreover, we refine this theorem and give a better bound in the bigraded case in Theorem \autoref{r=2}.
+The first question is to show the linear truncations is a non-empty set.  In  \autoref{Section Theorems} we will answer to this question. Indeed, in  \cite{EisenbudErmanSchreyer}  the authors provide a degree $\textbf{d}$  where $M_{\geq \textbf{d}}$ has a linear resolution. Unfortunately, this degree, in general,  is greater than the generators of the linear truncations. Moreover, we refine this theorem and give a better bound in the bigraded case in Theorem \autoref{r=2}. By using these two results, we describe the main code in this package $(\mathtt{findAllLinearTruncations}$) which finds all the generators of the linear truncations. 
 
 In the last section, we provide some interesting examples and give an answer to some initial questions  that may arise about linear truncations. 
 
 \section{Linear Truncations: \\ $\mathtt{coarseMultigradedRegularity}$ and  $\mathtt{findAllLinearTruncations}$ }\label{Section Theorems}
-Throughout, we shall use the following notations. Let $k$ be a field and $S=k[x_1,\dots ,x_n]$ be a $\Z^r$-graded polynomial ring over $k$. Let $M$ be a finitely generated $S$-module, let $\textbf{d}=(d_1,\dots,d_r)\in \Z^r$, define $\bar{\textbf{d}}=d_1+\cdots +d_r$ to be the total degree of $\textbf{d}$ and  $M_{\geq \textbf{d}}:= \oplus _{\textbf{d}'\geq \textbf{d}} M_{\textbf{d}'}$ is the truncation of $M$ at $\textbf{d}$. 
+\noindent Throughout, we shall use the following notations. Let $k$ be a field and $S=k[x_1,\dots ,x_n]$ be a $\Z^r$-graded polynomial ring over $k$. Let $M$ be a finitely generated $S$-module, let $\textbf{d}=(d_1,\dots,d_r)\in \Z^r$, define $\bar{\textbf{d}}=d_1+\cdots +d_r$ to be the total degree of $\textbf{d}$ and  $M_{\geq \textbf{d}}:= \oplus _{\textbf{d}'\geq \textbf{d}} M_{\textbf{d}'}$ is the truncation of $M$ at $\textbf{d}$. 
  We define the \textit{linear truncations} of $M$ to  be 
  $$
  \{ \textbf{d} \in \Z^r \mid M_{\geq \textbf{d}} \,\text{has a linear resolution}\}\subset \Z^r.
  $$
-As we mentioned before, in \cite{EisenbudErmanSchreyer} the authors proved the linear truncations is a non-empty set.
+As we mentioned before, in \cite{EisenbudErmanSchreyer} the authors proved that the linear truncations is a non-empty set.
  \begin{prop}\cite[Proposition 1.7 ]{EisenbudErmanSchreyer}\label{prop EES}
  Let $M$ be finitely generated $\Z^r$-graded $S$-module. Suppose $M$ has a finite free multi-homogeneous resolution
  $$
  0\leftarrow M\leftarrow G_0\leftarrow G_1\leftarrow \cdots \leftarrow G_N\leftarrow 0.
  $$
- Write $G_k= \oplus S(-a)^{\beta_{k,a}}$ and set $b_i = \max \{ a_i \mid \exists \beta_{k,a}\neq 0 \}$ and $b=(b_1,\dots,b_r)$, then $M_{\geq b}$ has a linear resolution.
+ Write $G_k= \oplus S(-\textbf{a})^{\beta_{k,\textbf{a}}}$ and set $b_i = \max \{ a_i \mid \exists \beta_{k,\textbf{a}}\neq 0 \}$ and $\textbf{b}=(b_1,\dots,b_r)$, then $M_{\geq \textbf{b}}$ has a linear resolution.
  \end{prop}
-The code $\mathtt{CoarseMultigradedRegularity}$ in the package is implemented to find an element in the linear truncations of a finitely generated module. While $r\geq 3$, this code is implemented by using  proposition \autoref{prop EES}.
+The code $\mathtt{CoarseMultigradedRegularity}$ in the package is implemented to find an element in the linear truncations of a finitely generated module. While $r\geq 3$, this code is implemented by using  Proposition \autoref{prop EES}.
 
   \begin{footnotesize}
  \begin{verbatim}
-i0 : S= QQ[x,y,z,Degrees=>{{1,0,0},{0,1,0}, {0,0,1}}];
-i1 : I = ideal(x*y*z, x*y^2, y*z^2);
-i2 : M = S^1/I;
+i0 : S=QQ[x,y,z,Degrees=>{{1,0,0},{0,1,0},{0,0,1}}];
+i1 : I=ideal(x*y*z, x*y^2, y*z^2);
+i2 : M=S^1/I;
 i3 : coarseMultigradedRegularity M
-o3 :  {1, 2, 2}
+o3 : {1, 2, 2}
 \end{verbatim}
 \end{footnotesize}
-In  the above example one can check truncation of $M$ at $(0,0,2), (0,1,1), (1,0,1) $ and $(1,1,0)$ has a linear resolution. 
+In  the above example one can check that truncation of $M$ at $(0,0,2), (0,1,1), (1,0,1) $ and $(1,1,0)$ has a linear resolution. 
 
 \subsection*{Bigraded Case} In this part, let $S=k[x_1,\dots,x_n,y_1,\dots,y_m]$ be a polynomial ring and $\deg(x_i)=(1,0)$ and $\deg(y_i)=(0,1)$.   for any $\textbf{d}\in \Z^2$ we have
 $$
@@ -115,7 +115,7 @@ $$
 \cdots \rightarrow \Tor_{i+1}^S(M,k)\rightarrow \Tor_{i+1}^S(E,k)\rightarrow 
 \Tor_i^S({M_{\geq \textbf{d}}},k)\rightarrow \Tor_i^S(M,k)\rightarrow \cdots .
 $$
-Therefore, vanishing of $\tor_i^S(M_{\geq \textbf{d}},k)$ in degree $\mu$ deduced by vanishing of $\tor_i^S(M,k)$ and $\tor_{i+1}^S(E)$ in that degree. 
+Therefore, vanishing of $\tor_i^S(M_{\geq \textbf{d}},k)$ in degree $\mu$ is deduced by vanishing of $\tor_i^S(M,k)$ and $\tor_{i+1}^S(E)$ in that degree. 
 \begin{dfn}
 Let $M$ be a finitely generated bigraded $S$-module. Define
 \begin{align*}
@@ -126,7 +126,7 @@ The partial regularities of $M$ up to $i$-th step are defined as follows:
 $$
 \reg^i _x(M) := \max_{j\leq i} \lbrace b_j^x(M)-j\rbrace, \reg^i_y(M) = \max_{j\leq i}\lbrace b_j^y(M)-j\rbrace
 $$
-and  partial regularities of $M$ are:
+and  the partial regularities of $M$ are:
 $$
 \reg _x(M) := \max_{j} \lbrace b_j^x(M)-j\rbrace, \reg_y(M) = \max_{j}\lbrace b_j^y(M)-j\rbrace.
 $$
@@ -136,21 +136,6 @@ Let $S=k[x_1,\dots,x_n,y_1,\dots, y_m]$ be a bigraded polynomial ring and $M$ be
 $M_{\geq \textbf{d}}$ has a linear resolution for $t$ steps. In particular, truncation of $M$ at $(\reg_x(M),\reg_y(M))$ has a linear resolution.
 \end{thm}
 
-\begin{example}
- Herre is a counterexample to Theorem 2.3 in $\Z^r$-graded case. 
-\begin{align*}
-S =  \mathbb Q[x_0,x_1,y_0,y_1,z_0,z_1 ,&Degrees=>\{\{1,0,0\},\{1,0,0\},\{0,1,0\},\{0,1,0\},\{0,0,1\},\{0,0,1\}\}]\\
- I = {\rm ideal}(&x_0*x_1*y_0*z_0^2, x_1^2*y_0^2*y_1^2*z_0^2, x_0^3*y_0*z_1, x_0^2*x_1*y_1*z_0*z_1,\\
- &x_0*x_1^2*y_1^2*z_0^3, x_1^3*y_0^2*y_1*z_1^2)
-\end{align*}
-Partial regularities $(S^1/I)= \{4,3,2\}$ and  $\reg(S/I)=9$, but the truncation at $\{4,3,2\}$ doesn?t have a linear resolution. In general, we need more conditions than that the total degree of the partial regularities $\geq reg$.   In fact, each pair should satisfy the same condition.
- 
- For instance, in the above example, $\{3,4,4\}$ is the degree of a generator of $F_2$ in the minimal free resolution. Now just by looking at degrees of $y$ and $z$ we have  $\reg_\{y, z\}>= 4+4-2=6$ ( I mean, the same definition
- as regularity but without looking at the first degree).  On the other hand 
- $\reg_y+\reg_z= 3+2=5 < \reg_\{y, z\}.$   In all the counter-examples that I have computed, the same phenomenon happened.
-
- For finding all the linear truncations, in the above example, we can see it is \emph{not} enough to look at all the point with total degree $\leq 9$.
-\end{example}
 
 \begin{proof}
 For simplicity, we replace $M$ with $M(\textbf{d})$ and we show $M_{\geq 0}$ has a linear resolution.
@@ -194,10 +179,24 @@ $$
 $$
 $\partial^x(c_{a+1,i+1-a})\in \textbf{K}_{a, i+1-a}(\textbf{x};\textbf{y},E)_{(a,b)}\cong {E_{(0, a+b-(i+1))}}^{\binom{n}{a}\binom{m}{i+1-a}}=0$ since $a+b\geq i+1$. The argument for $z_2$ is the same.
 \end{proof}
-\begin{rem}
-The assumption $\bar{\textbf{d}}\geq \reg M$ is necessary for the Theorem \ref{r=2}. Let $S=k[x_1,y_1,y_2]$ and $I= (x_1^2y_1, x_1y_2^2)$, $\reg (S/I)=3$. The partial regularities of $S/I$ is $(1,1)$, but one can see the truncation of $M$ at $(1,1)$ does not have a linear resolution.
-\end{rem}
-Proposition \autoref{prop EES} and Theorem \autoref{r=2} give a single degree in the linear truncations of $M$ . In general, this degree could be far from the minimal generators. Because of that, we implemented $\mathtt{findAllLinearTruncation}$, which is useful to find all minimal generators of linear truncations of $M$.
+In the following examples we show that the assumptions in Theorem \ref{r=2} are necessary.
+\begin{example}
+Theorem \autoref{r=2} is no more true if we have more sets of variables. Let $ S = k[x_1,x_2,y_1,y_2,z_1,z_2]$ be a $\mathbb{Z}^3$-graded polynomial ring where $\deg(x_i)=(1,0,0), \deg(y_i)= (0,1,0)$ and $\deg(z_i)=(0,0,1)$ for $i=0,1$, and 
+  $$I = (x_1x_2y_1z_1^2, x_2^2y_1^2y_2^2z_1^2, x_1^3y_1z_2, x_1^2x_2y_2z_1z_2,
+ x_1x_2^2y_2^2z_1^3, x_2^3y_1^2y_2z_2^2).
+ $$
+Although $\{4,3,2\}$ is equal to the partial regularities of $S/I$ and its total degree is greater than  $\reg(S/I)=9$, the truncation of $S/I$ at $(4,3,2)$ does not have a linear resolution. 
+
+% For instance, in the above example, $\{3,4,4\}$ is the degree of a generator of $F_2$ in the minimal free resolution. Now just by looking at degrees of $y$ and $z$ we have  $\reg_\{y, z\}>= 4+4-2=6$ ( I mean, the same definition as regularity but without looking at the first degree).  On the other hand  $\reg_y+\reg_z= 3+2=5 < \reg_\{y, z\}.$   In all the counter-examples that I have computed, the same phenomenon happened.
+
+% For finding all the linear truncations, in the above example, we can see it is \emph{not} enough to look at all the point with total degree $\leq 9$.
+\end{example}
+\begin{example}
+Let $S=k[x_1,y_1,y_2]$, and $I= (x_1^2y_1, x_1y_2^2)$. The partial regularities of $S/I$ is $\{1,1\}$ which its total degree is smaller than $\reg (S/I)=3$.  One can see that the truncation of $S/I$ at $(1,1)$ does not have a linear resolution. Hence the assumption $\bar{\textbf{d}}\geq \reg(S/I)$ is necessary in Theorem \autoref{r=2}.
+
+\end{example}
+
+Proposition \autoref{prop EES} and Theorem \autoref{r=2} give a single degree in the linear truncations of $M$ . In general, this degree could be far from the minimal generators. Because of that, we implemented $\mathtt{findAllLinearTruncation}$, which is useful to find all the minimal generators of linear truncations of $M$.
 
 
 \begin{algorithm}[H]
@@ -208,7 +207,7 @@ Proposition \autoref{prop EES} and Theorem \autoref{r=2} give a single degree in
  \While{$a\leq i\leq b$}{
  \For {all $d\in \Z^r$ with $\bar{d}=i$} {  
   \If{$d\notin L$ and $M_{\geq d}$ has a linear resolution }{
- $L:= L\cup  (d+\Z^r)$ \;
+ $L:= L\cup  (d+\Z^r)$\;
 	$A:= A\cup \{d\}$\;
    }
  }
@@ -217,22 +216,22 @@ Proposition \autoref{prop EES} and Theorem \autoref{r=2} give a single degree in
  \caption{Algorithm for implementing $\mathtt{findAllLinearTruncation}$}
 \end{algorithm}
 \section{Some Examples}
-In this section, we provide some interesting examples.  In the following example ,the minimal generators of linear truncations have two different total degrees. 
+\noindent In this section, we provide some interesting examples.  In the following example, the minimal generators of linear truncations have two different total degrees. 
   \begin{footnotesize}
  \begin{verbatim}
-i0 : S = QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}];
-i1 : I = ideal(x_1*x_4*x_6,x_1*x_3^2,x_3^2*x_4*x_5,x_2^2*x_5^2,x_1*x_4^2*x_5,x_1*x_2^2*x_4);
-i2 : M = S^1/I;
-i3 : c = coarseMultigradedRegularity M
+i0 : S=QQ[x_1..x_6,Degrees=>{{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,0,1},{0,0,1}}];
+i1 : I=ideal(x_1*x_4*x_6,x_1*x_3^2,x_3^2*x_4*x_5,x_2^2*x_5^2,x_1*x_4^2*x_5,x_1*x_2^2*x_4);
+i2 : M=S^1/I;
+i3 : c=coarseMultigradedRegularity M
 o3 = {3, 4, 2}
 i4 : findAllLinearTruncations({regularity M, sum coarseMultigradedRegularity M}, M)
 o4 = {{2, 2, 1}, {1, 3, 2}}
 \end{verbatim}
 \end{footnotesize}
 \begin{question}
-Let $S=k[x_1,\dots, x_n]$ be polynomial ring and $M$ be a finitely generated $S$-module. Is it possible for a degree $\textbf{d}$ where $\bar{\textbf{d}}<\reg(M)$ to be in a linear truncations of $M$?
+Let $S$ be multigraded polynomial ring and $M$ be a finitely generated  multigraded  $S$-module. Is it possible for a degree $\textbf{d}$ where $\bar{\textbf{d}}<\reg(M)$ to be in a linear truncations of $M$?
 \end{question}
-The answer to this question is yes.  Let $M$ be an Artinian module, the regularity of $M$ is equal to the maximum degree of the socle elements. On the other hand, truncating at each socle element has a linear resolution. Hence, it is possible to find that $\textbf{d}$ if the two socle elements of $M$ have different degrees.  Here is a simple example: 
+The answer to this question is yes.  Let $M$ be an Artinian module, the regularity of $M$ is equal to the maximum degree of the socle elements. On the other hand, truncating at each socle element has a linear resolution. Therefore it is possible to find that $\textbf{d}$ if the two socle elements of $M$ have different degrees.  Here is a simple example: 
 \begin{footnotesize}
  \begin{verbatim}
 i0 : S = QQ[x,y,Degrees=>{{1,0},{0,1}}];
@@ -244,8 +243,8 @@ i4 : isLinearComplex (res truncate({2,0},M))
 o4 = true
 \end{verbatim}
 \end{footnotesize}
-Since $M$ is an Artinian module, it is are not very interesting in the algebraic geometry's point of view. 
-Moreover, there is an interesting example  by studying $96$ generic points in $\mathbb{P}^2\times \mathbb{P}^2$.
+We conclude the paper by presenting an example of  $96$ points in $\mathbb{P}^2\times \mathbb{P}^2$ forming a complete intersection\footnote{A subscheme $V \subset \mathbb{P}^n \times \mathbb{P}^m$, is a complete intersection if $V = \mathrm{Proj}(S/I)$ where $I$ is generated by $\mathrm{codim}(V)$ bihomogeneous elements.} that has more geometric meaning than previous Artinian example:
+
 \begin{footnotesize}
  \begin{verbatim}
 i0 : S = QQ[x_0,x_1,x_2,y_0,y_1,y_2,Degrees=>{{1,0},{1,0},{1,0},{0,1},{0,1},{0,1}}];
@@ -259,7 +258,7 @@ i6 : findAllLinearTruncations({0,11},M)
 o6 = {{2, 6}, {6, 2}}
 \end{verbatim}
 \end{footnotesize}
-This example is also interesting because the minimal generators of the linear truncations of $M$ is not a convex set. In addition, if we look at the bigraded Hilbert function of $M$:
+This  is also interesting because the linear truncations of $M$ is not a convex set. In addition, if we look at the bigraded Hilbert function of $M$:
 \begin{footnotesize}
  \begin{verbatim}
 i7 :  matrix for i to 10 list for j to 10 list hilbertFunction({j,i},M)
@@ -274,11 +273,11 @@ o7 = | 1  3  6  10 15 21 24 24 24 |
      | 24 72 96 96 96 96 96 96 96 |
 \end{verbatim}
 \end{footnotesize}
-and applying Proposition 6.7 in \cite{MaclagenSmith}, the multigraded regularity and linear truncations in this example are the same.
+and applying Proposition 6.7 in \cite{MaclagenSmith}, the multigraded regularity and the linear truncations of $M$ coincide.
 
 
 \section{Acknowledgment}
-The authors thanks the organizers and of the Macaulay2 workshop June 2018 in Leipzig during which the algorithms were first implemented. The second author would like to thank Marc Chardin for his useful comments.
+The authors would like to thank the organizers of the Macaulay2 workshop(June 2018) in Leipzig during which the algorithms were first implemented. The second author would like to thank Marc Chardin for his useful comments.
 
 
 \bibliographystyle{alpha}
